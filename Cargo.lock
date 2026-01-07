@@ -146,6 +146,9 @@ dependencies = [
 name = "frontend"
 version = "0.1.0"
 dependencies = [
+ "http 1.4.0",
+ "http-body-util",
+ "tokio",
  "yew",
 ]
 

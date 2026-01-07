@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 yew = { version = "0.22", features = ["csr"] }
+tokio = { version = "1.49.0", features = ["full"] }
