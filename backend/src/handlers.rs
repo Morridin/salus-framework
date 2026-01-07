@@ -1,3 +1,5 @@
-pub async fn hello_world() -> &'static str {
-    "Hello, World!"
+use axum::response::IntoResponse;
+
+pub async fn hello_world() -> impl IntoResponse {
+    ([("Access-Control-Allow-Origin", "*")], "Hello, World!")
 }
