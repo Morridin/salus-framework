@@ -4,5 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-yew = { version = "0.22", features = ["csr"] }
-tokio = { version = "1.49.0", features = ["full"] }
+dioxus = { version = "0.7.1"}
+reqwest = "0.12.28"
+
+[features]
+default = ["web", "webview", "server"]
+web = ["dioxus/web"]
+webview = ["dioxus/desktop"]
+server = ["dioxus/server"]
