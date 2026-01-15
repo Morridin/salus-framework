@@ -20,3 +20,10 @@ script = []
 # Javascript code file
 # serve: [dev-server] only
 script = []
+
+
+[web.https]
+enabled = true
+mkcert = false
+key_path = ".certs/key.pem"
+cert_path = ".certs/cert.pem"

@@ -12,7 +12,7 @@ fn App() -> Element {
         let address = "127.0.0.1:8081";
         let resource = "/hello-world";
 
-        let response = match reqwest::get(format!("http://{}{}", address, resource)).await {
+        let response = match reqwest::get(format!("https://{}{}", address, resource)).await {
             Ok(response) => response
                 .text()
                 .await
