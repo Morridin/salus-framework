@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use std::fs;
 
 fn main() {
     dioxus::launch(App);
@@ -12,7 +13,12 @@ fn App() -> Element {
         let address = "127.0.0.1:8081";
         let resource = "/hello-world";
 
-        let response = match reqwest::get(format!("https://{}{}", address, resource)).await {
+        let response = match reqwest::Client::new()
+            .get(format!("https://{}{}", address, resource))
+            .bearer_auth(fs::read_to_string("../../token").unwrap())
+            .send()
+            .await
+        {
             Ok(response) => response
                 .text()
                 .await
