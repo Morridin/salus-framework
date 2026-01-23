@@ -1,5 +1,7 @@
+use dioxus::logger::tracing;
 use dioxus::prelude::*;
-use std::fs;
+use reqwest::header::{HeaderMap, ACCEPT, AUTHORIZATION, CONTENT_TYPE};
+use reqwest::Version;
 
 fn main() {
     dioxus::launch(App);
@@ -13,17 +15,23 @@ fn App() -> Element {
         let address = "127.0.0.1:8081";
         let resource = "/hello-world";
 
+        static TOKEN: Asset = asset!("../token");
+        let bytes = dioxus::asset_resolver::read_asset_bytes(&TOKEN)
+            .await
+            .unwrap();
+        let token = String::from_utf8(bytes).unwrap();
+
         let response = match reqwest::Client::new()
             .get(format!("https://{}{}", address, resource))
-            .bearer_auth(fs::read_to_string("../../token").unwrap())
+            .header(ACCEPT, "text/plain")
+            .bearer_auth(token)
             .send()
-            .await
-        {
+            .await {
             Ok(response) => response
                 .text()
                 .await
                 .unwrap_or_else(|error| error.to_string()),
-            Err(error) => error.to_string(),
+            Err(error) => format!("Fehler: {}", error.to_string()),
         };
 
         external_content.set(response);

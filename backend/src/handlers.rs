@@ -1,24 +1,39 @@
-use std::fs;
-use axum::http::{HeaderMap, StatusCode};
-use axum::response::IntoResponse;
+use crate::utils;
+use axum::body::Body;
+use axum::http::{HeaderMap, HeaderValue, StatusCode, Version, header};
+use axum::response::{IntoResponse, Response};
 
-pub async fn hello_world(headers: HeaderMap) -> Result<impl IntoResponse, (StatusCode, String)> {
-    if !headers.contains_key("Authorization") {
-        return Err((StatusCode::UNAUTHORIZED, "Missing Authorization header".to_string()))
-    }
+pub async fn hello_world(headers: HeaderMap) -> Response {
+    let mut response = match utils::authorize(headers) {
+        Ok(response) => response.into_response(),
+        Err(status) => return status.into_response(),
+    };
 
-    let token_from_header = headers["Authorization"].to_str().unwrap_or_else(|_| "");
-    if !token_from_header.starts_with("Bearer ") {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid Authorization header".to_string()))
-    }
+    let headers = response.headers_mut();
+    headers.append(
+        header::CONTENT_TYPE,
+        HeaderValue::from_str("text/plain").unwrap(),
+    );
 
-    let token_from_header = token_from_header.strip_prefix("Bearer ").unwrap();
-    let token = fs::read_to_string("../token").unwrap_or_else(|_| "".to_string());
-    if token_from_header == token {
-        Ok(([("Access-Control-Allow-Origin", "*")], "Hello, World!"))
-    }
-    else {
-        Err((StatusCode::FORBIDDEN, "Invalid authentication token".to_string()))
-    }
+    let body = response.body_mut();
+    *body = Body::from("Hello, World!");
 
+    response
+}
+
+pub async fn hello_world_options(headers: HeaderMap) -> Response {
+    _ = headers;
+    Response::builder()
+        .status(StatusCode::OK)
+        .version(Version::HTTP_3)
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        .header(header::ALLOW, "GET")
+        .header(header::ACCESS_CONTROL_ALLOW_METHODS, "GET")
+        .header(
+            header::ACCESS_CONTROL_ALLOW_HEADERS,
+            "Content-Type, Authorization",
+        )
+        .header(header::ACCESS_CONTROL_MAX_AGE, 60 * 60 * 24 * 200)
+        .body(Body::empty())
+        .unwrap()
 }
