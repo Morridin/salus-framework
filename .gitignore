@@ -1,4 +1,5 @@
 .idea
 target
 .certs/
-token
+backend/token
+frontend/token
