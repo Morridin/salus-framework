@@ -19,10 +19,10 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    overflow: scroll;
 
     .panel-body {
         padding: 1em;
+        overflow-y: auto;
     }
 
     &.closed {
