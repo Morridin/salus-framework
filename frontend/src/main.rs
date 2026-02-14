@@ -1,8 +1,6 @@
-use dioxus::html::completions::CompleteWithBraces::style;
 use dioxus::logger::tracing;
 use dioxus::prelude::*;
-use reqwest::Version;
-use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap};
+use reqwest::header::ACCEPT;
 use crate::components::panel::Panel;
 
 mod components;
