@@ -19,10 +19,11 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    overflow-y: auto;
 
     .panel-body {
         padding: 1em;
-        overflow-y: auto;
+        height: inherit;
     }
 
     &.closed {
@@ -78,4 +79,10 @@ body {
 
 .close-btn {
 
+}
+
+iframe {
+    height: 100%;
+    width: 100%;
+    border: 0;
 }

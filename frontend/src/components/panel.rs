@@ -17,7 +17,7 @@ pub fn Panel(
 
     rsx! {
         div {
-            class: {format!("panel {} {}", class, closed)},
+            class: format!("panel {} {}", class, closed),
             if !headless {
                 div {
                     class: "panel-header",

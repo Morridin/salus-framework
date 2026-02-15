@@ -22,7 +22,7 @@ script = []
 script = []
 
 
-[web.https]
+[fullstack.https]
 enabled = true
 mkcert = false
 key_path = ".certs/key.pem"
