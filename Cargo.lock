@@ -1403,7 +1403,10 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "dioxus-free-icons",
+ "serde",
  "serde_json",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

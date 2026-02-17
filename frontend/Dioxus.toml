@@ -1,5 +1,4 @@
 [application]
-asset_dir = "www-root/assets"
 
 [web.app]
 
