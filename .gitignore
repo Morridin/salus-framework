@@ -2,4 +2,3 @@
 target
 .certs/
 backend/token
-frontend/token
