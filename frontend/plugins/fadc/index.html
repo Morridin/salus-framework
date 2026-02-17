@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="utf-8"/>
+    <title>Test Plugin</title>
+    <script>
+        async function loadExternalContent() {
+            const token = await fetch("token").then((res) => res.text());
+            const data = await fetch("https://localhost:8081/hello-world", {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+            const text = await data.text();
+            document.getElementById("externalContent").innerHTML = text;
+            window.parent.postMessage(text);
+        }
+    </script>
+</head>
+<body style="background-color: #fff;">
+<noscript>
+    JabbaScript doesn't work here. Have you declared this plug-in as static?
+</noscript>
+<h1>
+    It works!
+</h1>
+<p>
+    Hello there!
+    <br />
+    JavaScript should not work here.
+    If it doesn't, you will see a note above everything else in here.
+</p>
+<button onclick="loadExternalContent();">
+    Load external content
+</button>
+<p id="externalContent"></p>
+</body>
+</html>

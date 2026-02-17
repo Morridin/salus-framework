@@ -1,0 +1,7 @@
+{
+  "name": "Dynamic Test Plugin",
+  "type": "dynamic",
+  "source": "index.html",
+  "dependencies": [],
+  "panels": ["all"]
+}
