@@ -1,5 +1,5 @@
 {
-  "name": "Dynamic Test Plugin",
+  "name": "Dynamic Test Plug-in",
   "type": "dynamic",
   "source": "index.html",
   "dependencies": [],

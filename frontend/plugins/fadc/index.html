@@ -8,7 +8,7 @@
             const token = await fetch("token").then((res) => res.text());
             const data = await fetch("https://localhost:8081/hello-world", {
                 headers: {
-                    "Authorization": "Bearer " + token
+                    "Authorization": "Bearer " + token,
                 }
             });
             const text = await data.text();
