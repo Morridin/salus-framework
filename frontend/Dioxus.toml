@@ -20,9 +20,3 @@ script = []
 # serve: [dev-server] only
 script = []
 
-
-[fullstack.https]
-enabled = true
-mkcert = false
-key_path = ".certs/key.pem"
-cert_path = ".certs/cert.pem"
