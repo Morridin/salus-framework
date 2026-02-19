@@ -1,27 +1,32 @@
-use crate::components::{panel::Panel, plugin_list::PluginList};
+use crate::components::{
+    panel::{Panel, PluginPanel},
+    plugin_list::{PluginList, PluginManifest},
+};
 use dioxus::prelude::*;
-use serde_json::json;
-use std::io::Write;
-use std::{fs, io};
 use wasm_bindgen::prelude::*;
 use web_sys::{MessageEvent, window};
-use crate::components::plugin_list::PluginContainer;
 
 mod components;
 mod server;
 
 fn main() {
+    #[cfg(feature = "web")]
     dioxus::launch(App);
-}
 
+    #[cfg(feature = "server")]
+    dioxus::serve(|| async move {
+        let router = dioxus::server::router(App);
+
+        Ok(router)
+    })
+}
 #[component]
 fn App() -> Element {
+    // Handlers for Plugin-MPI
     let mut message_origin = use_signal(|| String::from("No message received yet."));
     let mut external_message = use_signal(|| String::from("No message received yet."));
-    let mut plugin_manifest = use_signal(|| String::new());
-
     use_effect(move || {
-        let window = web_sys::window().expect("no global `window` exists");
+        let window = window().expect("No global `window` exists!");
 
         let closure = Closure::wrap(Box::new(move |event: MessageEvent| {
             let origin = event.origin();
@@ -39,6 +44,9 @@ fn App() -> Element {
         closure.forget();
     });
 
+    // Required for plugin handling
+    let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
+
     rsx! {
         document::Stylesheet {
             href: asset!("/www-root/assets/main.css"),
@@ -47,27 +55,26 @@ fn App() -> Element {
             class: "side-panel",
             panel_name: "Left Panel",
             PluginList {
-                plugin_manifest
+                plugin_manifests
             },
         },
         div {
             class: "central-pane",
-            Panel {
+            PluginPanel {
                 headless: true,
                 class: "main-panel",
-                if plugin_manifest() != String::new() {
-                    PluginContainer { plugin_manifest },
-                }
-                else {
-                    div {
-                        h1 { "Welcome to Salus!", },
-                        p { "To start, please select a plug-in on the left panel!", },
-                    },
-                }
+                position: "center",
+                plugin_manifests,
+                div {
+                    h1 { "Welcome to Salus!", },
+                    p { "To start, please select a plugin on the left panel!", },
+                },
             },
-            Panel {
+            PluginPanel {
                 class: "bottom-panel",
                 panel_name: "Bottom Panel",
+                position: "bottom",
+                plugin_manifests,
                 h2 { "Received messages" },
                 table {
                     tr {
@@ -81,9 +88,11 @@ fn App() -> Element {
                 }
             },
         },
-        Panel {
+        PluginPanel {
             class: "side-panel",
             panel_name: "Right Panel",
+            position: "right",
+            plugin_manifests,
             "Right panel",
         },
     }

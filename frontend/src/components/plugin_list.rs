@@ -1,51 +1,65 @@
 use crate::server::list_plugins;
-use dioxus::asset_resolver::AssetResolveError;
 use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[component]
-pub fn PluginList(plugin_manifest: Signal<String>) -> Element {
+pub fn PluginList(plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
+    let server_success = use_server_future(move || async { list_plugins().await });
+
+    let plugin_list = use_resource(move || async move {
+        match dioxus::asset_resolver::read_asset_bytes(asset!("/plugins/plugin-list.json")).await {
+            Ok(bytes) => serde_json::from_slice(&bytes).unwrap_or_else(|e| vec![format!("Error parsing plugin list!\n\n{}\n", e)]),
+            Err(e) => vec![format!("Error reading plugins list file!\n\n{}\n", e)]
+        }
+    });
+
     rsx! {
-        h2 { "Available Plug-ins" },
-        {
-            let plugin_list = use_resource(move || async move {
-                if let Err(e) = list_plugins().await {
-                     return vec![format!("Error writing plug-ins list!\n\n{}\n", e)];
-                };
-
-                static LIST_ASSET: Asset = asset!("/plugins/plugin-list.json");
-
-                match dioxus::asset_resolver::read_asset_bytes(&LIST_ASSET).await {
-                    Ok(bytes) => serde_json::from_slice(&bytes).unwrap_or_else(|e| vec![format!("Error parsing plug-in list!\n\n{}\n", e)]),
-                    Err(e) => vec![format!("Error loading plug-ins!\n\n{}\n", e)]
-                }
-            });
-
-            let plugin_list = plugin_list.read();
-
-            match &*plugin_list {
-                Some(plugin_list) => rsx! {
-                    ul {
-                        for name in plugin_list {
-                            li {
-                                PluginListEntry {
-                                    uuid: name,
-                                    plugin_manifest,
+        h2 { "Available Plugins" },
+        if let Err(e) = server_success {
+            pre {
+                class: "plugin-error",
+                "Error writing plug-ins list!\n\n{e}"
+            },
+        }
+        else {
+            match plugin_list() {
+                Some(plugin_list) => {
+                    match plugin_list.iter().next() {
+                        Some(name) => {
+                            if name.starts_with("Error ") {
+                                rsx! {
+                                    pre {
+                                        class: "plugin-error",
+                                        "{name}"
+                                    },
                                 }
                             }
-                        }
+                            else {
+                                rsx! {
+                                    ul {
+                                        for name in plugin_list {
+                                            li {
+                                                PluginListEntry {
+                                                    uuid: name,
+                                                    plugin_manifests,
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        },
+                        None => rsx! { p { "No plugins found!" }, },
                     }
                 },
-                None => rsx! {
-                    p { "Plug-ins still loading ..."}
-                }
+                None => rsx! { p { "Plugins still loading ..."}, },
             }
-        }
+        },
     }
 }
 
 #[component]
-fn PluginListEntry(uuid: String, plugin_manifest: Signal<String>) -> Element {
+fn PluginListEntry(uuid: String, plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
     static PLUGINS_FOLDER: Asset = asset!("/plugins");
     let path_prototype = format!("{}/{}", PLUGINS_FOLDER, uuid);
     let manifest = format!("{}/plugin.json", path_prototype);
@@ -60,7 +74,7 @@ fn PluginListEntry(uuid: String, plugin_manifest: Signal<String>) -> Element {
             let mut plugin_data = match dioxus::asset_resolver::read_asset_bytes(manifest).await {
                 Ok(bytes) => serde_json::from_slice(&bytes).unwrap_or_else(|e| PluginManifest {
                     error: Some(format!(
-                        "Error parsing plug-in manifest for {}!\n\n{}\n",
+                        "Error parsing plugin manifest for {}!\n\n{}\n",
                         uuid, e
                     )),
                     ..Default::default()
@@ -68,7 +82,7 @@ fn PluginListEntry(uuid: String, plugin_manifest: Signal<String>) -> Element {
 
                 Err(e) => PluginManifest {
                     error: Some(format!(
-                        "Error loading plug-in manifest for {}!\n\n{}\n",
+                        "Error loading plugin manifest for {}!\n\n{}\n",
                         uuid, e
                     )),
                     ..Default::default()
@@ -90,46 +104,34 @@ fn PluginListEntry(uuid: String, plugin_manifest: Signal<String>) -> Element {
             if let Some(error) = &data.error {
                 rsx! { "Error: {error}" }
             } else {
-                let manifest = serde_json::to_string(&data)?;
+                let manifest = data.clone();
                 rsx! {
                     span {
-                        onclick: move |_| plugin_manifest.set(manifest.clone()),
+                        class: "plugin-list-entry",
+                        onclick: move |_| plugin_manifests.push(manifest.clone()),
                         "{&data.name}",
                     },
                 }
             }
         }
-        None => rsx! { "Loading plug-in manifest {uuid}" },
+        None => rsx! { "Loading plugin manifest {uuid}" },
     }
 }
 
-#[derive(Deserialize, Serialize, Default)]
-struct PluginManifest {
-    name: String,
+#[derive(Deserialize, Default, PartialEq, Clone)]
+pub(crate) struct PluginManifest {
+    pub(crate) name: String,
     #[serde(rename = "type")]
     kind: String,
     source: String,
     dependencies: Vec<String>,
-    panels: Vec<String>,
+    pub(crate) panels: Vec<String>,
     #[serde(default)]
     error: Option<String>,
 }
 
 #[component]
-pub fn PluginContainer(plugin_manifest: Signal<String>) -> Element {
-    let plugin = match serde_json::from_str::<PluginManifest>(&plugin_manifest()) {
-        Ok(plugin) => plugin,
-        Err(e) => {
-            return rsx! {
-                div {
-                    class: "plugin-error",
-                    h1 { "Error loading plug-in!" },
-                    p { "{e}" },
-                },
-            };
-        }
-    };
-
+pub fn PluginContainer(plugin: PluginManifest) -> Element {
     match plugin.kind.as_str() {
         "static" => rsx! {
             iframe {
@@ -145,15 +147,15 @@ pub fn PluginContainer(plugin_manifest: Signal<String>) -> Element {
         "rust" | "component" => rsx! {
             div {
                 class: "plugin-error",
-                h1 { "Error loading plug-in!" },
-                p { code { "component" }, " type plug-ins are not yet supported!" },
+                h1 { "Error loading plugin!" },
+                p { code { "component" }, " type plugins are not yet supported!" },
             },
         },
         other => rsx! {
             div {
                 class: "plugin-error",
-                h1 { "Error loading plug-in!" },
-                p { "Plug-in type ", code { "{other}" }, " is unknown and not supported" },
+                h1 { "Error loading plugin!" },
+                p { "Plugin type ", code { "{other}" }, " is unknown and not supported" },
             },
         },
     }

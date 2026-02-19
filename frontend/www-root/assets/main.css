@@ -1,7 +1,18 @@
+:root {
+    --font-size: 16px;
+    --font-family: "Frutiger 65", Helvetica, Arial;
+    --primary-color: #000;
+    --secondary-color: #fff;
+
+    --max-panel-size: 448px;
+    --min-panel-size: 224px;
+}
+
 body {
     margin: 0;
-    font-family: "Frutiger 65", Helvetica, Arial, sans-serif;
-    font-size: 16px;
+    font-family: var(--font-family), sans-serif;
+    color: var(--primary-color);
+    font-size: var(--font-size);
 }
 
 #main {
@@ -66,13 +77,17 @@ body {
 }
 
 .side-panel {
-    width: 400px;
+    max-width: var(--max-panel-size);
+    width: 15vw;
+    min-width: var(--min-panel-size);
     height: 100%;
     background-color: #2b7fff;
 }
 
 .bottom-panel {
-    height: 400px;
+    max-height: var(--max-panel-size);
+    height: 15vw;
+    min-height: var(--min-panel-size);
     background-color: #10b981;
     width: 100%;
 }
@@ -85,4 +100,12 @@ iframe {
     height: 100%;
     width: 100%;
     border: 0;
+}
+
+.plugin-list-entry {
+    cursor: pointer;
+}
+
+.plugin-error {
+    font-family: var(--font-family), sans-serif;
 }
