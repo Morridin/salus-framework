@@ -1401,10 +1401,13 @@ dependencies = [
 name = "frontend"
 version = "0.1.0"
 dependencies = [
+ "axum-server",
  "dioxus",
  "dioxus-free-icons",
+ "rustls",
  "serde",
  "serde_json",
+ "tokio",
  "wasm-bindgen",
  "web-sys",
 ]

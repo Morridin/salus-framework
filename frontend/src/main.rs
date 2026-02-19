@@ -9,17 +9,39 @@ use web_sys::{MessageEvent, window};
 mod components;
 mod server;
 
+#[cfg(feature = "web")]
 fn main() {
-    #[cfg(feature = "web")]
     dioxus::launch(App);
-
-    #[cfg(feature = "server")]
-    dioxus::serve(|| async move {
-        let router = dioxus::server::router(App);
-
-        Ok(router)
-    })
 }
+
+#[cfg(feature = "server")]
+#[tokio::main]
+async fn main() {
+    use axum_server::tls_rustls::RustlsConfig;
+    use dioxus::server::axum::Router;
+    use std::net::SocketAddr;
+
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("Failed to install rustls crypto provider");
+
+    let ssr_options = ServeConfig::new();
+
+    let app = Router::new()
+        .serve_dioxus_application(ssr_options, App);
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+
+    let config = RustlsConfig::from_pem_file(".certs/cert.pem", ".certs/key.pem")
+        .await
+        .unwrap();
+
+    axum_server::bind_rustls(addr, config)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+
 #[component]
 fn App() -> Element {
     // Handlers for Plugin-MPI
@@ -45,7 +67,7 @@ fn App() -> Element {
     });
 
     // Required for plugin handling
-    let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
+    let plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
 
     rsx! {
         document::Stylesheet {
