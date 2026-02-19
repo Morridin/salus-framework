@@ -3,5 +3,5 @@
   "type": "static",
   "source": "index.html",
   "dependencies": [],
-  "panels": ["all"]
+  "panels": ["bottom", "all"]
 }

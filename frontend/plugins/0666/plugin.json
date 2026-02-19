@@ -3,5 +3,5 @@
   "type": "extern",
   "source": "https://42-4-4z.com",
   "dependencies": [],
-  "panels": ["all"]
+  "panels": ["center", "all"]
 }

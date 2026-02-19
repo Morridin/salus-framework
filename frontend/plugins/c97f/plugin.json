@@ -3,5 +3,5 @@
   "type": "dynamic",
   "source": "index.html",
   "dependencies": [],
-  "panels": ["all"]
+  "panels": ["right", "all"]
 }
