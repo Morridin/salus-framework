@@ -1,13 +1,10 @@
-use crate::components::{
-    panel::{Panel, PluginPanel},
-    plugin_list::{PluginList, PluginManifest},
-};
+use models::PluginManifest;
 use dioxus::prelude::*;
-use wasm_bindgen::prelude::*;
-use web_sys::{MessageEvent, window};
+use crate::components::{Panel, PluginList, PluginPanel};
 
 mod components;
 mod server;
+mod models;
 
 #[cfg(feature = "web")]
 fn main() {
@@ -27,8 +24,7 @@ async fn main() {
 
     let ssr_options = ServeConfig::new();
 
-    let app = Router::new()
-        .serve_dioxus_application(ssr_options, App);
+    let app = Router::new().serve_dioxus_application(ssr_options, App);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 
@@ -44,28 +40,6 @@ async fn main() {
 
 #[component]
 fn App() -> Element {
-    // Handlers for Plugin-MPI
-    let mut message_origin = use_signal(|| String::from("No message received yet."));
-    let mut external_message = use_signal(|| String::from("No message received yet."));
-    use_effect(move || {
-        let window = window().expect("No global `window` exists!");
-
-        let closure = Closure::wrap(Box::new(move |event: MessageEvent| {
-            let origin = event.origin();
-            message_origin.set(origin);
-
-            if let Some(data) = event.data().as_string() {
-                external_message.set(format!("Message: {data}"));
-            }
-        }) as Box<dyn FnMut(MessageEvent)>);
-
-        window
-            .add_event_listener_with_callback("message", closure.as_ref().unchecked_ref())
-            .unwrap();
-
-        closure.forget();
-    });
-
     // Required for plugin handling
     let plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
 
@@ -97,17 +71,6 @@ fn App() -> Element {
                 panel_name: "Bottom Panel",
                 position: "bottom",
                 plugin_manifests,
-                h2 { "Received messages" },
-                table {
-                    tr {
-                        th { "Message origins" },
-                        th { "Message contents" },
-                    },
-                    tr {
-                        td { "{message_origin}" },
-                        td { "{external_message}" },
-                    }
-                }
             },
         },
         PluginPanel {
