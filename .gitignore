@@ -3,7 +3,7 @@ target
 
 # Secrets
 .certs/
-backend/token
+token
 
 # Dynamic content
 frontend/plugins/plugin-list.json
