@@ -18,8 +18,9 @@ pub fn PluginPanel(
 ) -> Element {
     // Signals
     let mut plugin = use_signal(|| None);
-    let mut iframe = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
+    let mut message_data = use_signal(|| None);
+    let mut message_received = use_signal(|| false);
 
     let plugin_prototype = plugin_manifests
         .iter()
@@ -33,53 +34,77 @@ pub fn PluginPanel(
 
     // Handlers for Plugin-MPI
     use_effect(move || {
-        let window = window().expect("No global `window` exists!");
-
-        if !plugin().is_some() {
-            return;
-        }
-
-        let closure = Closure::wrap(Box::new(move |event: MessageEvent| {
-            let Some(data) = event.data().as_string() else {
-                return;
+        let mut eval = document::eval(
+            r#"
+            const handler = event => {
+                dioxus.send(event.data);
             };
+            window.addEventListener("message", handler);
 
-            let message_data = match Message::create(data.as_str()) {
-                Ok(message) => message,
-                Err(error) => return, // TODO: Implement Error Handling!
-            };
+            return () => window.removeEventListener("message", handler);
+        "#,
+        );
 
-            // Get origin, check actual UUID in it and leave if not matching
-            match message_data.origin().split_once("plugins-") {
-                Some((_, origin)) => match origin.split_once("/") {
-                    Some((_, origin)) => {
-                        if origin != plugin().unwrap().uuid() {
-                            return;
-                        }
-                    }
+        spawn(async move {
+            while let Ok(data) = eval.recv::<String>().await {
+                let plugin = match plugin() {
+                    Some(plugin) => plugin,
                     None => return,
-                },
-                None => return,
-            }
+                };
 
-            spawn(async move {
-                if let Ok(r) = make_backend_request(&plugin().unwrap(), &message_data).await {
-                    external_message.set(String::from(r));
+                let message = match Message::create(data.as_str()) {
+                    Ok(message) => message,
+                    Err(error) => return, // TODO: Implement Error Handling!
+                };
+
+                // Get origin, check actual UUID in it and leave if not matching
+                match message.origin().split_once("plugins-") {
+                    Some((_, origin)) => match origin.split("/").skip(1).next() {
+                        Some(uuid) => {
+                            if uuid != plugin.uuid() {
+                                return;
+                            }
+                        }
+                        None => return,
+                    },
+                    None => return,
                 }
-            });
-        }) as Box<dyn FnMut(MessageEvent)>);
 
-        window
-            .add_event_listener_with_callback("message", closure.as_ref().unchecked_ref())
-            .unwrap();
+                message_received.set(false);
+                message_data.set(Some(message));
+            }
+        });
+    });
 
-        closure.forget();
+    let backend_request = use_resource(move || async move {
+        let plugin = plugin.read();
+        let message = message_data.read();
+
+        if !*message_received.peek() && plugin.is_some() && message.is_some() {
+
+            message_received.set(true);
+
+            let plugin = plugin.as_ref().unwrap();
+            let message = message.as_ref().unwrap();
+
+            if let Ok(r) = make_backend_request(plugin, message).await {
+                external_message.set(String::from(r));
+            }
+        }
     });
 
     use_effect(move || {
-        let message = external_message();
-        if let Some(plugin) = plugin() && !message.is_empty() {
-            let eval = document::eval(&format!(r#"document.getElementById({}).contentWindow.postMessage({});"#, plugin.uuid(), message));
+        let message = external_message.read();
+
+        if let Some(plugin) = plugin.read().as_ref()
+            && !message.is_empty()
+        {
+            let message = format!(
+                r#"document.getElementById("{}").contentWindow.postMessage({}, "*");"#,
+                plugin.uuid(),
+                serde_json::to_string(&*message).unwrap_or("null".to_string())
+            );
+            let eval = document::eval(&message);
         }
     });
 
@@ -126,7 +151,6 @@ pub fn PluginPanel(
                         },
                     },
                 },
-                p {"{external_message}"},
             },
         }
     } else {
@@ -157,7 +181,6 @@ async fn make_backend_request(
     Ok(message_data
         .get_request(address, uuid)
         .await?
-        .header(ACCEPT, "text/plain")
         .bearer_auth(token)
         .send()
         .await?

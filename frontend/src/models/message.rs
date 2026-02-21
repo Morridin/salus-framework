@@ -1,18 +1,18 @@
-use dioxus::{
-    fullstack::{
-        http::method::InvalidMethod,
-        reqwest,
-        reqwest::{RequestBuilder, Method}
-    }
+use dioxus::fullstack::http::header::ACCEPT;
+use dioxus::fullstack::{
+    http::method::InvalidMethod,
+    reqwest,
+    reqwest::{Method, RequestBuilder},
 };
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Message {
     origin: String,
     method: String,
     endpoint: String,
-    body: String,
+    #[serde(default)]
+    body: Option<String>,
 }
 
 impl Message {
@@ -30,15 +30,22 @@ impl Message {
         uuid: &str,
     ) -> Result<RequestBuilder, InvalidMethod> {
         let method = Method::from_bytes(self.method.as_bytes())?;
-        Ok(reqwest::Client::new()
+        let request = reqwest::Client::new()
             .request(
                 method,
                 format!("https://{}/{}/{}", target, uuid, self.endpoint),
             )
-            .body(self.body.clone()))
+            .header(ACCEPT, "text/plain");
+        match self.body {
+            Some(ref body) => Ok(request.body(body.clone())),
+            None => Ok(request),
+        }
     }
 
-    pub fn body(&self) -> &str {
-        self.body.as_str()
+    pub fn body(&self) -> Option<&str> {
+        match self.body {
+            Some(ref body) => Some(body.as_str()),
+            None => None,
+        }
     }
 }

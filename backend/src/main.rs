@@ -10,6 +10,8 @@ async fn main() {
     let app = Router::new()
         .route("/hello-world", get(hello_world))
         .route("/hello-world", options(hello_world_options))
+        .route("/c97f/hello-world", get(hello_world))
+        .route("/c97f/hello-world", options(hello_world_options))
         .fallback(fallback);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8081));

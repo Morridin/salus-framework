@@ -1,3 +1,4 @@
+use dioxus::logger::tracing::Level;
 use models::PluginManifest;
 use dioxus::prelude::*;
 use crate::components::{Panel, PluginList, PluginPanel};
@@ -8,6 +9,7 @@ mod models;
 
 #[cfg(feature = "web")]
 fn main() {
+    dioxus::logger::init(Level::DEBUG).expect("failed to init logger");
     dioxus::launch(App);
 }
 
