@@ -1,11 +1,11 @@
-use dioxus::core_macro::component;
-use dioxus::prelude::{Asset, Signal, WritableExt};
-use dioxus::core::Element;
-use dioxus::hooks::{use_effect, use_signal};
-use web_sys::{window, MessageEvent};
-use wasm_bindgen::closure::Closure;
-use wasm_bindgen::JsCast;
-use crate::models::PluginManifest;
+use crate::components::Panel;
+use crate::models::{BackendRequestError, Message, PluginManifest};
+use dioxus::fullstack::reqwest::Response;
+use dioxus::fullstack::reqwest::header::ACCEPT;
+use dioxus::prelude::*;
+use std::error::Error;
+use wasm_bindgen::prelude::*;
+use web_sys::{MessageEvent, window};
 
 #[component]
 pub fn PluginPanel(
@@ -13,22 +13,60 @@ pub fn PluginPanel(
     #[props(default)] panel_name: String,
     #[props(default = false)] headless: bool,
     position: String,
-    #[props(default)] plugin_manifests: Signal<Vec<PluginManifest>>,
+    #[props(default)] plugin_manifests: ReadSignal<Vec<PluginManifest>>,
     children: Element,
 ) -> Element {
+    // Signals
+    let mut plugin = use_signal(|| None);
+    let mut iframe = use_signal(|| None);
+    let mut external_message = use_signal(|| String::new());
+
+    let plugin_prototype = plugin_manifests
+        .iter()
+        .filter(|p| p.panels()[0] == position)
+        .last();
+
+    match plugin_prototype {
+        Some(p) => plugin.set(Some(p.clone())),
+        None => plugin.set(None),
+    }
+
     // Handlers for Plugin-MPI
-    let mut message_origin = use_signal(|| String::from("No message received yet."));
-    let mut external_message = use_signal(|| String::from("No message received yet."));
     use_effect(move || {
         let window = window().expect("No global `window` exists!");
 
-        let closure = Closure::wrap(Box::new(move |event: MessageEvent| {
-            let origin = event.origin();
-            message_origin.set(origin);
+        if !plugin().is_some() {
+            return;
+        }
 
-            if let Some(data) = event.data().as_string() {
-                external_message.set(format!("Message: {data}"));
+        let closure = Closure::wrap(Box::new(move |event: MessageEvent| {
+            let Some(data) = event.data().as_string() else {
+                return;
+            };
+
+            let message_data = match Message::create(data.as_str()) {
+                Ok(message) => message,
+                Err(error) => return, // TODO: Implement Error Handling!
+            };
+
+            // Get origin, check actual UUID in it and leave if not matching
+            match message_data.origin().split_once("plugins-") {
+                Some((_, origin)) => match origin.split_once("/") {
+                    Some((_, origin)) => {
+                        if origin != plugin().unwrap().uuid() {
+                            return;
+                        }
+                    }
+                    None => return,
+                },
+                None => return,
             }
+
+            spawn(async move {
+                if let Ok(r) = make_backend_request(&plugin().unwrap(), &message_data).await {
+                    external_message.set(String::from(r));
+                }
+            });
         }) as Box<dyn FnMut(MessageEvent)>);
 
         window
@@ -38,34 +76,40 @@ pub fn PluginPanel(
         closure.forget();
     });
 
-    let plugin_manifests = plugin_manifests();
-    let plugin = plugin_manifests
-        .iter()
-        .rev()
-        .filter(|p| p.panels()[0] == position)
-        .next();
+    use_effect(move || {
+        let message = external_message();
+        if let Some(plugin) = plugin() && !message.is_empty() {
+            let eval = document::eval(&format!(r#"document.getElementById({}).contentWindow.postMessage({});"#, plugin.uuid(), message));
+        }
+    });
 
     static PLUGIN_FOLDER: Asset = asset!("/plugins/");
 
-    if let Some(plugin) = plugin {
+    if let Some(plugin) = &plugin() {
+        let local_url = format!("{}/{}/{}", PLUGIN_FOLDER, plugin.uuid(), plugin.source());
         rsx! {
             Panel {
                 class,
                 headless,
                 panel_name: plugin,
-
                 match plugin.kind() {
                     "static" => rsx! {
                         iframe {
-                            src: format!("{}/{}/{}", PLUGIN_FOLDER, plugin.uuid(), plugin.source()),
+                            src: local_url,
                             "sandbox": "allow-downloads allow-forms allow-popups allow-same-origin",
                         },
                     },
                     "dynamic" => rsx!{
-                        iframe { src: format!("{}/{}/{}", PLUGIN_FOLDER, plugin.uuid(), plugin.source()), },
+                        iframe {
+                            id: plugin.uuid(),
+                            src: local_url,
+                        },
                     },
                     "extern" => rsx!{
-                        iframe { src: plugin.source(), },
+                        iframe {
+                            id: plugin.uuid(),
+                            src: plugin.source(),
+                        },
                     },
                     known_other @ ("rust" | "component") => rsx!{
                         div {
@@ -82,6 +126,7 @@ pub fn PluginPanel(
                         },
                     },
                 },
+                p {"{external_message}"},
             },
         }
     } else {
@@ -94,4 +139,28 @@ pub fn PluginPanel(
             },
         }
     }
+}
+
+async fn make_backend_request(
+    plugin: &PluginManifest,
+    message_data: &Message,
+) -> Result<String, BackendRequestError> {
+    let uuid = plugin.uuid();
+
+    let address = "127.0.0.1:8081";
+
+    // Retrieve token
+    static TOKEN: Asset = asset!("../../token");
+    let bytes = dioxus::asset_resolver::read_asset_bytes(&TOKEN).await?;
+    let token = String::from_utf8(bytes)?;
+
+    Ok(message_data
+        .get_request(address, uuid)
+        .await?
+        .header(ACCEPT, "text/plain")
+        .bearer_auth(token)
+        .send()
+        .await?
+        .text()
+        .await?)
 }
