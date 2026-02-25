@@ -1,9 +1,10 @@
 use crate::utils;
 use axum::body::Body;
+use axum::extract::Path;
 use axum::http::{HeaderMap, HeaderValue, StatusCode, Version, header};
 use axum::response::{IntoResponse, Response};
 
-pub async fn hello_world(headers: HeaderMap) -> Response {
+pub async fn hello_world(Path(uuid): Path<String>, headers: HeaderMap) -> Response {
     let mut response = match utils::authorize(headers) {
         Ok(response) => response.into_response(),
         Err(status) => return status.into_response(),
@@ -12,11 +13,11 @@ pub async fn hello_world(headers: HeaderMap) -> Response {
     let headers = response.headers_mut();
     headers.append(
         header::CONTENT_TYPE,
-        HeaderValue::from_str("text/plain").unwrap(),
+        HeaderValue::from_str("application/json").unwrap(),
     );
 
     let body = response.body_mut();
-    *body = Body::from("Hello, World!");
+    *body = Body::from(format!(r#"{{"message": "Hello, dear plugin {uuid}!"}}"#));
 
     response
 }
