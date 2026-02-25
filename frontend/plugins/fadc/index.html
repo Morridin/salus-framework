@@ -6,16 +6,20 @@
     <link rel="stylesheet" href="main.css" />
     <script>
         async function loadExternalContent() {
-            const token = await fetch("token").then((res) => res.text());
-            const data = await fetch("https://localhost:8081/hello-world", {
-                headers: {
-                    "Authorization": "Bearer " + token,
-                }
-            });
-            const text = await data.text();
-            document.getElementById("externalContent").innerHTML = text;
-            window.parent.postMessage(text);
+            let request = {
+                origin: location.href,
+                method: "GET",
+                endpoint: "hello-world",
+                body: null,
+            }
+            window.parent.postMessage(JSON.stringify(request));
         }
+
+        window.addEventListener('message', event => {
+            if (event.origin !== location.origin) return;
+            document.getElementById("externalContent").innerHTML = event.data;
+
+        })
     </script>
 </head>
 <body>
