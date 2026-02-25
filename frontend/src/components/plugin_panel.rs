@@ -44,17 +44,16 @@ pub fn PluginPanel(
             return () => window.removeEventListener("message", handler);
         "#,
         );
-
         spawn(async move {
             while let Ok(data) = eval.recv::<String>().await {
                 let plugin = match plugin() {
                     Some(plugin) => plugin,
-                    None => return,
+                    None => continue,
                 };
 
                 let message = match Message::create(data.as_str()) {
                     Ok(message) => message,
-                    Err(error) => return, // TODO: Implement Error Handling!
+                    Err(error) => continue, // TODO: Implement Error Handling!
                 };
 
                 // Get origin, check actual UUID in it and leave if not matching
@@ -62,15 +61,14 @@ pub fn PluginPanel(
                     Some((_, origin)) => match origin.split("/").skip(1).next() {
                         Some(uuid) => {
                             if uuid != plugin.uuid() {
-                                return;
+                                continue;
                             }
                         }
-                        None => return,
+                        None => continue,
                     },
-                    None => return,
+                    None => continue,
                 }
 
-                message_received.set(false);
                 message_data.set(Some(message));
             }
         });
@@ -105,6 +103,7 @@ pub fn PluginPanel(
                 serde_json::to_string(&*message).unwrap_or("null".to_string())
             );
             let eval = document::eval(&message);
+            message_received.set(false);
         }
     });
 
