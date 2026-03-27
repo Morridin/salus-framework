@@ -1,11 +1,10 @@
-use dioxus::logger::tracing::Level;
-use models::PluginManifest;
-use dioxus::prelude::*;
-use crate::components::{Panel, PluginList, PluginPanel};
+use crate::components::{Panel, PluginList, PluginPanel, ResizeablePanel};
+use dioxus::{logger::tracing::Level, prelude::*};
+use models::{PluginManifest, Position};
 
 mod components;
-mod server;
 mod models;
+mod server;
 
 #[cfg(feature = "web")]
 fn main() {
@@ -49,11 +48,14 @@ fn App() -> Element {
         document::Stylesheet {
             href: asset!("/www-root/assets/main.css"),
         },
-        Panel {
-            class: "side-panel",
-            panel_name: "Left Panel",
-            PluginList {
-                plugin_manifests
+        ResizeablePanel {
+            position: Position::Left,
+            Panel {
+                class: "side-panel",
+                panel_name: "Left Panel",
+                PluginList {
+                    plugin_manifests
+                },
             },
         },
         div {
@@ -68,19 +70,26 @@ fn App() -> Element {
                     p { "To start, please select a plugin on the left panel!", },
                 },
             },
-            PluginPanel {
-                class: "bottom-panel",
-                panel_name: "Bottom Panel",
-                position: "bottom",
-                plugin_manifests,
+            ResizeablePanel {
+                position: Position::Bottom,
+                PluginPanel {
+                    class: "bottom-panel",
+                    panel_name: "Bottom Panel",
+                    position: "bottom",
+                    plugin_manifests,
+                },
             },
+
         },
-        PluginPanel {
-            class: "side-panel",
-            panel_name: "Right Panel",
-            position: "right",
-            plugin_manifests,
-            "Right panel",
+        ResizeablePanel {
+            position: Position::Right,
+            PluginPanel {
+                class: "side-panel",
+                panel_name: "Right Panel",
+                position: "right",
+                plugin_manifests,
+                "Right panel",
+            },
         },
     }
 }

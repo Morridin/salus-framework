@@ -1,6 +1,6 @@
 use crate::models::PluginManifest;
 use dioxus::prelude::*;
-use dioxus_free_icons::{icons::vsc_icons::VscClose, Icon};
+use dioxus_free_icons::{icons::ld_icons::LdX, Icon};
 
 /// The highest-level units the main page is built of.
 #[component]
@@ -26,7 +26,7 @@ pub fn Panel(
                             width: 24,
                             height: 24,
                             fill: "black",
-                            icon: VscClose,
+                            icon: LdX,
                         },
                     },
                 },
