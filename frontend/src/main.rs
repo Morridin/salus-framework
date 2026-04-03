@@ -1,4 +1,4 @@
-use crate::components::{Panel, PluginList, PluginPanel, ResizeablePanel};
+use components::{Panel, PluginList, PluginPanel, ResizeablePanel};
 use dioxus::{logger::tracing::Level, prelude::*};
 use models::{PluginManifest, Position};
 
@@ -49,7 +49,7 @@ fn App() -> Element {
             href: asset!("/www-root/assets/main.css"),
         },
         ResizeablePanel {
-            position: Position::Left,
+            position: Position::West,
             Panel {
                 class: "side-panel",
                 panel_name: "Left Panel",
@@ -71,7 +71,7 @@ fn App() -> Element {
                 },
             },
             ResizeablePanel {
-                position: Position::Bottom,
+                position: Position::South,
                 PluginPanel {
                     class: "bottom-panel",
                     panel_name: "Bottom Panel",
@@ -82,7 +82,7 @@ fn App() -> Element {
 
         },
         ResizeablePanel {
-            position: Position::Right,
+            position: Position::East,
             PluginPanel {
                 class: "side-panel",
                 panel_name: "Right Panel",
