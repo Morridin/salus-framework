@@ -48,7 +48,7 @@ body {
 
 .panel-wrapper {
     display: flex;
-    flex-shrink: 1;
+    flex-shrink: 0;
     height: 100%;
     width: 100%;
     flex-basis: auto;
@@ -133,6 +133,16 @@ body {
     width: 100%;
     height: 100%;
 
+    &.side-panel .panel-header.minimised {
+        writing-mode: sideways-lr;
+        height: 100%;
+    }
+
+    &:has(> .minimised) {
+        width: auto;
+        height: auto;
+    }
+
     .panel-body {
         height: inherit;
         padding: 1em;
@@ -151,6 +161,12 @@ body {
         font-weight: 700;
         color: var(--violet-color);
 
+        .panel-header-button-group {
+            display: flex;
+            gap: 0.5em;
+            order: 2;
+        }
+
         button {
             height: 1.5em;
             width: 1.5em;
@@ -158,11 +174,13 @@ body {
             border: 0;
             font-size: 1em;
             background: none;
-            order: 2;
             color: inherit;
             outline: 1px solid currentColor;
 
             svg {
+                height: 1.5em;
+                width: 1.5em;
+                fill: currentColor;
                 stroke: currentColor;
             }
 
