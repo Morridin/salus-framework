@@ -48,8 +48,8 @@ fn App() -> Element {
         document::Stylesheet {
             href: asset!("/www-root/assets/main.css"),
         },
-        ResizeablePanel {
-            position: Position::West,
+        // ResizeablePanel {
+        //     position: Position::West,
             Panel {
                 class: "side-panel",
                 panel_name: "Left Panel",
@@ -57,7 +57,7 @@ fn App() -> Element {
                     plugin_manifests
                 },
             },
-        },
+        // },
         div {
             class: "central-pane",
             PluginPanel {
@@ -70,19 +70,18 @@ fn App() -> Element {
                     p { "To start, please select a plugin on the left panel!", },
                 },
             },
-            ResizeablePanel {
-                position: Position::South,
+            // ResizeablePanel {
+            //     position: Position::South,
                 PluginPanel {
                     class: "bottom-panel",
                     panel_name: "Bottom Panel",
                     position: "bottom",
                     plugin_manifests,
                 },
-            },
-
+            // },
         },
-        ResizeablePanel {
-            position: Position::East,
+        // ResizeablePanel {
+        //     position: Position::East,
             PluginPanel {
                 class: "side-panel",
                 panel_name: "Right Panel",
@@ -90,6 +89,6 @@ fn App() -> Element {
                 plugin_manifests,
                 "Right panel",
             },
-        },
+        // },
     }
 }
