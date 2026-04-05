@@ -52,7 +52,7 @@ fn App() -> Element {
         //     position: Position::West,
             Panel {
                 class: "side-panel",
-                panel_name: "Left Panel",
+                panel_name: "Plugins",
                 PluginList {
                     plugin_manifests
                 },
