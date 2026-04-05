@@ -1,6 +1,6 @@
 {
   "name": "Static Test Plug-in",
-  "type": "dynamic",
+  "type": "static",
   "source": "index.html",
   "dependencies": [],
   "panels": ["bottom", "all"]
