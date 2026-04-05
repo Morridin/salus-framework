@@ -1,63 +1,71 @@
 # Salus Image Viewer
 
+This project is intended to provide an open-source framework software for medical software to live in and be run from.
+The framework is distributed with a web-based user-interface that can be used with any browser.
 
+## Plugins
+The core of this framework are plugins that introduce functionality into the program.
+The Salus Image Viewer was intended to be the first and most prominent example for such plugins.
+However, it was postponed until further notice to allow for a better integrated framework.
 
-## Getting started
+In order to work as a plugin, code must meet the following requirements:
+- It must contain a `plugin.json` file adhering to the following structure:
+  ```JS
+  {
+    "name": str,
+    "type": "static" | "dynamic" | "extern" | "rust" | "component",
+    "source": str,
+    "dependencies": [str],
+    "panels": ["right" | "left" | "bottom" | "center" | "all"],
+    "routes": [
+        {
+            "method":str,
+            "path":str,
+            "handler": str
+        }
+    ]
+  }
+  ```
+  Not all values are supported yet, namely: `rust` and `component` for `type` and `all` and `left` in the first position of `panels`.
+  Please note, that, currently, only the first value of `panels` is processed and all other ignored.
+  In case of `type`, unsupported values generate an error, while in case of `panels`, the plugin just won't be rendered.
+- The file provided in `source` must exist at the given location, if it is a local file. 
+  Depending on the value in `type`, the file is expected to be of a certain type:  
+  - `static`, `dynamic`: HTML. `dynamic` Allows for the execution of JavaScript within the plugin, `static` does not.
+  - `extern`: URL.
+  - `component`: A file containing a valid web-component.
+  - `rust`: Rust source file (.rs)
+- Any additional files that the file you provide in `source` depends on (graphics, styles, etc.)
+- Any paths within the file given in `source` must be relative and must not reach outside the directory the plugin resides in.
+- If the plugin wants to communicate with code in the backend, it must use a message passing interface provided by the framework.
+  - The request must be made by calling `window.parent.postMessage(<JSON>);`
+  - The JSON has to look like so: 
+    ```JS
+    {
+      "origin": str,
+      "method": str,
+      "endpoint": str,
+      "body": str | null
+    }
+    ```
+    - Usually, `origin` should be set to `location.href`.
+    - `method` must be a valid HTTP method which is implemented for `endpoint`.
+    - `endpoint` must be a path existing on the backend (see later).
+    - The content of `body` is up to the plugin developer. Note, however, that some HTTP requests do not allow bodies.
+  - In order to generate the required endpoint paths on the backend, the plugin needs to provide an object each per Path within the `routes` array in the `plugin.json` file.
+    - This object specifies the HTTP method (`method`) and path on which the endpoint will appear on the backend (`path`).
+    - Also, by the key `handler` it specifies, which code the backend executes when the endpoint is called.
+      This can be either a path to a file or any command.
+      The backend will first check if `handler` is a file and, if so, execute it, if executable, else simply send the file's contents.
+      If `handler` is a command instead, the backend will try to execute it with a timeout of n (tbd) seconds.  
+      If the program returns with code 0, everything printed to standard output will be sent to the frontend, else everything printed to standard error output.
+  - The developer is solely responsible for the format and handling of their plugin's messages.
+  - The developer does not need to take any precautions against conflicts with other plugins.
+### Plugin installation
+Put the collection of files forming your plugin into a folder named with some yet unused 32-bit UUID and move the folder to the directory `frontend/plugins`.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.lrz.de/ge57sak/salus-image-viewer.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.lrz.de/ge57sak/salus-image-viewer/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
+On the next Ctrl-F5 reload, you should see your plugin appear in the list of available plugins on the left of the screen.
+ 
 ## Badges
 On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
 
