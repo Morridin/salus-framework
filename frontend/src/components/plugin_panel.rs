@@ -15,6 +15,7 @@ pub fn PluginPanel(
     #[props(default = false)] headless: bool,
     position: Position,
     #[props(default)] plugin_manifests: ReadSignal<Vec<PluginManifest>>,
+    #[props(default)] min_size: i32,
     children: Element,
 ) -> Element {
     // Signals
@@ -116,6 +117,7 @@ pub fn PluginPanel(
             Panel {
                 headless,
                 position,
+                min_size,
                 panel_name: plugin,
                 match plugin.kind() {
                     "static" => rsx! {
@@ -158,6 +160,7 @@ pub fn PluginPanel(
             Panel {
                 headless,
                 position,
+                min_size,
                 panel_name,
                 {children}
             },

@@ -19,9 +19,9 @@ pub fn PanelGroup(
     let members = use_signal(|| HashMap::new());
     let uuid = use_signal(|| Uuid::new_v4());
 
-    use_context_provider(|| GroupContext::new(orientation.clone(), members));
-
     let context: Option<GroupContext> = try_use_context();
+
+    use_context_provider(|| GroupContext::new(orientation.clone(), members));
 
     let size = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).copied()
@@ -36,7 +36,6 @@ pub fn PanelGroup(
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
             onmounted: move |e: MountedEvent| async move {
                 if context.is_none() {
-                    warn!("PanelGroup: context not mounted");
                     return
                 }
                 let context = context.unwrap();
@@ -52,7 +51,7 @@ pub fn PanelGroup(
                     .insert(uuid(), Size::new(range.start, range.end, min_size));
                 }
             },
-            { children }
+            { children },
         }
     }
 }
