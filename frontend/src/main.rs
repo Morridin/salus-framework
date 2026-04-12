@@ -73,7 +73,7 @@ fn App() -> Element {
                 },
             },
             ResizeHandler {},
-            Panel {
+            PluginPanel {
                 min_size: 288,
                 panel_name: "Right Panel",
                 position: Position::East,

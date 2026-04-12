@@ -3,5 +3,9 @@
   "type": "dynamic",
   "source": "index.html",
   "dependencies": [],
-  "panels": ["right", "all"]
+  "panels": [
+    "right",
+    "center",
+    "all"
+  ]
 }
