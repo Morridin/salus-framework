@@ -1,6 +1,6 @@
 use crate::components::buttons::{CloseButton, MinimiseButton};
 use crate::models::panel::{GroupContext, Size};
-use crate::models::{PluginManifest, Position, ResizeData};
+use crate::models::{PluginManifest, Position};
 use dioxus::html::geometry::PixelsRect;
 use dioxus::prelude::*;
 use uuid::Uuid;
