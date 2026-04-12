@@ -33,6 +33,9 @@ body {
 }
 
 #main {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
     width: 100vw;
     height: 100vh;
 }
@@ -40,10 +43,9 @@ body {
 .panel-group {
     display: flex;
     flex-basis: auto;
+    flex-grow: 1;
     flex-shrink: 0;
     justify-content: stretch;
-    height: 100%;
-    width: 100%;
 
     &.horizontal {
         flex-direction: row;
@@ -52,17 +54,15 @@ body {
     &.vertical {
         flex-direction: column;
     }
-
 }
 
 .panel {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     flex-shrink: 0;
     overflow-y: auto;
     background-color: var(--primary-background-color);
-    width: 100%;
-    height: 100%;
 
     .panel-header {
         display: flex;
@@ -118,30 +118,21 @@ body {
     }
 }
 
-&.side-panel.minimised .panel-header {
+.side-panel.minimised .panel-header {
     writing-mode: sideways-lr;
     height: 100%;
 }
 
-&.bottom-panel {
-    max-height: var(--max-panel-size);
-    height: 288px;
-    min-height: var(--min-panel-size);
-}
-
-&.side-panel {
-    max-width: var(--max-panel-size);
-    width: 288px;
-    min-width: var(--min-panel-size);
-}
-
 .panel-resize-handler {
-flex-grow: 0;
+    flex-grow: 0;
     flex-shrink: 0;
     flex-basis: 0.5em;
-    background-color: var(--violet-color);
     height: 100%;
     width: 100%;
+
+    &:hover {
+        background-color: var(--green-color-darken-20);
+    }
 
     &.horizontal {
         cursor: ew-resize;
@@ -154,8 +145,8 @@ flex-grow: 0;
     .panel-resize-overlay {
         display: none;
         position: fixed;
-            top: 0;
-            left: 0;
+        top: 0;
+        left: 0;
         height: 100vh;
         width: 100vw;
         cursor: inherit;
