@@ -47,6 +47,10 @@ pub trait PositionTrait {
     fn flex_basis(&self, size: i16) -> String {
         format!("{size}px")
     }
+
+    fn panel_type(&self) -> String {
+        "side-panel".to_string()
+    }
 }
 
 pub struct East;
@@ -91,6 +95,10 @@ impl PositionTrait for South {
     fn height(&self, size: i16) -> String {
         format!("{size}px")
     }
+
+    fn panel_type(&self) -> String {
+        "bottom-panel".to_string()
+    }
 }
 
 pub struct West;
@@ -113,5 +121,9 @@ impl PositionTrait for North {
     }
     fn height(&self, size: i16) -> String {
         format!("{size}px")
+    }
+
+    fn panel_type(&self) -> String {
+        "main-panel".to_string()
     }
 }

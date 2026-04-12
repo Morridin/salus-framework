@@ -1,6 +1,7 @@
+use crate::models::Position;
+use serde::Deserialize;
 use std::fmt;
 use std::fmt::Formatter;
-use serde::Deserialize;
 
 #[derive(Clone, PartialEq)]
 pub struct PluginManifest {
@@ -32,8 +33,18 @@ impl PluginManifest {
         &self.uuid
     }
 
-    pub fn panels(&self) -> &Vec<String> {
-        &self.manifest.panels
+    pub fn panels(&self) -> Vec<Position> {
+        let mut valid_positions: Vec<Position> = vec![];
+        for x in &self.manifest.panels {
+            valid_positions.push(match x.as_str() {
+                "left" => Position::West,
+                "bottom" => Position::South,
+                "right" => Position::East,
+                "center" => Position::North,
+                _ => continue,
+            });
+        }
+        valid_positions
     }
 
     pub fn kind(&self) -> &str {
@@ -53,8 +64,7 @@ impl fmt::Display for PluginManifest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(error) = &self.manifest.error {
             write!(f, "{}", error)
-        }
-        else {
+        } else {
             write!(f, "{}", self.manifest.name)
         }
     }
