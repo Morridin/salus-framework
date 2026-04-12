@@ -44,6 +44,7 @@ fn App() -> Element {
         PanelGroup {
             orientation: GroupOrientation::Horizontal,
             Panel {
+                min_size: 288,
                 panel_name: "Plugins",
                 position: Position::West,
                     PluginList {
@@ -53,6 +54,7 @@ fn App() -> Element {
             ResizeHandler {},
             PanelGroup {
                 orientation: GroupOrientation::Vertical,
+                min_size: 500,
                 PluginPanel {
                     headless: true,
                     position: Position::North,
@@ -64,6 +66,7 @@ fn App() -> Element {
                 },
                 ResizeHandler {},
                 PluginPanel {
+                    min_size: 200,
                     panel_name: "Bottom Panel",
                     position: Position::South,
                     plugin_manifests,
@@ -71,6 +74,7 @@ fn App() -> Element {
             },
             ResizeHandler {},
             Panel {
+                min_size: 288,
                 panel_name: "Right Panel",
                 position: Position::East,
                 "Right panel",

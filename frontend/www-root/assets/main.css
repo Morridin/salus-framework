@@ -25,6 +25,7 @@ h1 {
 
 body {
     margin: 0;
+    padding: 0;
     font-family: var(--font-family), sans-serif;
     color: var(--primary-color);
     background-color: var(--secondary-background-color);
@@ -32,96 +33,26 @@ body {
 }
 
 #main {
-    display: flex;
-    gap: 0.5em;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    max-width: 100vw;
 }
 
-.central-pane {
+.panel-group {
     display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    width: 100%;
-}
-
-.panel-wrapper {
-    display: flex;
+    flex-basis: auto;
     flex-shrink: 0;
+    justify-content: stretch;
     height: 100%;
     width: 100%;
-    flex-basis: auto;
 
-    .panel-resize-handler {
-        display: flex;
-        flex-shrink: 0;
-        background-color: var(--violet-color);
-        position: relative;
-        height: 100%;
-        width: 100%;
-
-        &::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            background-color: var(--primary-background-color);
-            border: 1px solid var(--violet-color);
-            transform: translate(-50%, -50%);
-        }
-
-        &:hover {
-            background-color: var(--green-color);
-
-            &::after {
-                border-color: var(--green-color);
-                background-color: color-mix(in oklch shorter hue, var(--green-color) 25%, var(--primary-background-color));
-            }
-        }
-
-        .panel-resize-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-        }
+    &.horizontal {
+        flex-direction: row;
     }
 
-    &:has(> .closed) {
-        display: none;
+    &.vertical {
+        flex-direction: column;
     }
 
-    &:has(> .side-panel) {
-        max-width: var(--max-panel-size);
-        min-width: var(--min-panel-size);
-
-        .panel-resize-handler {
-            width: 1px;
-
-            &::after {
-                height: 4em;
-                width: .5em;
-                top: 50%;
-            }
-        }
-    }
-
-    &:has(> .bottom-panel) {
-        max-height: var(--max-panel-size);
-        min-height: var(--min-panel-size);
-
-        .panel-resize-handler {
-            height: 1px;
-
-            &::after {
-                height: .5em;
-                width: 4em;
-                left: 50%;
-            }
-        }
-    }
 }
 
 .panel {
@@ -133,38 +64,6 @@ body {
     width: 100%;
     height: 100%;
 
-    &.bottom-panel {
-        max-height: var(--max-panel-size);
-        height: 288px;
-        min-height: var(--min-panel-size);
-    }
-    &.side-panel {
-        max-width: var(--max-panel-size);
-        width: 288px;
-        min-width: var(--min-panel-size);
-    }
-
-    &.side-panel .panel-header.minimised {
-        writing-mode: sideways-lr;
-        height: 100%;
-    }
-
-    &:has(> .minimised) {
-        width: auto;
-        height: auto;
-        min-width: 0;
-        min-height: 0;
-    }
-
-    .panel-body {
-        height: inherit;
-        padding: 1em;
-    }
-
-    &.closed {
-        display: none;
-    }
-
     .panel-header {
         display: flex;
         justify-content: space-between;
@@ -174,14 +73,9 @@ body {
         font-weight: 700;
         color: var(--violet-color);
 
-        &.minimised {
-            border: 0;
-        }
-
         .panel-header-button-group {
             display: flex;
             gap: 0.5em;
-            order: 2;
         }
 
         button {
@@ -208,12 +102,72 @@ body {
             }
         }
     }
+
+    .panel-body {
+        height: inherit;
+        padding: 1em;
+    }
+
+    &.minimised {
+        flex-grow: 0;
+        flex-basis: auto !important;
+
+        .panel-header {
+            border-bottom: 0;
+        }
+    }
+}
+
+&.side-panel.minimised .panel-header {
+    writing-mode: sideways-lr;
+    height: 100%;
+}
+
+&.bottom-panel {
+    max-height: var(--max-panel-size);
+    height: 288px;
+    min-height: var(--min-panel-size);
+}
+
+&.side-panel {
+    max-width: var(--max-panel-size);
+    width: 288px;
+    min-width: var(--min-panel-size);
+}
+
+.panel-resize-handler {
+flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 0.5em;
+    background-color: var(--violet-color);
+    height: 100%;
+    width: 100%;
+
+    &.horizontal {
+        cursor: ew-resize;
+    }
+
+    &.vertical {
+        cursor: ns-resize;
+    }
+
+    .panel-resize-overlay {
+        display: none;
+        position: fixed;
+            top: 0;
+            left: 0;
+        height: 100vh;
+        width: 100vw;
+        cursor: inherit;
+        z-index: 9000;
+
+        &.open {
+            display: block;
+        }
+    }
 }
 
 .main-panel {
-    height: 100%;
-    flex-shrink: 1;
-
     h1 {
         margin-top: 0;
     }
