@@ -1,5 +1,5 @@
 use crate::components::Panel;
-use crate::models::{BackendRequestError, Message, ResizeData, PluginManifest, Position};
+use crate::models::{BackendRequestError, Message, PluginManifest, Position};
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
