@@ -1,0 +1,85 @@
+use dioxus::{
+    prelude::*,
+    html::geometry::{PixelsRect, PixelsVector2D}
+};
+use std::{
+    fmt::Debug,
+    ops::Range
+};
+use uuid::Uuid;
+use crate::models::panel::{GroupContext, GroupOrientation};
+
+#[component]
+pub fn ResizeHandler() -> Element {
+    let mut resize_active = use_signal(|| false);
+    let mut last_mouse_position = use_signal(|| 0.);
+    let mut data = use_signal(|| PixelsRect::zero());
+    let uuid = use_signal(|| Uuid::new_v4());
+
+    let context: GroupContext = use_context();
+
+    let orientation = context.orientation();
+    let orientation_trait = orientation.as_trait();
+    let own_range = use_memo(move|| orientation_trait.extract_range(data()));
+
+    let mut siblings = context.children();
+
+    rsx! {
+        div {
+            class: "panel-resize-handler",
+            class: "{orientation}",
+            "data-testvalue": format!("Bonding Rect: x: {}, y {}, width: {}, height: {}", data().min_x(), data().min_y(), data().width(), data().height()),
+            onmounted: move |e| async move {
+                data.set(
+                    e
+                    .get_client_rect()
+                    .await
+                    .unwrap_or(PixelsRect::zero())
+                );
+            },
+            onmousedown: move |e| {
+                resize_active.set(true);
+                last_mouse_position.set(orientation_trait.pointer_position(e));
+            },
+            div {
+                class: "panel-resize-overlay",
+                class: if resize_active() { "open" } else { "" },
+                onmousemove: move |e: MouseEvent| {
+                    let current_pos = orientation_trait.pointer_position(e);
+                    let last_pos = *last_mouse_position.peek();
+                    let mut delta = (current_pos - last_pos) as i32;
+
+                    let left_sibling = context.find_left_sibling(own_range().start);
+                    let right_sibling = context.find_right_sibling(own_range().end);
+
+                    if let Some(ls) = left_sibling {
+                        delta = siblings.peek()[&ls].check_update_right(delta);
+                    }
+                    if let Some(rs) = right_sibling {
+                        if let Some(rs) = siblings.write().get_mut(&rs) {
+                            delta = rs.update_left(delta);
+                        }
+                    }
+                    if let Some(ls) = left_sibling {
+                        if let Some(ls) = siblings.write().get_mut(&ls) {
+                            ls.update_right(delta);
+                        }
+                    }
+
+                    let translation = data.peek().translate(orientation_trait.translation_vector(delta as f64));
+
+                    data.set(translation);
+                    last_mouse_position.set(current_pos);
+                },
+                onmouseup: move |e: MouseEvent| {
+                    resize_active.set(false);
+                },
+                onmouseleave: move |e: MouseEvent| {
+                    resize_active.set(false);
+                }
+            },
+        }
+    }
+}
+
+
