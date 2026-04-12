@@ -1,18 +1,19 @@
 use crate::components::Panel;
-use crate::models::{BackendRequestError, Message, PluginManifest};
+use crate::models::{BackendRequestError, Message, ResizeData, PluginManifest, Position};
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
 use std::error::Error;
+use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 use web_sys::{MessageEvent, window};
+use crate::models::panel::GroupContext;
 
 #[component]
 pub fn PluginPanel(
-    #[props(default)] class: String,
     #[props(default)] panel_name: String,
     #[props(default = false)] headless: bool,
-    position: String,
+    position: Position,
     #[props(default)] plugin_manifests: ReadSignal<Vec<PluginManifest>>,
     children: Element,
 ) -> Element {
@@ -113,8 +114,8 @@ pub fn PluginPanel(
         let local_url = format!("{}/{}/{}", PLUGIN_FOLDER, plugin.uuid(), plugin.source());
         rsx! {
             Panel {
-                class,
                 headless,
+                position,
                 panel_name: plugin,
                 match plugin.kind() {
                     "static" => rsx! {
@@ -155,8 +156,8 @@ pub fn PluginPanel(
     } else {
         rsx! {
             Panel {
-                class,
                 headless,
+                position,
                 panel_name,
                 {children}
             },

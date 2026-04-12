@@ -3,7 +3,7 @@ use std::io::Write;
 use dioxus::prelude::*;
 
 #[get("/api/list-plugins")]
-pub async fn list_plugins() -> dioxus::Result<()> {
+pub async fn list_plugins() -> Result<()> {
     let mut plugin_list = fs::read_dir("plugins")?
         .map(|result| result.ok())
         .filter(|path_option| path_option.is_some())
@@ -23,4 +23,9 @@ pub async fn list_plugins() -> dioxus::Result<()> {
         Ok(()) => Ok(()),
         Err(e) => Err(e.into()),
     }
+}
+
+#[get("/login")]
+pub async fn login() -> Result<String> {
+    Ok("Hello world!".to_string())
 }
