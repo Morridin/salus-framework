@@ -1,10 +1,10 @@
 use dioxus::{
     prelude::*,
-    html::geometry::{PixelsRect, PixelsVector2D}
+    html::geometry::{PixelsRect, PixelsVector2D},
 };
 use std::{
     fmt::Debug,
-    ops::Range
+    ops::Range,
 };
 use uuid::Uuid;
 use crate::models::panel::{GroupContext, GroupOrientation};
@@ -20,9 +20,7 @@ pub fn ResizeHandler() -> Element {
 
     let orientation = context.orientation();
     let orientation_trait = orientation.as_trait();
-    let own_range = use_memo(move|| orientation_trait.extract_range(data()));
-
-    let mut siblings = context.children();
+    let own_range = use_memo(move || orientation_trait.extract_range(data()));
 
     rsx! {
         div {
@@ -47,24 +45,9 @@ pub fn ResizeHandler() -> Element {
                 onmousemove: move |e: MouseEvent| {
                     let current_pos = orientation_trait.pointer_position(e);
                     let last_pos = *last_mouse_position.peek();
-                    let mut delta = (current_pos - last_pos) as i32;
+                    let delta = (current_pos - last_pos) as i32;
 
-                    let left_sibling = context.find_left_sibling(own_range().start);
-                    let right_sibling = context.find_right_sibling(own_range().end);
-
-                    if let Some(ls) = left_sibling {
-                        delta = siblings.peek()[&ls].check_update_right(delta);
-                    }
-                    if let Some(rs) = right_sibling {
-                        if let Some(rs) = siblings.write().get_mut(&rs) {
-                            delta = rs.update_left(delta);
-                        }
-                    }
-                    if let Some(ls) = left_sibling {
-                        if let Some(ls) = siblings.write().get_mut(&ls) {
-                            ls.update_right(delta);
-                        }
-                    }
+                    let delta = resize(delta, own_range(), context);
 
                     let translation = data.peek().translate(orientation_trait.translation_vector(delta as f64));
 
@@ -82,4 +65,35 @@ pub fn ResizeHandler() -> Element {
     }
 }
 
+fn resize(delta: i32, own_range: Range<i32>, context: GroupContext) -> i32 {
+    let mut siblings = context.children();
+    let left_sibling = context.find_left_sibling(own_range.start);
+    let right_sibling = context.find_right_sibling(own_range.end);
 
+    let mut delta = delta;
+
+    if delta < 0 {
+        if let Some(ls) = left_sibling {
+            if let Some(ls) = siblings.write().get_mut(&ls) {
+                delta = ls.size.update_right(delta);
+            }
+        }
+        if let Some(rs) = right_sibling {
+            if let Some(rs) = siblings.write().get_mut(&rs) {
+                rs.size.update_left(delta);
+            }
+        }
+    } else {
+        if let Some(rs) = right_sibling {
+            if let Some(rs) = siblings.write().get_mut(&rs) {
+                delta = rs.size.update_left(delta);
+            }
+        }
+        if let Some(ls) = left_sibling {
+            if let Some(ls) = siblings.write().get_mut(&ls) {
+                ls.size.update_right(delta);
+            }
+        }
+    }
+    delta
+}

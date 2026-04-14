@@ -1,4 +1,4 @@
-use crate::models::panel::{GroupContext, GroupOrientation, Size};
+use crate::models::panel::{GroupContext, GroupOrientation, MetaData, Size};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -48,7 +48,7 @@ pub fn PanelGroup(
                     context
                     .children()
                     .write()
-                    .insert(uuid(), Size::new(range.start, range.end, min_size));
+                    .insert(uuid(), MetaData { title: String::new(), size: Size::new(range.start, range.end, min_size)});
                 }
             },
             { children },

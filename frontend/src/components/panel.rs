@@ -1,5 +1,5 @@
 use crate::components::buttons::{CloseButton, MinimiseButton};
-use crate::models::panel::{GroupContext, Size};
+use crate::models::panel::{GroupContext, MetaData, Size};
 use crate::models::{PluginManifest, Position};
 use dioxus::html::geometry::PixelsRect;
 use dioxus::prelude::*;
@@ -12,7 +12,7 @@ pub fn Panel(
     #[props(default)] panel_name: String,
     #[props(default = false)] headless: bool,
     #[props(default = true)] minimisable: bool,
-    #[props(default = false)] required: bool,
+    #[props(default = true)] required: bool,
     #[props(default = 0)] min_size: i32,
     position: Position,
     children: Element,
@@ -44,21 +44,24 @@ pub fn Panel(
             class: "{minimised_class}",
             class: "{custom_classes}",
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
-            onmounted: move |e: MountedEvent| async move {
-                if context.is_none() {
-                    return
-                }
-                let context = context.unwrap();
-                let bounding_rect = e.get_client_rect().await;
-                if let Ok(bounding_rect) = bounding_rect {
-                    let range = context
-                        .orientation()
-                        .as_range()
-                        .extract_range(bounding_rect);
-                    context
-                    .children()
-                    .write()
-                    .insert(uuid(), Size::new(range.start, range.end, min_size));
+            onmounted: {
+                let title = panel_name.clone();
+                move |e: MountedEvent| async move {
+                    if context.is_none() {
+                        return
+                    }
+                    let context = context.unwrap();
+                    let bounding_rect = e.get_client_rect().await;
+                    if let Ok(bounding_rect) = bounding_rect {
+                        let range = context
+                            .orientation()
+                            .as_range()
+                            .extract_range(bounding_rect);
+                        context
+                            .children()
+                            .write()
+                            .insert(uuid(), MetaData { title, size: Size::new(range.start, range.end, min_size)});
+                    }
                 }
             },
             if !headless {

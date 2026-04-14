@@ -1,7 +1,4 @@
-use crate::models::panel::{
-    GroupOrientation,
-    Size
-};
+use crate::models::panel::{GroupOrientation, MetaData};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -9,11 +6,11 @@ use uuid::Uuid;
 #[derive(Clone, Copy)]
 pub struct GroupContext {
     orientation: GroupOrientation,
-    children: Signal<HashMap<Uuid, Size>>,
+    children: Signal<HashMap<Uuid, MetaData>>,
 }
 
 impl GroupContext {
-    pub fn new(orientation: GroupOrientation, children: Signal<HashMap<Uuid, Size>>) -> Self {
+    pub fn new(orientation: GroupOrientation, children: Signal<HashMap<Uuid, MetaData>>) -> Self {
         Self {
             orientation,
             children,
@@ -23,7 +20,7 @@ impl GroupContext {
         &self.orientation
     }
 
-    pub fn children(&self) -> Signal<HashMap<Uuid, Size>> {
+    pub fn children(&self) -> Signal<HashMap<Uuid, MetaData>> {
         self.children
     }
 
