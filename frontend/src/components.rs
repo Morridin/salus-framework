@@ -4,6 +4,7 @@ mod plugin_panel;
 mod buttons;
 mod panel_group;
 mod resize_handler;
+mod tabbed_group;
 
 pub use self::plugin_list::PluginList;
 pub use self::panel::Panel;

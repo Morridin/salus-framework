@@ -11,8 +11,7 @@ use uuid::Uuid;
 /// - `orientation`: One of either `[Horizontal]` or `Vertical`. Determines the flex direction of the group and hence, in which direction group members can be resized and in which direction they are placed on screen.
 /// - `children`: The group members. Prefereably, those are other `PanelGroup`s and `Panel`s, interleaved with `ResizeHandler`s.
 #[component]
-pub fn PanelGroup(
-    orientation: GroupOrientation,
+pub fn TabbedGroup(
     children: Element,
     #[props(default = 0)] min_size: i32,
 ) -> Element {
@@ -21,7 +20,7 @@ pub fn PanelGroup(
 
     let context: Option<GroupContext> = try_use_context();
 
-    use_context_provider(|| GroupContext::new(orientation.clone(), members));
+    use_context_provider(|| GroupContext::new(GroupOrientation::Horizontal, members));
 
     let metadata = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).cloned()
@@ -46,9 +45,9 @@ pub fn PanelGroup(
                         .as_range()
                         .extract_range(bounding_rect);
                     context
-                    .children()
-                    .write()
-                    .insert(uuid(), MetaData { title: String::new(), size: Size::new(range.start, range.end, min_size)});
+                        .children()
+                        .write()
+                        .insert(uuid(), MetaData {title: String::new(), size: Size::new(range.start, range.end, min_size)});
                 }
             },
             { children },
