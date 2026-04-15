@@ -32,21 +32,21 @@ pub fn Panel(
     let inner_position = position.as_trait();
     let panel_type = inner_position.panel_type();
 
-    let size = if let Some(context) = context {
-        context.children().read().get(&uuid.peek()).copied()
+    let metadata = if let Some(context) = context {
+        context.children().read().get(&uuid.peek()).cloned()
     } else {
         None
     };
-
+    let title = panel_name.clone();
     rsx! {
         div {
             class: "panel {panel_type}",
             class: "{minimised_class}",
             class: "{custom_classes}",
-            flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
-            onmounted: {
-                let title = panel_name.clone();
-                move |e: MountedEvent| async move {
+            flex_basis: if let Some(metadata) = metadata { "{metadata.size.size()}px" } else { "auto" },
+            onmounted: move |e: MountedEvent| {
+                let title = title.clone();
+                async move {
                     if context.is_none() {
                         return
                     }
