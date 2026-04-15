@@ -27,7 +27,7 @@ impl GroupContext {
     pub fn find_left_sibling(&self, own_start: i32) -> Option<Uuid> {
         self.children.peek().iter().find_map(
             |(&k, r)| {
-                if r.end() == own_start { Some(k) } else { None }
+                if r.size.end() == own_start { Some(k) } else { None }
             },
         )
     }
@@ -35,7 +35,7 @@ impl GroupContext {
     pub fn find_right_sibling(&self, own_end: i32) -> Option<Uuid> {
         self.children.peek().iter().find_map(
             move |(&k, r)| {
-                if r.start() == own_end { Some(k) } else { None }
+                if r.size.start() == own_end { Some(k) } else { None }
             },
         )
     }
