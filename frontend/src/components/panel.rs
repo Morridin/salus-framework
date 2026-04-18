@@ -70,7 +70,7 @@ pub fn Panel(
                             MinimiseButton { panel_minimised },
                         },
                         if !required {
-                            CloseButton { panel_closed },
+                            CloseButton { on_panel_close: move |_| panel_closed.set(true) },
                         }
                     },
                 },
