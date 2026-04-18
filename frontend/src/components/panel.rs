@@ -1,5 +1,4 @@
-use crate::components::buttons::{CloseButton, MinimiseButton};
-use crate::models::panel::{GroupContext, MetaData, Size};
+use crate::components::{PanelHeader, buttons::{CloseButton, MinimiseButton}};
 use crate::models::panel::{GroupContext, Size};
 use crate::models::{PluginManifest, Position};
 use dioxus::html::geometry::PixelsRect;
@@ -65,7 +64,7 @@ pub fn Panel(
             if !headless {
                 PanelHeader {
                     panel_name,
-                    custom_classes: minimised_class,
+                    class: minimised_class,
                     buttons: rsx! {
                         if minimisable {
                             MinimiseButton { panel_minimised },
@@ -82,21 +81,6 @@ pub fn Panel(
                     {children},
                 },
             }
-        },
-    }
-}
-
-#[component]
-fn PanelHeader(panel_name: String, custom_classes: String, buttons: Element) -> Element {
-    rsx! {
-        div {
-            class: "panel-header",
-            class: "{custom_classes}",
-            span { "{panel_name}", },
-            div {
-                class: "panel-header-button-group",
-                { buttons },
-            },
         },
     }
 }
