@@ -1,6 +1,8 @@
 use dioxus::events::MouseEvent;
 use dioxus::html::InteractionElementOffset;
 
+/// This Enum specifies where on screen an element is placed.
+/// If offers a bunch of utility function via its `as_trait` method that define behaviour adjusted to the element placement.
 #[derive(PartialEq, Clone)]
 pub enum Position {
     East,
@@ -39,9 +41,11 @@ pub trait PositionTrait {
         delta as i16
     }
     fn height(&self, size: i16) -> String {
+        _ = size;
         "100%".to_string()
     }
     fn width(&self, size: i16) -> String {
+        _ = size;
         "100%".to_string()
     }
     fn flex_basis(&self, size: i16) -> String {

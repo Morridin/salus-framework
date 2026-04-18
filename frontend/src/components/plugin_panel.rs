@@ -109,6 +109,7 @@ pub fn PluginPanel(
             message_received.set(false);
         }
     });
+    // END: Plugin MPI Handlers
 
     static PLUGIN_FOLDER: Asset = asset!("/plugins/");
 
