@@ -13,5 +13,6 @@ pub use self::plugin_list::PluginList;
 pub use self::panel::Panel;
 pub use self::panel_header::PanelHeader;
 pub use self::plugin_panel::PluginPanel;
+pub use self::tabbed_group::TabbedGroup;
 pub use self::panel_group::PanelGroup;
 pub use self::resize_handler::ResizeHandler;
