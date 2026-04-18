@@ -1,4 +1,4 @@
-use crate::models::panel::{GroupContext, GroupOrientation, MetaData, Size};
+use crate::models::panel::{GroupContext, GroupOrientation, Size};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -23,7 +23,7 @@ pub fn PanelGroup(
 
     use_context_provider(|| GroupContext::new(orientation.clone(), members));
 
-    let metadata = if let Some(context) = context {
+    let size = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).cloned()
     } else {
         None
@@ -33,7 +33,7 @@ pub fn PanelGroup(
         div {
             class: "panel-group",
             class: "{orientation}",
-            flex_basis: if let Some(metadata) = metadata { "{metadata.size.size()}px" } else { "auto" },
+            flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
             onmounted: move |e: MountedEvent| async move {
                 if context.is_none() {
                     return
@@ -48,7 +48,7 @@ pub fn PanelGroup(
                     context
                     .children()
                     .write()
-                    .insert(uuid(), MetaData { title: String::new(), size: Size::new(range.start, range.end, min_size)});
+                    .insert(uuid(), Size::new(range.start, range.end, min_size));
                 }
             },
             { children },
