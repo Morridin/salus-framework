@@ -88,6 +88,7 @@ pub fn Panel(
             PanelGroup {
                 orientation,
                 min_size,
+                uuid: uuid(),
                 Panel {
                     custom_classes: custom_classes.clone(),
                     panel_name,

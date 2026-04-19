@@ -16,9 +16,10 @@ pub fn PanelGroup(
     orientation: GroupOrientation,
     children: Element,
     #[props(default = 0)] min_size: i32,
+    #[props(default)] uuid: Option<Uuid>,
 ) -> Element {
     let members = use_signal(|| HashMap::new());
-    let uuid = use_signal(|| Uuid::new_v4());
+    let uuid = use_signal(move || uuid.unwrap_or(Uuid::new_v4()));
 
     let context: Option<GroupContext> = try_use_context();
 
@@ -34,6 +35,7 @@ pub fn PanelGroup(
         div {
             class: "panel-group",
             class: "{orientation}",
+            "data-testvalue": "{min_size}",
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
             onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
             { children },
