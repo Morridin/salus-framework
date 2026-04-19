@@ -1,8 +1,8 @@
 use crate::components::{
-    PanelHeader,
+    PanelGroup, PanelHeader, ResizeHandler,
     buttons::{CloseButton, MinimiseButton},
 };
-use crate::models::panel::{GroupContext, GroupOrientation, Size};
+use crate::models::panel::{GroupContext, GroupOrientation, Size, Variant};
 use crate::models::{PluginManifest, Position};
 use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
@@ -24,61 +24,89 @@ pub fn Panel(
     let mut panel_minimised = use_signal(|| false);
     let mut panel_closed = use_signal(|| false);
     let mut context_menu_open = use_signal(|| None);
+    let mut variant = use_signal(|| Variant::Leaf);
     let uuid = use_signal(|| Uuid::new_v4());
 
-    let context: Option<GroupContext> = try_use_context();
+    match variant() {
+        Variant::Leaf => {
+            let context: Option<GroupContext> = try_use_context();
 
-    if panel_closed() {
-        return rsx! {};
-    }
-
-    let minimised_class = if panel_minimised() { "minimised" } else { "" };
-
-    let inner_position = position.as_trait();
-    let panel_type = inner_position.panel_type();
-
-    let size = if let Some(context) = context {
-        context.children().read().get(&uuid.peek()).copied()
-    } else {
-        None
-    };
-
-    rsx! {
-        div {
-            class: "panel {panel_type}",
-            class: "{minimised_class}",
-            class: "{custom_classes}",
-            flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
-            onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
-            oncontextmenu: move |e: MouseEvent| on_context_menu(e, context_menu_open),
-            if !headless {
-                PanelHeader {
-                    panel_name,
-                    class: minimised_class,
-                    buttons: rsx! {
-                        if minimisable {
-                            MinimiseButton { panel_minimised },
-                        },
-                        if !required {
-                            CloseButton { on_panel_close: move |_| panel_closed.set(true) },
-                        }
-                    },
-                },
+            if panel_closed() {
+                return rsx! {};
             }
-            if !panel_minimised() {
+
+            let minimised_class = if panel_minimised() { "minimised" } else { "" };
+
+            let inner_position = position.as_trait();
+            let panel_type = inner_position.panel_type();
+
+            let size = if let Some(context) = context {
+                context.children().read().get(&uuid.peek()).copied()
+            } else {
+                None
+            };
+
+            rsx! {
                 div {
-                    class: "panel-body",
-                    {children},
+                    class: "panel {panel_type}",
+                    class: "{minimised_class}",
+                    class: "{custom_classes}",
+                    flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
+                    onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
+                    oncontextmenu: move |e: MouseEvent| on_context_menu(e, context_menu_open),
+                    if !headless {
+                        PanelHeader {
+                            panel_name,
+                            class: minimised_class,
+                            buttons: rsx! {
+                                if minimisable {
+                                    MinimiseButton { panel_minimised },
+                                },
+                                if !required {
+                                    CloseButton { on_panel_close: move |_| panel_closed.set(true) },
+                                }
+                            },
+                        },
+                    }
+                    if !panel_minimised() {
+                        div {
+                            class: "panel-body",
+                            {children},
+                        },
+                    }
                 },
-            }
-        },
-        if context_menu_open().is_some() {
-            ContextMenu {
-                life_line: context_menu_open,
-                allowed_directions: IndexSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
-                on_split: move |_| (),
+                if context_menu_open().is_some() {
+                    ContextMenu {
+                        life_line: context_menu_open,
+                        allowed_directions: IndexSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
+                        on_split: move |_| (),
+                    }
+                }
             }
         }
+        Variant::Branch(orientation) => rsx! {
+            PanelGroup {
+                orientation,
+                min_size,
+                Panel {
+                    custom_classes: custom_classes.clone(),
+                    panel_name,
+                    headless,
+                    minimisable,
+                    required,
+                    position: position.clone(),
+                    children,
+                },
+                ResizeHandler {},
+                Panel {
+                    custom_classes: custom_classes.clone(),
+                    headless,
+                    minimisable,
+                    required,
+                    position: position.clone(),
+                }
+            }
+        },
     }
 }
 
