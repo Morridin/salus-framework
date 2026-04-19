@@ -26,7 +26,6 @@ pub fn ResizeHandler() -> Element {
         div {
             class: "panel-resize-handler",
             class: "{orientation}",
-            "data-testvalue": format!("Bonding Rect: x: {}, y {}, width: {}, height: {}", data().min_x(), data().min_y(), data().width(), data().height()),
             onmounted: move |e| async move {
                 data.set(
                     e
