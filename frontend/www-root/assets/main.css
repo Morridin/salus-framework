@@ -19,7 +19,7 @@
     background-color: transparent;
 }
 
-h1 {
+button, h1, h2, h3 {
     color: var(--violet-color);
 }
 
@@ -79,29 +79,7 @@ body {
             gap: 0.5em;
         }
 
-        button {
-            height: 1.5em;
-            width: 1.5em;
-            padding: 0;
-            border: 0;
-            font-size: 1em;
-            background: none;
-            color: inherit;
-            outline: 1px solid currentColor;
 
-            svg {
-                height: 1.5em;
-                width: 1.5em;
-                fill: currentColor;
-                stroke: currentColor;
-            }
-
-            &:hover {
-                color: var(--green-color);
-                background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
-                outline: 1px solid currentColor;
-            }
-        }
     }
 
     .panel-body {
@@ -116,6 +94,33 @@ body {
         .panel-header {
             border-bottom: 0;
         }
+    }
+}
+
+button {
+    height: 1.5em;
+    padding: 0 1em;
+    border: 1px solid currentColor;
+    font-size: 1em;
+    background: none;
+    box-sizing: content-box;
+    margin: -1px 0;
+
+    &.icon-btn {
+        width: 1.5em;
+        padding: 0;
+    }
+
+    svg {
+        height: 1.5em;
+        width: 1.5em;
+        fill: currentColor;
+        stroke: currentColor;
+    }
+
+    &:hover {
+        color: var(--green-color);
+        background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
     }
 }
 

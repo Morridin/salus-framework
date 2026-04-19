@@ -8,7 +8,7 @@ use dioxus_free_icons::{
 pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
     rsx! {
         button {
-            class: "panel-header-btn close-btn",
+            class: "icon-btn close-btn",
             onclick: on_panel_close,
             Icon {
                 icon: LdX,
@@ -21,7 +21,7 @@ pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
 pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
     rsx! {
         button {
-            class: "panel-header-btn minimise-button",
+            class: "icon-btn minimise-btn",
             onclick: move |_| panel_minimised.toggle(),
             if !panel_minimised() {
                 Icon {
