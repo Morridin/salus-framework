@@ -7,7 +7,6 @@ use std::error::Error;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 use web_sys::{MessageEvent, window};
-use crate::models::panel::GroupContext;
 
 #[component]
 pub fn PluginPanel(
@@ -25,7 +24,10 @@ pub fn PluginPanel(
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
 
-    let plugin_prototype = plugin_manifests
+    // Legacy Plugin Handling
+    let plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
+
+    let plugin_prototype = plugin_manifests()
         .iter()
         .filter(|p| p.panels()[0] == position)
         .last();
@@ -82,7 +84,6 @@ pub fn PluginPanel(
         let message = message_data.read();
 
         if !*message_received.peek() && plugin.is_some() && message.is_some() {
-
             message_received.set(true);
 
             let plugin = plugin.as_ref().unwrap();
