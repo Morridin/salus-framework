@@ -1,7 +1,11 @@
-use crate::components::{PanelHeader, buttons::{CloseButton, MinimiseButton}};
-use crate::models::panel::{GroupContext, Size};
+use std::collections::HashSet;
+use crate::components::{
+    PanelHeader,
+    buttons::{CloseButton, MinimiseButton},
+};
+use crate::models::panel::{GroupContext, GroupOrientation, Size};
 use crate::models::{PluginManifest, Position};
-use dioxus::html::geometry::PixelsRect;
+use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
 use uuid::Uuid;
 
@@ -19,6 +23,7 @@ pub fn Panel(
 ) -> Element {
     let mut panel_minimised = use_signal(|| false);
     let mut panel_closed = use_signal(|| false);
+    let mut context_menu_open = use_signal(|| None);
     let uuid = use_signal(|| Uuid::new_v4());
 
     let context: Option<GroupContext> = try_use_context();
@@ -44,24 +49,8 @@ pub fn Panel(
             class: "{minimised_class}",
             class: "{custom_classes}",
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
-            onmounted: move |e: MountedEvent| async move {
-                if context.is_none() {
-                    return
-                }
-                let context = context.unwrap();
-                let bounding_rect = e.get_client_rect().await;
-                if let Ok(bounding_rect) = bounding_rect {
-                    let range = context
-                        .orientation()
-                        .as_range()
-                        .extract_range(bounding_rect);
-                    context
-                        .children()
-                        .write()
-                        .insert(uuid(), Size::new(range.start, range.end, min_size));
-                }
-            },
             onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
+            oncontextmenu: move |e: MouseEvent| on_context_menu(e, context_menu_open),
             if !headless {
                 PanelHeader {
                     panel_name,
@@ -83,6 +72,13 @@ pub fn Panel(
                 },
             }
         },
+        if context_menu_open().is_some() {
+            ContextMenu {
+                life_line: context_menu_open,
+                allowed_directions: HashSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
+                on_split: move |_| (),
+            }
+        }
     }
 }
 
@@ -103,5 +99,43 @@ pub async fn on_mounted(event: MountedEvent, context: Option<GroupContext>, uuid
             .children()
             .write()
             .insert(uuid, Size::new(range.start, range.end, min_size));
+    }
+}
+
+fn on_context_menu(event: MouseEvent, mut context_menu_open: Signal<Option<ClientPoint>>) {
+    event.prevent_default();
+    context_menu_open.set(Some(event.client_coordinates()));
+}
+
+#[component]
+fn ContextMenu(
+    life_line: Signal<Option<ClientPoint>>,
+    allowed_directions: HashSet<GroupOrientation>,
+    on_split: EventHandler<GroupOrientation>,
+) -> Element {
+    if life_line().is_none() {
+        return rsx! {}
+    }
+    let position = life_line.unwrap();
+    rsx! {
+        ul {
+            class: "context-menu",
+            left: position.x,
+            top: position.y,
+            onblur: move |_| life_line.set(None),
+            for orientation in allowed_directions {
+                li {
+                    class: "context-menu-entry",
+                    onclick: {
+                        let orientation = orientation.clone();
+                        move |_| {
+                            life_line.set(None);
+                            on_split(orientation);
+                        }
+                    },
+                    "Split {orientation}ly",
+                },
+            }
+        }
     }
 }
