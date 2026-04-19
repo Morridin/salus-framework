@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use crate::components::{
     PanelHeader,
     buttons::{CloseButton, MinimiseButton},
@@ -7,6 +6,7 @@ use crate::models::panel::{GroupContext, GroupOrientation, Size};
 use crate::models::{PluginManifest, Position};
 use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
+use indexmap::IndexSet;
 use uuid::Uuid;
 
 /// The highest-level units the main page is built of.
@@ -75,14 +75,19 @@ pub fn Panel(
         if context_menu_open().is_some() {
             ContextMenu {
                 life_line: context_menu_open,
-                allowed_directions: HashSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
+                allowed_directions: IndexSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
                 on_split: move |_| (),
             }
         }
     }
 }
 
-pub async fn on_mounted(event: MountedEvent, context: Option<GroupContext>, uuid: Uuid, min_size: i32) {
+pub async fn on_mounted(
+    event: MountedEvent,
+    context: Option<GroupContext>,
+    uuid: Uuid,
+    min_size: i32,
+) {
     if context.is_none() {
         return;
     }
@@ -110,7 +115,7 @@ fn on_context_menu(event: MouseEvent, mut context_menu_open: Signal<Option<Clien
 #[component]
 fn ContextMenu(
     life_line: Signal<Option<ClientPoint>>,
-    allowed_directions: HashSet<GroupOrientation>,
+    allowed_directions: IndexSet<GroupOrientation>,
     on_split: EventHandler<GroupOrientation>,
 ) -> Element {
     if life_line().is_none() {
@@ -120,9 +125,8 @@ fn ContextMenu(
     rsx! {
         ul {
             class: "context-menu",
-            left: position.x,
-            top: position.y,
-            onblur: move |_| life_line.set(None),
+            left: "{position.x}px",
+            top: "{position.y}px",
             for orientation in allowed_directions {
                 li {
                     class: "context-menu-entry",
