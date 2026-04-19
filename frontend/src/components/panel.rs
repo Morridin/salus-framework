@@ -61,6 +61,7 @@ pub fn Panel(
                         .insert(uuid(), Size::new(range.start, range.end, min_size));
                 }
             },
+            onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
             if !headless {
                 PanelHeader {
                     panel_name,
@@ -82,5 +83,25 @@ pub fn Panel(
                 },
             }
         },
+    }
+}
+
+pub async fn on_mounted(event: MountedEvent, context: Option<GroupContext>, uuid: Uuid, min_size: i32) {
+    if context.is_none() {
+        return;
+    }
+
+    let context = context.unwrap();
+    let bounding_rect = event.get_client_rect().await;
+
+    if let Ok(bounding_rect) = bounding_rect {
+        let range = context
+            .orientation()
+            .as_range()
+            .extract_range(bounding_rect);
+        context
+            .children()
+            .write()
+            .insert(uuid, Size::new(range.start, range.end, min_size));
     }
 }
