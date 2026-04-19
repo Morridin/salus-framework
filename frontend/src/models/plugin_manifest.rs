@@ -34,6 +34,12 @@ impl PluginManifest {
     }
 
     pub fn panels(&self) -> Vec<Position> {
+        // Check for all and exit early.
+        if &self.manifest.panels.iter().any(|p| p == "all") {
+            return vec![Position::North, Position::East, Position::South, Position::West];
+        }
+
+        // Go on and do it one by one
         let mut valid_positions: Vec<Position> = vec![];
         for x in &self.manifest.panels {
             valid_positions.push(match x.as_str() {
