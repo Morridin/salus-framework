@@ -7,7 +7,7 @@ use dioxus::{
     html::geometry::{PixelsRect, PixelsVector2D}
 };
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash)]
 pub enum GroupOrientation {
     Horizontal,
     Vertical,
