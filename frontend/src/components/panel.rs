@@ -140,6 +140,14 @@ fn ContextMenu(
                     "Split {orientation}ly",
                 },
             }
+        },
+        div {
+            class: "backdrop",
+            onclick: move |_| life_line.set(None),
+            oncontextmenu: move |event| {
+                event.prevent_default();
+                life_line.set(Some(event.client_coordinates()));
+            }
         }
     }
 }
