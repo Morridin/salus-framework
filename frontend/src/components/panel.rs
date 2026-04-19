@@ -79,7 +79,7 @@ pub fn Panel(
                     ContextMenu {
                         life_line: context_menu_open,
                         allowed_directions: IndexSet::from([GroupOrientation::Horizontal, GroupOrientation::Vertical]),
-                        on_split: move |_| (),
+                        on_split: move |orientation| variant.set(Variant::Branch(orientation)),
                     }
                 }
             }
