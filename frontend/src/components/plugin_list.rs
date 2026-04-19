@@ -25,34 +25,28 @@ pub fn PluginList(plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
         }
         else {
             match plugin_list() {
-                Some(plugin_list) => {
-                    match plugin_list.iter().next() {
-                        Some(name) => {
-                            if name.starts_with("Error ") {
-                                rsx! {
-                                    pre {
-                                        class: "plugin-error",
-                                        "{name}"
+                Some(plugin_list) => match plugin_list.first() {
+                    Some(name) => rsx! {
+                        if name.starts_with("Error ") {
+                            pre {
+                                class: "plugin-error",
+                                "{name}"
+                            },
+                        }
+                        else {
+                            ul {
+                                for name in plugin_list {
+                                    li {
+                                        PluginListEntry {
+                                            uuid: name,
+                                            plugin_manifests,
+                                        },
                                     },
                                 }
-                            }
-                            else {
-                                rsx! {
-                                    ul {
-                                        for name in plugin_list {
-                                            li {
-                                                PluginListEntry {
-                                                    uuid: name,
-                                                    plugin_manifests,
-                                                },
-                                            },
-                                        }
-                                    },
-                                }
-                            }
-                        },
-                        None => rsx! { p { "No plugins found!" }, },
-                    }
+                            },
+                        }
+                    },
+                    None => rsx! { p { "No plugins found!" }, },
                 },
                 None => rsx! { p { "Plugins still loading ..."}, },
             }
