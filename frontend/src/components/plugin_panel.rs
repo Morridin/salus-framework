@@ -13,7 +13,6 @@ pub fn PluginPanel(
     #[props(default)] panel_name: String,
     #[props(default = false)] headless: bool,
     position: Position,
-    #[props(default)] plugin_manifests: ReadSignal<Vec<PluginManifest>>,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
     children: Element,

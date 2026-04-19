@@ -40,7 +40,6 @@ pub fn App() -> Element {
                     min_size: 200,
                     panel_name: "Bottom Panel",
                     position: Position::South,
-                    plugin_manifests,
                 },
             },
             ResizeHandler {},
@@ -48,7 +47,6 @@ pub fn App() -> Element {
                 min_size: 288,
                 panel_name: "Right Panel",
                 position: Position::East,
-                plugin_manifests,
                 "Right panel",
             },
         }
