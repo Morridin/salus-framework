@@ -1,8 +1,12 @@
 use crate::components::Panel;
 use crate::models::{BackendRequestError, Message, PluginManifest, Position};
+use crate::server;
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
+use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
+use dioxus_free_icons::Icon;
+use dioxus_free_icons::icons::ld_icons::LdPlus;
 use std::error::Error;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
@@ -166,10 +170,24 @@ pub fn PluginPanel(
                 min_size,
                 panel_name,
                 required,
+                button {
+                    class: "icon-btn",
+                    onclick: move |_| async move { on_plugin_open().await },
+                    Icon {
+                        icon: LdPlus,
+                    }
+                },
                 {children}
             },
         }
     }
+}
+
+async fn on_plugin_open() {
+    let available_plugins: Result<Vec<String>> = match server::plugins().await {
+        Ok(json) => serde_json::from_str::<Vec<String>>(&json).into(),
+        Err(error) => Err(error),
+    };
 }
 
 async fn make_backend_request(
@@ -193,4 +211,61 @@ async fn make_backend_request(
         .await?
         .text()
         .await?)
+}
+
+#[component]
+fn ContextMenu(
+    life_line: Signal<Option<ClientPoint>>,
+    options: Result<Vec<String>>,
+    selection: Signal<Option<String>>,
+) -> Element {
+    if life_line().is_none() {
+        return rsx! {};
+    }
+
+    let position = life_line.unwrap();
+
+    rsx! {
+        match options {
+            Ok(options) => {
+                rsx! {
+                    ul {
+                        class: "context-menu",
+                        left: "{position.x}px",
+                        top: "{position.y}px",
+                        for plugin_id in options {
+                            li {
+                                class: "context-menu-entry",
+                                onclick: {
+                                    let plugin_id = plugin_id.clone();
+                                    move |_| {
+                                        life_line.set(None);
+                                        selection.set(Some(plugin_id));
+                                    }
+                                },
+                                "{plugin_id}",
+                            },
+                        }
+                    },
+                }
+            },
+            Err(error) => rsx! {
+                div {
+                    class: "context-menu plugin-error",
+                    left: "{position.x}px",
+                    top: "{position.y}px",
+                    onclick: move |_| life_line.set(None),
+                    "{error}"
+                }
+            },
+        },
+        div {
+            class: "backdrop",
+            onclick: move |_| life_line.set(None),
+            oncontextmenu: move |event| {
+                event.prevent_default();
+                life_line.set(Some(event.client_coordinates()));
+            }
+        }
+    }
 }
