@@ -119,7 +119,7 @@ fn ContextMenu(
     on_split: EventHandler<GroupOrientation>,
 ) -> Element {
     if life_line().is_none() {
-        return rsx! {}
+        return rsx! {};
     }
     let position = life_line.unwrap();
     rsx! {

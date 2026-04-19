@@ -39,28 +39,29 @@ pub fn ResizeHandler() -> Element {
                 resize_active.set(true);
                 last_mouse_position.set(orientation_trait.pointer_position(e));
             },
-            div {
-                class: "panel-resize-overlay",
-                class: if resize_active() { "open" } else { "" },
-                onmousemove: move |e: MouseEvent| {
-                    let current_pos = orientation_trait.pointer_position(e);
-                    let last_pos = *last_mouse_position.peek();
-                    let delta = (current_pos - last_pos) as i32;
+            if resize_active() {
+                div {
+                    class: "backdrop",
+                    onmousemove: move |e: MouseEvent| {
+                        let current_pos = orientation_trait.pointer_position(e);
+                        let last_pos = *last_mouse_position.peek();
+                        let delta = (current_pos - last_pos) as i32;
 
-                    let delta = resize(delta, own_range(), context);
+                        let delta = resize(delta, own_range(), context);
 
-                    let translation = data.peek().translate(orientation_trait.translation_vector(delta as f64));
+                        let translation = data.peek().translate(orientation_trait.translation_vector(delta as f64));
 
-                    data.set(translation);
-                    last_mouse_position.set(current_pos);
+                        data.set(translation);
+                        last_mouse_position.set(current_pos);
+                    },
+                    onmouseup: move |e: MouseEvent| {
+                        resize_active.set(false);
+                    },
+                    onmouseleave: move |e: MouseEvent| {
+                        resize_active.set(false);
+                    }
                 },
-                onmouseup: move |e: MouseEvent| {
-                    resize_active.set(false);
-                },
-                onmouseleave: move |e: MouseEvent| {
-                    resize_active.set(false);
-                }
-            },
+            }
         }
     }
 }
