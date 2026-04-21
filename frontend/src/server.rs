@@ -1,7 +1,7 @@
-use std::{fs, io};
-use std::io::{Read, Write};
+use crate::models::{PluginManifest, plugin, Position};
 use dioxus::prelude::*;
-use crate::models::PluginManifest;
+use std::io::{Read, Write};
+use std::{fs, io};
 
 #[get("/api/list-plugins")]
 pub async fn list_plugins() -> Result<()> {
@@ -19,24 +19,41 @@ pub async fn list_plugins() -> Result<()> {
 }
 
 #[get("/api/plugins")]
-pub async fn plugins() -> Result<String> {
-    let plugin_list = generate_plugin_list()?;
-    serde_json::to_string(&plugin_list).into()
+pub async fn plugins(position: &Position) -> Result<Vec<plugin::Name>> {
+    let plugin_list = generate_plugin_list()?
+        .iter()
+        .filter_map(|id| async {
+            let plugin = get_plugin_by_id(id).await;
+            match plugin {
+                Err(_) => None,
+                Ok(plugin) => {
+                    if !plugin.panels().contains(position) {
+                        return None;
+                    }
+                    Some(plugin::Name {
+                        uuid: *id,
+                        name: plugin.to_string(),
+                    })
+                },
+            }
+        })
+        .collect();
+
+    Ok(plugin_list)
 }
 
 #[get("/api/plugins/{id}")]
 pub async fn get_plugin_by_id(id: &String) -> Result<PluginManifest> {
     let checked_id = u16::from_str_radix(id, 16)?;
     if checked_id == 0 {
-        return Err("Error: The framework is not a valid plugin!".into())
+        return Err("Error: The framework is not a valid plugin!".into());
     }
 
     let plugin_manifest = fs::read(format!("plugins/{checked_id}/plugin-manifest.json"))?;
     let plugin_manifest = PluginManifest::create(*id, &plugin_manifest);
     if plugin_manifest.is_valid() {
         Ok(plugin_manifest)
-    }
-    else {
+    } else {
         Err(plugin_manifest.to_string().into())
     }
 }
