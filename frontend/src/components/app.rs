@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
 use crate::{
+    components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup},
     models::{
         panel::GroupOrientation,
-        PluginManifest,
-        Position
+        Position,
+        plugin::PluginManifest
     },
-    components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup},
 };
 
 #[component]

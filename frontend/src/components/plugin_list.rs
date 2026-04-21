@@ -1,7 +1,7 @@
 use crate::server::list_plugins;
 use dioxus::fullstack::serde::Deserialize;
 use dioxus::prelude::*;
-use crate::models::PluginManifest;
+use crate::models::plugin::PluginManifest;
 
 #[component]
 pub fn PluginList(plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {

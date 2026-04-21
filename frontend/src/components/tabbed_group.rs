@@ -1,8 +1,9 @@
 use crate::components::buttons::CloseButton;
 use crate::components::{Panel, PanelHeader, PluginPanel};
 use crate::models::{
-    PluginManifest, Position,
     panel::{GroupContext, GroupOrientation, Size},
+    plugin::PluginManifest,
+    Position,
 };
 use dioxus::prelude::*;
 use std::collections::HashMap;
@@ -19,8 +20,8 @@ use uuid::Uuid;
 pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> Element {
     let uuid = use_signal(|| Uuid::new_v4());
     let mut open_plugins = use_signal(|| TabbedPlugins::new());
-    let mut active_plugin_id = use_signal(|| None);
-    let active_plugin = use_memo(move || open_plugins().filter(&active_plugin_id().unwrap_or_default()));
+    let mut active_tab = use_signal(|| None);
+    let active_plugin = use_memo(move || open_plugins().filter(&active_tab().unwrap_or_default()).first().cloned());
 
     let context: Option<GroupContext> = try_use_context();
     let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
@@ -47,29 +48,29 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
                 class: "tabbed-header",
                 for uuid in open_plugins() {
                     PanelHeader {
-                        class: if active_plugin_id.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
+                        class: if active_tab.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
                         panel_name: open_plugins().get(&uuid).unwrap().to_string(),
                         buttons: rsx! {
                             CloseButton {
                                 on_panel_close: move |event: MouseEvent| {
                                     event.stop_propagation();
-                                    if active_plugin_id.peek().unwrap_or_default() == uuid {
+                                    if active_tab.peek().unwrap_or_default() == uuid {
                                         let next = open_plugins.peek().find_next(&uuid);
-                                        active_plugin_id.set(next);
+                                        active_tab.set(next);
                                     }
                                     open_plugins.write().remove(&uuid);
                                 },
                             }
                         },
-                        onclick: move |_| active_plugin_id.set(Some(uuid.clone())),
+                        onclick: move |_| active_tab.set(Some(uuid.clone())),
                     },
                 }
             }
-            if active_plugin_id().is_some() {
+            if active_tab().is_some() {
                 PluginPanel {
                     headless: true,
                     position,
-                    plugin_manifests: active_plugin,
+                    external_plugin: active_plugin,
                 }
             }
             else {
