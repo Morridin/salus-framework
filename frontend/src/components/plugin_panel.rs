@@ -173,9 +173,9 @@ pub fn PluginPanel(
                 required,
                 AddButton {
                     position,
-                    plugin,
+                    opened_plugin: plugin,
                 },
-                {children}
+                { children }
             },
         }
     }

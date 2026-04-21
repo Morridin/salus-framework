@@ -75,38 +75,7 @@ fn ContextMenu(
     }
 
     let position = life_line.unwrap();
-
-    rsx! {
-        match options {
-            Ok(options) => {
-                rsx! {
-                    ul {
-                        class: "context-menu",
-                        left: "{position.x}px",
-                        top: "{position.y}px",
-                        for plugin::Name { uuid, name } in options {
-                            li {
-                                class: "context-menu-entry",
-                                onclick: move |_| {
-                                    life_line.set(None);
-                                    selection.set(Some(uuid));
-                                },
-                                "{name}",
-                            },
-                        }
-                    },
-                }
-            },
-            Err(error) => rsx! {
-                div {
-                    class: "context-menu plugin-error",
-                    left: "{position.x}px",
-                    top: "{position.y}px",
-                    onclick: move |_| life_line.set(None),
-                    "{error}"
-                }
-            },
-        },
+    let backdrop = rsx! {
         div {
             class: "backdrop",
             onclick: move |_| life_line.set(None),
@@ -115,5 +84,46 @@ fn ContextMenu(
                 life_line.set(Some(event.client_coordinates()));
             }
         }
+    };
+
+    match options {
+        Ok(options) => rsx! {
+            ul {
+                class: "context-menu",
+                left: "{position.x}px",
+                top: "{position.y}px",
+                for plugin::Name { uuid, name } in options {
+                    li {
+                        class: "context-menu-entry",
+                        onclick: move |_| async move {
+                            let manifest = server::get_plugin_by_id(&uuid).await;
+
+                            match manifest {
+                                Ok(manifest) => {
+                                    life_line.set(None);
+                                    selection.set(Some(manifest));
+                                },
+                                Err(error) => {
+                                    selection.set(None);
+                                    options.set(Err(error));
+                                }
+                            }
+                        },
+                        "{name}",
+                    },
+                }
+            },
+            { backdrop },
+        },
+        Err(error) => rsx! {
+            div {
+                class: "context-menu plugin-error",
+                left: "{position.x}px",
+                top: "{position.y}px",
+                onclick: move |_| life_line.set(None),
+                "{error}"
+            },
+            { backdrop },
+        },
     }
 }
