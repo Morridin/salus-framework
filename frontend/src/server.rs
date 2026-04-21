@@ -1,4 +1,6 @@
-use crate::models::{PluginManifest, plugin, Position};
+use crate::models::plugin::PluginManifest;
+use crate::models::{Position, plugin};
+use dioxus::CapturedError;
 use dioxus::prelude::*;
 use std::io::{Read, Write};
 use std::{fs, io};
@@ -18,43 +20,45 @@ pub async fn list_plugins() -> Result<()> {
     }
 }
 
-#[get("/api/plugins")]
-pub async fn plugins(position: &Position) -> Result<Vec<plugin::Name>> {
-    let plugin_list = generate_plugin_list()?
-        .iter()
-        .filter_map(|id| async {
-            let plugin = get_plugin_by_id(id).await;
-            match plugin {
-                Err(_) => None,
-                Ok(plugin) => {
-                    if !plugin.panels().contains(position) {
-                        return None;
-                    }
-                    Some(plugin::Name {
-                        uuid: *id,
-                        name: plugin.to_string(),
-                    })
-                },
-            }
-        })
-        .collect();
+#[get("/api/plugins?position")]
+pub async fn plugins(position: Option<Position>) -> Result<Vec<plugin::Name>> {
+    let plugin_list = generate_plugin_list()?;
 
-    Ok(plugin_list)
+    let mut output = vec![];
+
+    for id in plugin_list {
+        let plugin = get_plugin_by_id(id.clone()).await;
+        match plugin {
+            Err(_) => continue,
+            Ok(plugin) => {
+                if position.clone().is_none_or(|pos| plugin.panels().contains(&pos)) {
+                    output.push(plugin::Name {
+                        uuid: id,
+                        name: plugin.to_string(),
+                    });
+                }
+            }
+        }
+    }
+
+    Ok(output)
 }
 
 #[get("/api/plugins/{id}")]
-pub async fn get_plugin_by_id(id: &String) -> Result<PluginManifest> {
-    let checked_id = u16::from_str_radix(id, 16)?;
+pub async fn get_plugin_by_id(id: String) -> Result<PluginManifest> {
+    let checked_id = u16::from_str_radix(&id, 16)?;
     if checked_id == 0 {
-        return Err("Error: The framework is not a valid plugin!".into());
+        return Err(CapturedError::from_display(
+            "Error: The framework is not a valid plugin!",
+        ));
     }
 
-    let plugin_manifest = fs::read(format!("plugins/{checked_id}/plugin-manifest.json"))?;
-    let plugin_manifest = PluginManifest::create(*id, &plugin_manifest);
+    let plugin_manifest = fs::read(format!("plugins/{id}/plugin.json"))?;
+    let plugin_manifest = PluginManifest::create(id, &plugin_manifest);
     if plugin_manifest.is_valid() {
         Ok(plugin_manifest)
     } else {
-        Err(plugin_manifest.to_string().into())
+        Err(CapturedError::from_display(plugin_manifest))
     }
 }
 
