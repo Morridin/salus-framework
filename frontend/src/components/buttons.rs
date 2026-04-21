@@ -1,12 +1,13 @@
-use crate::models::{PluginManifest, Position, plugin};
+use crate::models::{plugin, Position};
 use crate::server;
 use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
 use dioxus_free_icons::icons::ld_icons::LdPlus;
 use dioxus_free_icons::{
-    Icon,
     icons::ld_icons::{LdMaximize2, LdMinimize2, LdX},
+    Icon,
 };
+use crate::models::plugin::PluginManifest;
 
 #[component]
 pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
@@ -43,12 +44,17 @@ pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
 
 #[component]
 pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest>>) -> Element {
-    let available_plugins = use_resource(move || async move { server::plugins(&position).await });
+    let available_plugins = use_resource(move || {
+        let position = position.clone();
+        async move { server::plugins(Some(position)).await }
+    });
+    let plugins_ready = use_memo(move || available_plugins.state() == UseResourceState::Ready);
     let mut life_line = use_signal(|| None);
 
     rsx! {
         button {
             class: "icon-btn",
+            disabled: !plugins_ready(),
             onclick: move |event: MouseEvent| {
                 life_line.set(Some(event.client_coordinates()));
             },
@@ -56,10 +62,12 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest
                 icon: LdPlus,
             }
         },
-        ContextMenu {
-            life_line,
-            options: available_plugins().unwrap(),
-            selection: opened_plugin
+        if plugins_ready() {
+            ContextMenu {
+                life_line,
+                options: available_plugins.value().unwrap(),
+                selection: opened_plugin
+            }
         }
     }
 }
@@ -95,17 +103,19 @@ fn ContextMenu(
                 for plugin::Name { uuid, name } in options {
                     li {
                         class: "context-menu-entry",
-                        onclick: move |_| async move {
-                            let manifest = server::get_plugin_by_id(&uuid).await;
+                        onclick: move |_| {
+                            let uuid = uuid.clone();
+                            async move {
+                                let manifest = server::get_plugin_by_id(uuid).await;
+                                life_line.set(None);
 
-                            match manifest {
-                                Ok(manifest) => {
-                                    life_line.set(None);
-                                    selection.set(Some(manifest));
-                                },
-                                Err(error) => {
-                                    selection.set(None);
-                                    options.set(Err(error));
+                                match manifest {
+                                    Ok(manifest) => {
+                                        selection.set(Some(manifest));
+                                    },
+                                    Err(_) => {
+                                        selection.set(None);
+                                    }
                                 }
                             }
                         },

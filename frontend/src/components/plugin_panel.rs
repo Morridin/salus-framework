@@ -1,17 +1,12 @@
 use crate::components::Panel;
-use crate::models::{plugin, BackendRequestError, Message, PluginManifest, Position};
+use crate::components::buttons::AddButton;
+use crate::models::{plugin, BackendRequestError, Message, Position};
 use crate::server;
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
-use dioxus::html::geometry::ClientPoint;
 use dioxus::prelude::*;
-use dioxus_free_icons::Icon;
-use dioxus_free_icons::icons::ld_icons::LdPlus;
-use std::error::Error;
-use uuid::Uuid;
 use wasm_bindgen::prelude::*;
-use web_sys::{MessageEvent, window};
-use crate::components::buttons::AddButton;
+use web_sys::{window, MessageEvent};
 
 #[component]
 pub fn PluginPanel(
@@ -20,26 +15,15 @@ pub fn PluginPanel(
     position: Position,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
+    #[props(default)] external_plugin: ReadSignal<Option<plugin::PluginManifest>>,
     children: Element,
 ) -> Element {
     // Signals
-    let mut plugin = use_signal(|| None);
+    let mut active_plugin = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
-
-    // Legacy Plugin Handling
-    let plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
-
-    let plugin_prototype = plugin_manifests()
-        .iter()
-        .filter(|p| p.panels()[0] == position)
-        .last();
-
-    match plugin_prototype {
-        Some(p) => plugin.set(Some(p.clone())),
-        None => plugin.set(None),
-    }
+    let plugin = use_memo(move || if external_plugin().is_some() { external_plugin() } else { active_plugin() });
 
     // Handlers for Plugin-MPI
     use_effect(move || {
@@ -55,7 +39,7 @@ pub fn PluginPanel(
         );
         spawn(async move {
             while let Ok(data) = eval.recv::<String>().await {
-                let plugin = match plugin() {
+                let plugin: plugin::PluginManifest = match plugin() {
                     Some(plugin) => plugin,
                     None => continue,
                 };
@@ -173,7 +157,7 @@ pub fn PluginPanel(
                 required,
                 AddButton {
                     position,
-                    opened_plugin: plugin,
+                    opened_plugin: active_plugin,
                 },
                 { children }
             },
@@ -182,7 +166,7 @@ pub fn PluginPanel(
 }
 
 async fn make_backend_request(
-    plugin: &PluginManifest,
+    plugin: &plugin::PluginManifest,
     message_data: &Message,
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();

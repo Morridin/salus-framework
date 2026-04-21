@@ -118,6 +118,14 @@ button {
         stroke: currentColor;
     }
 
+    &:disabled {
+        color: var(--violet-color-darken-20) !important;
+
+        &:hover {
+            background: none;
+        }
+    }
+
     &:hover {
         color: var(--green-color);
         background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
@@ -199,5 +207,26 @@ iframe {
                 color: var(--green-color-darken-20);
             }
         }
+    }
+}
+
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    cursor: inherit;
+    z-index: 1000;
+}
+
+.context-menu {
+    background: #fff;
+    color: #000;
+    position: absolute;
+    z-index: 2000;
+
+    .context-menu-entry {
+        cursor: default;
     }
 }
