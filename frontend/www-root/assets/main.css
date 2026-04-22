@@ -73,13 +73,6 @@ body {
         border-bottom: 1px solid currentColor;
         font-weight: 700;
         color: var(--violet-color);
-
-        .panel-header-button-group {
-            display: flex;
-            gap: 0.5em;
-        }
-
-
     }
 
     .panel-body {
@@ -95,6 +88,11 @@ body {
             border-bottom: 0;
         }
     }
+}
+
+.panel-header-button-group {
+    display: flex;
+    gap: 0.5em;
 }
 
 button {
@@ -198,7 +196,7 @@ iframe {
         display: flex;
         gap: 0.25em;
 
-        > * {
+        > .panel-header {
             flex-basis: 12.5em;
             white-space: nowrap;
             cursor: default;
@@ -206,6 +204,11 @@ iframe {
             &.tabbed-active {
                 color: var(--green-color-darken-20);
             }
+        }
+
+        > .panel-header-button-group {
+            margin-bottom: 1px;
+            padding: .25em;
         }
     }
 }

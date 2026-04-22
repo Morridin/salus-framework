@@ -1,4 +1,4 @@
-use crate::components::buttons::CloseButton;
+use crate::components::buttons::{AddButton, CloseButton};
 use crate::components::{Panel, PanelHeader, PluginPanel};
 use crate::models::{
     panel::{GroupContext, GroupOrientation, Size},
@@ -21,7 +21,13 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
     let uuid = use_signal(|| Uuid::new_v4());
     let mut open_plugins = use_signal(|| TabbedPlugins::new());
     let mut active_tab = use_signal(|| None);
+    let mut new_plugin = use_signal(|| None);
     let active_plugin = use_memo(move || open_plugins().filter(&active_tab().unwrap_or_default()).first().cloned());
+
+    use_effect(move || if new_plugin().is_some() {
+        let id = open_plugins.write().insert(new_plugin.take().unwrap());
+        active_tab.set(Some(id));
+    });
 
     let context: Option<GroupContext> = try_use_context();
     let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
@@ -65,6 +71,13 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
                         onclick: move |_| active_tab.set(Some(uuid.clone())),
                     },
                 }
+                div {
+                    class: "panel-header-button-group",
+                    AddButton {
+                        position: position.clone(),
+                        opened_plugin: new_plugin,
+                    }
+                }
             }
             if active_tab().is_some() {
                 PluginPanel {
@@ -98,10 +111,11 @@ impl TabbedPlugins {
         }
     }
 
-    pub fn insert(&mut self, plugin: PluginManifest) {
+    pub fn insert(&mut self, plugin: PluginManifest) -> Uuid {
         let uuid = Uuid::new_v4();
         self.keys.push(uuid);
         self.values.insert(uuid, plugin);
+        uuid.clone()
     }
 
     pub fn remove(&mut self, uuid: &Uuid) {
