@@ -5,11 +5,11 @@ use dioxus_free_icons::{
 };
 
 #[component]
-pub fn CloseButton(panel_closed: Signal<bool>) -> Element {
+pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
     rsx! {
         button {
             class: "panel-header-btn close-btn",
-            onclick: move |_| panel_closed.set(true),
+            onclick: on_panel_close,
             Icon {
                 icon: LdX,
             },

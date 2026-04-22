@@ -7,3 +7,12 @@ token
 
 # Dynamic content
 frontend/plugins/plugin-list.json
+
+# Test files
+frontend/www-root/assets/test.css
+
+# Temp files
+backend/src/build.rs
+
+# I don't know what this is
+frontend/www-root/assets/dx-components-theme.css

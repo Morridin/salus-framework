@@ -75,23 +75,23 @@ fn resize(delta: i32, own_range: Range<i32>, context: GroupContext) -> i32 {
     if delta < 0 {
         if let Some(ls) = left_sibling {
             if let Some(ls) = siblings.write().get_mut(&ls) {
-                delta = ls.size.update_right(delta);
+                delta = ls.update_right(delta);
             }
         }
         if let Some(rs) = right_sibling {
             if let Some(rs) = siblings.write().get_mut(&rs) {
-                rs.size.update_left(delta);
+                rs.update_left(delta);
             }
         }
     } else {
         if let Some(rs) = right_sibling {
             if let Some(rs) = siblings.write().get_mut(&rs) {
-                delta = rs.size.update_left(delta);
+                delta = rs.update_left(delta);
             }
         }
         if let Some(ls) = left_sibling {
             if let Some(ls) = siblings.write().get_mut(&ls) {
-                ls.size.update_right(delta);
+                ls.update_right(delta);
             }
         }
     }

@@ -68,8 +68,9 @@ body {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 0.25em;
         padding: 0.25em;
-        border-bottom: 1px solid var(--violet-color);
+        border-bottom: 1px solid currentColor;
         font-weight: 700;
         color: var(--violet-color);
 
@@ -177,4 +178,21 @@ iframe {
 .plugin-error {
     font-family: var(--font-family), sans-serif;
     color: var(--yellow-color);
+}
+
+.tabbed {
+    .tabbed-header {
+        display: flex;
+        gap: 0.25em;
+
+        > * {
+            flex-basis: 12.5em;
+            white-space: nowrap;
+            cursor: default;
+
+            &.tabbed-active {
+                color: var(--green-color-darken-20);
+            }
+        }
+    }
 }
