@@ -194,21 +194,27 @@ iframe {
 .tabbed {
     .tabbed-header {
         display: flex;
-        gap: 0.25em;
+        justify-content: space-between;
 
-        > .panel-header {
-            flex-basis: 12.5em;
-            white-space: nowrap;
-            cursor: default;
+        .tabbed-header-panel-group {
+            display: flex;
+            gap: 0.25em;
+            flex-grow: 1;
 
-            &.tabbed-active {
-                color: var(--green-color-darken-20);
+            > .panel-header {
+                flex-basis: 12.5em;
+                white-space: nowrap;
+                cursor: default;
+
+                &.tabbed-active {
+                    color: var(--green-color-darken-20);
+                }
             }
         }
 
         > .panel-header-button-group {
-            margin-bottom: 1px;
-            padding: .25em;
+            margin-bottom: 1px; /* Replacement for missing border-bottom */
+            padding: 0.25em;
         }
     }
 }

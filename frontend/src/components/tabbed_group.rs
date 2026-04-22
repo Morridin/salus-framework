@@ -52,25 +52,28 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
             div {
                 class: "tabbed-header",
-                for uuid in open_plugins() {
-                    PanelHeader {
-                        class: if active_tab.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
-                        panel_name: open_plugins().get(&uuid).unwrap().to_string(),
-                        buttons: rsx! {
-                            CloseButton {
-                                on_panel_close: move |event: MouseEvent| {
-                                    event.stop_propagation();
-                                    if active_tab.peek().unwrap_or_default() == uuid {
-                                        let next = open_plugins.peek().find_next(&uuid);
-                                        active_tab.set(next);
-                                    }
-                                    open_plugins.write().remove(&uuid);
-                                },
-                            }
+                div {
+                    class: "tabbed-header-panel-group",
+                    for uuid in open_plugins() {
+                        PanelHeader {
+                            class: if active_tab.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
+                            panel_name: open_plugins().get(&uuid).unwrap().to_string(),
+                            buttons: rsx! {
+                                CloseButton {
+                                    on_panel_close: move |event: MouseEvent| {
+                                        event.stop_propagation();
+                                        if active_tab.peek().unwrap_or_default() == uuid {
+                                            let next = open_plugins.peek().find_next(&uuid);
+                                            active_tab.set(next);
+                                        }
+                                        open_plugins.write().remove(&uuid);
+                                    },
+                                }
+                            },
+                            onclick: move |_| active_tab.set(Some(uuid.clone())),
                         },
-                        onclick: move |_| active_tab.set(Some(uuid.clone())),
-                    },
-                }
+                    }
+                },
                 div {
                     class: "panel-header-button-group",
                     AddButton {
