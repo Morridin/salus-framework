@@ -1,6 +1,6 @@
 use crate::models::{plugin, Position};
 use crate::server;
-use dioxus::html::geometry::ClientPoint;
+use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
 use dioxus_free_icons::icons::ld_icons::LdPlus;
 use dioxus_free_icons::{
@@ -56,7 +56,7 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest
             class: "icon-btn",
             disabled: !plugins_ready(),
             onclick: move |event: MouseEvent| {
-                life_line.set(Some(event.client_coordinates()));
+                life_line.set(Some(event.page_coordinates()));
             },
             Icon {
                 icon: LdPlus,
@@ -74,7 +74,7 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest
 
 #[component]
 fn ContextMenu(
-    life_line: Signal<Option<ClientPoint>>,
+    life_line: Signal<Option<PagePoint>>,
     options: Result<Vec<plugin::Name>>,
     selection: Signal<Option<PluginManifest>>,
 ) -> Element {
@@ -89,7 +89,7 @@ fn ContextMenu(
             onclick: move |_| life_line.set(None),
             oncontextmenu: move |event| {
                 event.prevent_default();
-                life_line.set(Some(event.client_coordinates()));
+                life_line.set(Some(event.page_coordinates()));
             }
         }
     };

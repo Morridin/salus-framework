@@ -20,13 +20,9 @@ pub fn App() -> Element {
         },
         PanelGroup {
             orientation: GroupOrientation::Horizontal,
-            Panel {
+            TabbedGroup {
                 min_size: 288,
-                panel_name: "Plugins",
                 position: Position::West,
-                    PluginList {
-                        plugin_manifests
-                    }
             },
             ResizeHandler {},
             PanelGroup {
@@ -36,18 +32,15 @@ pub fn App() -> Element {
                     position: Position::North,
                 },
                 ResizeHandler {},
-                PluginPanel {
+                TabbedGroup {
                     min_size: 200,
-                    panel_name: "Bottom Panel",
                     position: Position::South,
                 },
             },
             ResizeHandler {},
-            PluginPanel {
+            TabbedGroup {
                 min_size: 288,
-                panel_name: "Right Panel",
                 position: Position::East,
-                "Right panel",
             },
         }
     }

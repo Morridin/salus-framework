@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 /// This function generates an Element that groups PluginPanels in a tabbed view.
 ///
-/// ## Props
+/// # Props
 /// - `position`: One of either `North`, `East`, `South` or `West`. Determines some behavioural traits with respect to rendering.
 /// - `min_size`: The minimum size this element may be shrinked to.
 #[component]
