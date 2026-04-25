@@ -1,8 +1,8 @@
-use crate::components::buttons::CloseButton;
-use crate::components::{Panel, PanelHeader, PluginPanel};
-use crate::models::{
-    PluginManifest, Position,
+use crate::components::{Panel, PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
+use models::{
     panel::{GroupContext, GroupOrientation, Size},
+    plugin::Manifest,
+    Position,
 };
 use dioxus::prelude::*;
 use std::collections::HashMap;
@@ -12,18 +12,24 @@ use uuid::Uuid;
 
 /// This function generates an Element that groups PluginPanels in a tabbed view.
 ///
-/// ## Props
+/// # Props
 /// - `position`: One of either `North`, `East`, `South` or `West`. Determines some behavioural traits with respect to rendering.
 /// - `min_size`: The minimum size this element may be shrinked to.
 #[component]
 pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> Element {
     let uuid = use_signal(|| Uuid::new_v4());
     let mut open_plugins = use_signal(|| TabbedPlugins::new());
-    let mut active_plugin_id = use_signal(|| None);
-    let active_plugin = use_memo(move || open_plugins().filter(&active_plugin_id().unwrap_or_default()));
+    let mut active_tab = use_signal(|| None);
+    let mut new_plugin = use_signal(|| None);
+    let active_plugin = use_memo(move || open_plugins().filter(&active_tab().unwrap_or_default()).first().cloned());
+
+    use_effect(move || if new_plugin().is_some() {
+        let id = open_plugins.write().insert(new_plugin.take().unwrap());
+        active_tab.set(Some(id));
+    });
 
     let context: Option<GroupContext> = try_use_context();
-    let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
+    let mut plugin_manifests: Signal<Vec<Manifest>> = use_context();
 
     let size = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).cloned()
@@ -45,31 +51,41 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
             div {
                 class: "tabbed-header",
-                for uuid in open_plugins() {
-                    PanelHeader {
-                        class: if active_plugin_id.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
-                        panel_name: open_plugins().get(&uuid).unwrap().to_string(),
-                        buttons: rsx! {
-                            CloseButton {
-                                on_panel_close: move |event: MouseEvent| {
-                                    event.stop_propagation();
-                                    if active_plugin_id.peek().unwrap_or_default() == uuid {
-                                        let next = open_plugins.peek().find_next(&uuid);
-                                        active_plugin_id.set(next);
-                                    }
-                                    open_plugins.write().remove(&uuid);
-                                },
-                            }
+                div {
+                    class: "tabbed-header-panel-group",
+                    for uuid in open_plugins() {
+                        PanelHeader {
+                            class: if active_tab.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
+                            panel_name: open_plugins().get(&uuid).unwrap().to_string(),
+                            buttons: rsx! {
+                                CloseButton {
+                                    on_panel_close: move |event: MouseEvent| {
+                                        event.stop_propagation();
+                                        if active_tab.peek().unwrap_or_default() == uuid {
+                                            let next = open_plugins.peek().find_next(&uuid);
+                                            active_tab.set(next);
+                                        }
+                                        open_plugins.write().remove(&uuid);
+                                    },
+                                }
+                            },
+                            onclick: move |_| active_tab.set(Some(uuid.clone())),
                         },
-                        onclick: move |_| active_plugin_id.set(Some(uuid.clone())),
-                    },
+                    }
+                },
+                div {
+                    class: "panel-header-button-group",
+                    AddButton {
+                        position: position.clone(),
+                        opened_plugin: new_plugin,
+                    }
                 }
             }
-            if active_plugin_id().is_some() {
+            if active_tab().is_some() {
                 PluginPanel {
                     headless: true,
                     position,
-                    plugin_manifests: active_plugin,
+                    external_plugin: active_plugin,
                 }
             }
             else {
@@ -86,7 +102,7 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
 #[derive(PartialEq, Clone)]
 struct TabbedPlugins {
     keys: Vec<Uuid>,
-    values: HashMap<Uuid, PluginManifest>,
+    values: HashMap<Uuid, Manifest>,
 }
 
 impl TabbedPlugins {
@@ -97,10 +113,11 @@ impl TabbedPlugins {
         }
     }
 
-    pub fn insert(&mut self, plugin: PluginManifest) {
+    pub fn insert(&mut self, plugin: Manifest) -> Uuid {
         let uuid = Uuid::new_v4();
         self.keys.push(uuid);
         self.values.insert(uuid, plugin);
+        uuid.clone()
     }
 
     pub fn remove(&mut self, uuid: &Uuid) {
@@ -108,7 +125,7 @@ impl TabbedPlugins {
         self.values.remove(uuid);
     }
 
-    pub fn get(&self, uuid: &Uuid) -> Option<&PluginManifest> {
+    pub fn get(&self, uuid: &Uuid) -> Option<&Manifest> {
         self.values.get(uuid)
     }
 
@@ -122,7 +139,7 @@ impl TabbedPlugins {
         None
     }
 
-    pub fn filter(&self, uuid: &Uuid) -> Vec<PluginManifest> {
+    pub fn filter(&self, uuid: &Uuid) -> Vec<Manifest> {
         self.values
             .iter()
             .filter_map(|(k, v)| if k == uuid { Some(v.clone()) } else { None })

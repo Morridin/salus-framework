@@ -19,7 +19,7 @@
     background-color: transparent;
 }
 
-h1 {
+button, h1, h2, h3 {
     color: var(--violet-color);
 }
 
@@ -73,35 +73,6 @@ body {
         border-bottom: 1px solid currentColor;
         font-weight: 700;
         color: var(--violet-color);
-
-        .panel-header-button-group {
-            display: flex;
-            gap: 0.5em;
-        }
-
-        button {
-            height: 1.5em;
-            width: 1.5em;
-            padding: 0;
-            border: 0;
-            font-size: 1em;
-            background: none;
-            color: inherit;
-            outline: 1px solid currentColor;
-
-            svg {
-                height: 1.5em;
-                width: 1.5em;
-                fill: currentColor;
-                stroke: currentColor;
-            }
-
-            &:hover {
-                color: var(--green-color);
-                background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
-                outline: 1px solid currentColor;
-            }
-        }
     }
 
     .panel-body {
@@ -116,6 +87,46 @@ body {
         .panel-header {
             border-bottom: 0;
         }
+    }
+}
+
+.panel-header-button-group {
+    display: flex;
+    gap: 0.5em;
+}
+
+button {
+    height: 1.5em;
+    padding: 0 1em;
+    border: 1px solid currentColor;
+    font-size: 1em;
+    background: none;
+    box-sizing: content-box;
+    margin: -1px 0;
+
+    &.icon-btn {
+        width: 1.5em;
+        padding: 0;
+    }
+
+    svg {
+        height: 1.5em;
+        width: 1.5em;
+        fill: currentColor;
+        stroke: currentColor;
+    }
+
+    &:disabled {
+        color: var(--violet-color-darken-20) !important;
+
+        &:hover {
+            background: none;
+        }
+    }
+
+    &:hover {
+        color: var(--green-color);
+        background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
     }
 }
 
@@ -183,16 +194,48 @@ iframe {
 .tabbed {
     .tabbed-header {
         display: flex;
-        gap: 0.25em;
+        justify-content: space-between;
 
-        > * {
-            flex-basis: 12.5em;
-            white-space: nowrap;
-            cursor: default;
+        .tabbed-header-panel-group {
+            display: flex;
+            gap: 0.25em;
+            flex-grow: 1;
 
-            &.tabbed-active {
-                color: var(--green-color-darken-20);
+            > .panel-header {
+                flex-basis: 12.5em;
+                white-space: nowrap;
+                cursor: default;
+
+                &.tabbed-active {
+                    color: var(--green-color-darken-20);
+                }
             }
         }
+
+        > .panel-header-button-group {
+            margin-bottom: 1px; /* Replacement for missing border-bottom */
+            padding: 0.25em;
+        }
+    }
+}
+
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    cursor: inherit;
+    z-index: 1000;
+}
+
+.context-menu {
+    background: #fff;
+    color: #000;
+    position: absolute;
+    z-index: 2000;
+
+    .context-menu-entry {
+        cursor: default;
     }
 }

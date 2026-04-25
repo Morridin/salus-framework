@@ -7,7 +7,7 @@ use std::{
     ops::Range,
 };
 use uuid::Uuid;
-use crate::models::panel::{GroupContext, GroupOrientation};
+use models::panel::{GroupContext, GroupOrientation};
 
 #[component]
 pub fn ResizeHandler() -> Element {
