@@ -1,8 +1,9 @@
+use dioxus::fullstack::extract::Path;
+use dioxus::fullstack::{HeaderMap, HeaderValue, StatusCode};
+use dioxus::fullstack::body::Body;
+use dioxus::fullstack::http::{header, Version};
+use dioxus::fullstack::response::{IntoResponse, Response};
 use crate::utils;
-use axum::body::Body;
-use axum::extract::Path;
-use axum::http::{HeaderMap, HeaderValue, StatusCode, Version, header};
-use axum::response::{IntoResponse, Response};
 
 pub async fn hello_world(Path(uuid): Path<String>, headers: HeaderMap) -> Response {
     let mut response = match utils::authorize(headers) {
@@ -26,7 +27,7 @@ pub async fn hello_world_options(headers: HeaderMap) -> Response {
     _ = headers;
     Response::builder()
         .status(StatusCode::OK)
-        .version(Version::HTTP_3)
+        .version(Version::HTTP_2)
         .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
         .header(header::ALLOW, "GET")
         .header(header::ACCESS_CONTROL_ALLOW_METHODS, "GET")

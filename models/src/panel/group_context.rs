@@ -1,4 +1,4 @@
-use crate::models::panel::{GroupOrientation, Size};
+use crate::panel::{GroupOrientation, Size};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;

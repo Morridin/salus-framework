@@ -1,9 +1,10 @@
 use dioxus::events::MouseEvent;
 use dioxus::html::InteractionElementOffset;
+use serde::{Deserialize, Serialize};
 
 /// This Enum specifies where on screen an element is placed.
 /// If offers a bunch of utility function via its `as_trait` method that define behaviour adjusted to the element placement.
-#[derive(PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub enum Position {
     East,
     South,

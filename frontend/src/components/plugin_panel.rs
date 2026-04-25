@@ -1,39 +1,28 @@
 use crate::components::Panel;
-use crate::models::{BackendRequestError, Message, PluginManifest, Position};
+use crate::components::buttons::AddButton;
+use models::{plugin, BackendRequestError, Message, Position};
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
-use std::error::Error;
-use uuid::Uuid;
 use wasm_bindgen::prelude::*;
-use web_sys::{MessageEvent, window};
-use crate::models::panel::GroupContext;
+use web_sys::{window, MessageEvent};
 
 #[component]
 pub fn PluginPanel(
     #[props(default)] panel_name: String,
     #[props(default = false)] headless: bool,
     position: Position,
-    #[props(default)] plugin_manifests: ReadSignal<Vec<PluginManifest>>,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
+    #[props(default)] external_plugin: ReadSignal<Option<plugin::Manifest>>,
     children: Element,
 ) -> Element {
     // Signals
-    let mut plugin = use_signal(|| None);
+    let mut active_plugin = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
-
-    let plugin_prototype = plugin_manifests
-        .iter()
-        .filter(|p| p.panels()[0] == position)
-        .last();
-
-    match plugin_prototype {
-        Some(p) => plugin.set(Some(p.clone())),
-        None => plugin.set(None),
-    }
+    let plugin = use_memo(move || if external_plugin().is_some() { external_plugin() } else { active_plugin() });
 
     // Handlers for Plugin-MPI
     use_effect(move || {
@@ -49,7 +38,7 @@ pub fn PluginPanel(
         );
         spawn(async move {
             while let Ok(data) = eval.recv::<String>().await {
-                let plugin = match plugin() {
+                let plugin: plugin::Manifest = match plugin() {
                     Some(plugin) => plugin,
                     None => continue,
                 };
@@ -82,7 +71,6 @@ pub fn PluginPanel(
         let message = message_data.read();
 
         if !*message_received.peek() && plugin.is_some() && message.is_some() {
-
             message_received.set(true);
 
             let plugin = plugin.as_ref().unwrap();
@@ -162,23 +150,27 @@ pub fn PluginPanel(
         rsx! {
             Panel {
                 headless,
-                position,
+                position: position.clone(),
                 min_size,
                 panel_name,
                 required,
-                {children}
+                AddButton {
+                    position,
+                    opened_plugin: active_plugin,
+                },
+                { children }
             },
         }
     }
 }
 
 async fn make_backend_request(
-    plugin: &PluginManifest,
+    plugin: &plugin::Manifest,
     message_data: &Message,
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();
 
-    let address = "127.0.0.1:8081";
+    let address = "127.0.0.1:8082";
 
     // Retrieve token
     static TOKEN: Asset = asset!("../../token");

@@ -1,15 +1,34 @@
-use crate::models::Position;
-use serde::Deserialize;
+use crate::Position;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::Formatter;
 
-#[derive(Clone, PartialEq)]
-pub struct PluginManifest {
+/// Small struct to associate a plugin display name with its uuid without having to use tuples.
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
+pub struct Name {
+    pub uuid: String,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
+pub struct Manifest {
     uuid: String,
     manifest: RawPluginManifest,
 }
 
-impl PluginManifest {
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
+struct RawPluginManifest {
+    name: String,
+    #[serde(rename = "type")]
+    kind: String,
+    source: String,
+    dependencies: Vec<String>,
+    panels: Vec<String>,
+    #[serde(default)]
+    error: Option<String>,
+}
+
+impl Manifest {
     pub fn create(uuid: String, raw_bytes: &[u8]) -> Self {
         let manifest = serde_json::from_slice(raw_bytes).unwrap_or_else(|e| RawPluginManifest {
             error: Some(format!(
@@ -21,7 +40,7 @@ impl PluginManifest {
         Self { uuid, manifest }
     }
 
-    pub(crate) fn create_invalid(uuid: String, error_message: String) -> Self {
+    pub fn create_invalid(uuid: String, error_message: String) -> Self {
         let manifest = RawPluginManifest {
             error: Some(error_message),
             ..Default::default()
@@ -34,6 +53,17 @@ impl PluginManifest {
     }
 
     pub fn panels(&self) -> Vec<Position> {
+        // Check for all and exit early.
+        if self.manifest.panels.iter().any(|p| p == "all") {
+            return vec![
+                Position::North,
+                Position::East,
+                Position::South,
+                Position::West,
+            ];
+        }
+
+        // Go on and do it one by one
         let mut valid_positions: Vec<Position> = vec![];
         for x in &self.manifest.panels {
             valid_positions.push(match x.as_str() {
@@ -60,7 +90,7 @@ impl PluginManifest {
     }
 }
 
-impl fmt::Display for PluginManifest {
+impl fmt::Display for Manifest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(error) = &self.manifest.error {
             write!(f, "{}", error)
@@ -68,16 +98,4 @@ impl fmt::Display for PluginManifest {
             write!(f, "{}", self.manifest.name)
         }
     }
-}
-
-#[derive(Deserialize, Default, Clone, PartialEq)]
-struct RawPluginManifest {
-    name: String,
-    #[serde(rename = "type")]
-    kind: String,
-    source: String,
-    dependencies: Vec<String>,
-    panels: Vec<String>,
-    #[serde(default)]
-    error: Option<String>,
 }
