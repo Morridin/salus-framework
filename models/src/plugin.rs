@@ -1,4 +1,4 @@
-use crate::models::Position;
+use crate::Position;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::Formatter;
@@ -11,7 +11,7 @@ pub struct Name {
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
-pub struct PluginManifest {
+pub struct Manifest {
     uuid: String,
     manifest: RawPluginManifest,
 }
@@ -28,7 +28,7 @@ struct RawPluginManifest {
     error: Option<String>,
 }
 
-impl PluginManifest {
+impl Manifest {
     pub fn create(uuid: String, raw_bytes: &[u8]) -> Self {
         let manifest = serde_json::from_slice(raw_bytes).unwrap_or_else(|e| RawPluginManifest {
             error: Some(format!(
@@ -91,7 +91,7 @@ impl PluginManifest {
     }
 }
 
-impl fmt::Display for PluginManifest {
+impl fmt::Display for Manifest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(error) = &self.manifest.error {
             write!(f, "{}", error)

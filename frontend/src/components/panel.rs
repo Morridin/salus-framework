@@ -1,8 +1,13 @@
-use crate::components::{buttons::{CloseButton, MinimiseButton}, PanelHeader};
-use crate::models::panel::{GroupContext, Size};
-use crate::models::Position;
+use crate::components::{
+    buttons::{CloseButton, MinimiseButton},
+    PanelHeader,
+};
 use dioxus::html::geometry::PixelsRect;
 use dioxus::prelude::*;
+use models::{
+    panel::{GroupContext, Size},
+    Position,
+};
 use uuid::Uuid;
 
 /// The highest-level units the main page is built of.

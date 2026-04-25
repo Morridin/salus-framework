@@ -1,6 +1,8 @@
-use dioxus::fullstack::http::header::ACCEPT;
 use dioxus::fullstack::{
-    http::method::InvalidMethod,
+    http::{
+        method::InvalidMethod,
+        header::ACCEPT
+    },
     reqwest,
     reqwest::{Method, RequestBuilder},
 };

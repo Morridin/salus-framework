@@ -1,5 +1,5 @@
-use crate::models::{plugin, Position};
-use crate::server;
+use models::{plugin, Position};
+use backend::api;
 use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
 use dioxus_free_icons::icons::ld_icons::LdPlus;
@@ -7,7 +7,7 @@ use dioxus_free_icons::{
     icons::ld_icons::{LdMaximize2, LdMinimize2, LdX},
     Icon,
 };
-use crate::models::plugin::PluginManifest;
+use models::plugin::Manifest;
 
 #[component]
 pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
@@ -43,10 +43,10 @@ pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
 }
 
 #[component]
-pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest>>) -> Element {
+pub fn AddButton(position: Position, opened_plugin: Signal<Option<Manifest>>) -> Element {
     let available_plugins = use_resource(move || {
         let position = position.clone();
-        async move { server::plugins(Some(position)).await }
+        async move { api::plugins(Some(position)).await }
     });
     let plugins_ready = use_memo(move || available_plugins.state() == UseResourceState::Ready);
     let mut life_line = use_signal(|| None);
@@ -76,7 +76,7 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<PluginManifest
 fn ContextMenu(
     life_line: Signal<Option<PagePoint>>,
     options: Result<Vec<plugin::Name>>,
-    selection: Signal<Option<PluginManifest>>,
+    selection: Signal<Option<Manifest>>,
 ) -> Element {
     if life_line().is_none() {
         return rsx! {};
@@ -106,7 +106,7 @@ fn ContextMenu(
                         onclick: move |_| {
                             let uuid = uuid.clone();
                             async move {
-                                let manifest = server::get_plugin_by_id(uuid).await;
+                                let manifest = api::get_plugin_by_id(uuid).await;
                                 life_line.set(None);
 
                                 match manifest {

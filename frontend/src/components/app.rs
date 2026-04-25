@@ -1,17 +1,11 @@
+use crate::components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
-use crate::{
-    components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup},
-    models::{
-        panel::GroupOrientation,
-        Position,
-        plugin::PluginManifest
-    },
-};
+use models::{panel::GroupOrientation, plugin::Manifest, Position};
 
 #[component]
 pub fn App() -> Element {
     // Required for plugin handling
-    let plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
+    let plugin_manifests: Signal<Vec<Manifest>> = use_signal(|| vec![]);
     use_context_provider(|| plugin_manifests);
 
     rsx! {

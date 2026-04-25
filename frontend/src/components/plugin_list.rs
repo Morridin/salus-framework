@@ -1,11 +1,11 @@
-use crate::server::list_plugins;
+use backend::api;
 use dioxus::fullstack::serde::Deserialize;
 use dioxus::prelude::*;
-use crate::models::plugin::PluginManifest;
+use models::plugin::Manifest;
 
 #[component]
-pub fn PluginList(plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
-    let server_success = use_server_future(move || async { list_plugins().await });
+pub fn PluginList(plugin_manifests: Signal<Vec<Manifest>>) -> Element {
+    let server_success = use_server_future(move || async { api::list_plugins().await });
 
     let plugin_list = use_resource(move || async move {
         match dioxus::asset_resolver::read_asset_bytes(asset!("/plugins/plugin-list.json")).await {
@@ -55,7 +55,7 @@ pub fn PluginList(plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
 }
 
 #[component]
-fn PluginListEntry(uuid: String, plugin_manifests: Signal<Vec<PluginManifest>>) -> Element {
+fn PluginListEntry(uuid: String, plugin_manifests: Signal<Vec<Manifest>>) -> Element {
     static PLUGINS_FOLDER: Asset = asset!("/plugins");
     let path_prototype = format!("{}/{}", PLUGINS_FOLDER, uuid);
     let manifest = format!("{}/plugin.json", path_prototype);
@@ -68,13 +68,13 @@ fn PluginListEntry(uuid: String, plugin_manifests: Signal<Vec<PluginManifest>>) 
 
         async move {
             match dioxus::asset_resolver::read_asset_bytes(manifest).await {
-                Ok(bytes) => PluginManifest::create(uuid, &*bytes),
+                Ok(bytes) => Manifest::create(uuid, &*bytes),
                 Err(e) => {
                     let error_message = format!(
                         "Error loading plugin manifest for {}!\n\n{}\n",
                         uuid, e
                     );
-                    PluginManifest::create_invalid(uuid, error_message)
+                    Manifest::create_invalid(uuid, error_message)
                 },
             }
         }

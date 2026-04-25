@@ -1,5 +1,4 @@
-use crate::models::plugin::PluginManifest;
-use crate::models::{Position, plugin};
+use models::{Position, plugin};
 use dioxus::CapturedError;
 use dioxus::prelude::*;
 use std::io::{Read, Write};
@@ -45,7 +44,7 @@ pub async fn plugins(position: Option<Position>) -> Result<Vec<plugin::Name>> {
 }
 
 #[get("/api/plugins/{id}")]
-pub async fn get_plugin_by_id(id: String) -> Result<PluginManifest> {
+pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
     let checked_id = u16::from_str_radix(&id, 16)?;
     if checked_id == 0 {
         return Err(CapturedError::from_display(
@@ -54,7 +53,7 @@ pub async fn get_plugin_by_id(id: String) -> Result<PluginManifest> {
     }
 
     let plugin_manifest = fs::read(format!("plugins/{id}/plugin.json"))?;
-    let plugin_manifest = PluginManifest::create(id, &plugin_manifest);
+    let plugin_manifest = plugin::Manifest::create(id, &plugin_manifest);
     if plugin_manifest.is_valid() {
         Ok(plugin_manifest)
     } else {

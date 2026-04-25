@@ -1,7 +1,6 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
-use crate::models::{plugin, BackendRequestError, Message, Position};
-use crate::server;
+use models::{plugin, BackendRequestError, Message, Position};
 use dioxus::fullstack::reqwest::Response;
 use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
@@ -15,7 +14,7 @@ pub fn PluginPanel(
     position: Position,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
-    #[props(default)] external_plugin: ReadSignal<Option<plugin::PluginManifest>>,
+    #[props(default)] external_plugin: ReadSignal<Option<plugin::Manifest>>,
     children: Element,
 ) -> Element {
     // Signals
@@ -39,7 +38,7 @@ pub fn PluginPanel(
         );
         spawn(async move {
             while let Ok(data) = eval.recv::<String>().await {
-                let plugin: plugin::PluginManifest = match plugin() {
+                let plugin: plugin::Manifest = match plugin() {
                     Some(plugin) => plugin,
                     None => continue,
                 };
@@ -166,7 +165,7 @@ pub fn PluginPanel(
 }
 
 async fn make_backend_request(
-    plugin: &plugin::PluginManifest,
+    plugin: &plugin::Manifest,
     message_data: &Message,
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();

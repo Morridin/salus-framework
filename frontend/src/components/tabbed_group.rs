@@ -1,8 +1,7 @@
-use crate::components::buttons::{AddButton, CloseButton};
-use crate::components::{Panel, PanelHeader, PluginPanel};
-use crate::models::{
+use crate::components::{Panel, PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
+use models::{
     panel::{GroupContext, GroupOrientation, Size},
-    plugin::PluginManifest,
+    plugin::Manifest,
     Position,
 };
 use dioxus::prelude::*;
@@ -30,7 +29,7 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
     });
 
     let context: Option<GroupContext> = try_use_context();
-    let mut plugin_manifests: Signal<Vec<PluginManifest>> = use_context();
+    let mut plugin_manifests: Signal<Vec<Manifest>> = use_context();
 
     let size = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).cloned()
@@ -103,7 +102,7 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
 #[derive(PartialEq, Clone)]
 struct TabbedPlugins {
     keys: Vec<Uuid>,
-    values: HashMap<Uuid, PluginManifest>,
+    values: HashMap<Uuid, Manifest>,
 }
 
 impl TabbedPlugins {
@@ -114,7 +113,7 @@ impl TabbedPlugins {
         }
     }
 
-    pub fn insert(&mut self, plugin: PluginManifest) -> Uuid {
+    pub fn insert(&mut self, plugin: Manifest) -> Uuid {
         let uuid = Uuid::new_v4();
         self.keys.push(uuid);
         self.values.insert(uuid, plugin);
@@ -126,7 +125,7 @@ impl TabbedPlugins {
         self.values.remove(uuid);
     }
 
-    pub fn get(&self, uuid: &Uuid) -> Option<&PluginManifest> {
+    pub fn get(&self, uuid: &Uuid) -> Option<&Manifest> {
         self.values.get(uuid)
     }
 
@@ -140,7 +139,7 @@ impl TabbedPlugins {
         None
     }
 
-    pub fn filter(&self, uuid: &Uuid) -> Vec<PluginManifest> {
+    pub fn filter(&self, uuid: &Uuid) -> Vec<Manifest> {
         self.values
             .iter()
             .filter_map(|(k, v)| if k == uuid { Some(v.clone()) } else { None })
