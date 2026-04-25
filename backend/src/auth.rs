@@ -23,7 +23,7 @@ pub fn authorize(headers: HeaderMap) -> Result<impl IntoResponse, (StatusCode, S
         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Invalid Authorization header".to_string())),
     };
 
-    let token = match fs::read_to_string("backend/token") {
+    let token = match fs::read_to_string("token") {
         // Something is broken in the server FS, return 500 status code
         Err(error) => return Err((StatusCode::INTERNAL_SERVER_ERROR, error.to_string())),
         // We got a token, save it for later.
@@ -43,7 +43,7 @@ pub fn authorize(headers: HeaderMap) -> Result<impl IntoResponse, (StatusCode, S
 
     if token_from_header == token {
         Ok(Response::builder()
-            .version(Version::HTTP_3)
+            .version(Version::HTTP_2)
             .status(StatusCode::OK)
             .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
             .body(Body::empty())

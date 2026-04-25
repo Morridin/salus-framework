@@ -35,7 +35,7 @@ impl Message {
         let request = reqwest::Client::new()
             .request(
                 method,
-                format!("https://{}/{}/{}", target, uuid, self.endpoint),
+                format!("http://{}/{}/{}", target, uuid, self.endpoint), // TODO: FIX!!!
             )
             .header(ACCEPT, "text/plain");
         match self.body {

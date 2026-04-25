@@ -170,7 +170,7 @@ async fn make_backend_request(
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();
 
-    let address = "127.0.0.1:8081";
+    let address = "127.0.0.1:8082";
 
     // Retrieve token
     static TOKEN: Asset = asset!("../../token");

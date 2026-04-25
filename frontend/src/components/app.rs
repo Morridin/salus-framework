@@ -1,4 +1,4 @@
-use crate::components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup};
+use crate::components::{Panel, PanelGroup, PluginPanel, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
 use models::{panel::GroupOrientation, plugin::Manifest, Position};
 
