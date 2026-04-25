@@ -2,5 +2,14 @@
 members = [
     "backend",
     "frontend",
+    "models",
 ]
 resolver = "3"
+
+[workspace.dependencies]
+dioxus = { version = "0.7.6" }
+serde_json = "1.0.149"
+uuid = { version = "1.23.0", features = ["serde", "js", "v4"] }
+
+backend = { path = "backend" }
+models = { path = "models" }

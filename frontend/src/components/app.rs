@@ -1,17 +1,11 @@
+use crate::components::{Panel, PanelGroup, PluginPanel, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
-use crate::{
-    models::{
-        panel::GroupOrientation,
-        PluginManifest,
-        Position
-    },
-    components::{Panel, PanelGroup, PluginList, PluginPanel, ResizeHandler, TabbedGroup},
-};
+use models::{panel::GroupOrientation, plugin::Manifest, Position};
 
 #[component]
 pub fn App() -> Element {
     // Required for plugin handling
-    let plugin_manifests: Signal<Vec<PluginManifest>> = use_signal(|| vec![]);
+    let plugin_manifests: Signal<Vec<Manifest>> = use_signal(|| vec![]);
     use_context_provider(|| plugin_manifests);
 
     rsx! {
@@ -20,13 +14,9 @@ pub fn App() -> Element {
         },
         PanelGroup {
             orientation: GroupOrientation::Horizontal,
-            Panel {
+            TabbedGroup {
                 min_size: 288,
-                panel_name: "Plugins",
                 position: Position::West,
-                    PluginList {
-                        plugin_manifests
-                    }
             },
             ResizeHandler {},
             PanelGroup {
@@ -36,20 +26,15 @@ pub fn App() -> Element {
                     position: Position::North,
                 },
                 ResizeHandler {},
-                PluginPanel {
+                TabbedGroup {
                     min_size: 200,
-                    panel_name: "Bottom Panel",
                     position: Position::South,
-                    plugin_manifests,
                 },
             },
             ResizeHandler {},
-            PluginPanel {
+            TabbedGroup {
                 min_size: 288,
-                panel_name: "Right Panel",
                 position: Position::East,
-                plugin_manifests,
-                "Right panel",
             },
         }
     }

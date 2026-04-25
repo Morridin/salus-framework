@@ -1,12 +1,7 @@
-use dioxus::{
-    logger::tracing::Level,
-    prelude::*
-};
 use crate::components::App;
+use dioxus::{logger::tracing::Level, prelude::*};
 
 mod components;
-mod models;
-mod server;
 
 fn main() {
     #[cfg(feature = "web")]
@@ -15,8 +10,13 @@ fn main() {
         dioxus::launch(App);
     }
 
-    #[cfg(feature = "server")]
+    #[cfg(not(feature = "web"))]
     {
-        dioxus::serve(|| async { Ok(dioxus::server::router(App)) });
+        dioxus::serve(|| async {
+            let router = dioxus::server::router(App);
+            let router = backend::add_handlers(router);
+
+            Ok(router)
+        });
     }
 }

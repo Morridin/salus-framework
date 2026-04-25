@@ -2,10 +2,12 @@ use crate::components::{
     PanelGroup, PanelHeader, ResizeHandler,
     buttons::{CloseButton, MinimiseButton},
 };
-use crate::models::panel::{GroupContext, GroupOrientation, Size, Variant};
-use crate::models::{PluginManifest, Position};
-use dioxus::html::geometry::ClientPoint;
+use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
+use models::{
+    panel::{GroupContext, Size},
+    Position,
+};
 use indexmap::IndexSet;
 use uuid::Uuid;
 
@@ -136,14 +138,14 @@ pub async fn on_mounted(
     }
 }
 
-fn on_context_menu(event: MouseEvent, mut context_menu_open: Signal<Option<ClientPoint>>) {
+fn on_context_menu(event: MouseEvent, mut context_menu_open: Signal<Option<PagePoint>>) {
     event.prevent_default();
-    context_menu_open.set(Some(event.client_coordinates()));
+    context_menu_open.set(Some(event.page_coordinates()));
 }
 
 #[component]
 fn ContextMenu(
-    life_line: Signal<Option<ClientPoint>>,
+    life_line: Signal<Option<PagePoint>>,
     allowed_directions: IndexSet<GroupOrientation>,
     on_split: EventHandler<GroupOrientation>,
 ) -> Element {
@@ -175,7 +177,7 @@ fn ContextMenu(
             onclick: move |_| life_line.set(None),
             oncontextmenu: move |event| {
                 event.prevent_default();
-                life_line.set(Some(event.client_coordinates()));
+                life_line.set(Some(event.page_coordinates()));
             }
         }
     }
