@@ -40,8 +40,7 @@ impl Manifest {
         Self { uuid, manifest }
     }
 
-    #[deprecated]
-    pub(crate) fn create_invalid(uuid: String, error_message: String) -> Self {
+    pub fn create_invalid(uuid: String, error_message: String) -> Self {
         let manifest = RawPluginManifest {
             error: Some(error_message),
             ..Default::default()

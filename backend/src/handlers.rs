@@ -1,27 +1,27 @@
 use crate::utils;
-use axum::body::Body;
-use axum::response::{IntoResponse, Response};
-use dioxus::fullstack::{HeaderMap, HeaderValue};
+use dioxus::fullstack::body::Body;
 use dioxus::fullstack::http::header;
+use dioxus::fullstack::response::{IntoResponse, Response};
+use dioxus::fullstack::{HeaderMap, HeaderValue};
 use dioxus::prelude::*;
 
 #[get("/{uuid}/hello-world", headers: HeaderMap)]
-pub async fn hello_world(uuid: String) -> Response {
+pub async fn hello_world(uuid: String) -> Result<Response> {
     let mut response = match utils::authorize(headers) {
         Ok(response) => response.into_response(),
-        Err(status) => return status.into_response(),
+        Err((status, message)) => return Err(HttpError::new(status, message).into()),
     };
 
     let headers = response.headers_mut();
     headers.append(
         header::CONTENT_TYPE,
-        HeaderValue::from_str("application/json").unwrap(),
+        HeaderValue::from_str("application/json")?,
     );
 
     let body = response.body_mut();
     *body = Body::from(format!(r#"{{"message": "Hello, dear plugin {uuid}!"}}"#));
 
-    response
+    Ok(response)
 }
 
 // #[options("/uuid/hello-world")]
