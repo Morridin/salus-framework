@@ -5,6 +5,9 @@ mod error;
 mod message;
 mod position;
 
-pub use error::BackendRequestError;
+mod arg_type;
+
+pub use error::{BackendRequestError, PluginError};
 pub use message::Message;
 pub use position::Position;
+pub use arg_type::ArgType;

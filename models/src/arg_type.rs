@@ -10,7 +10,7 @@ pub enum ArgType {
 }
 
 impl ArgType {
-    pub(crate) fn from_str(arg_type: &str) -> Option<Self> {
+    pub fn from_str(arg_type: &str) -> Option<Self> {
         match arg_type {
             "string" => Some(Self::String),
             "int" => Some(Self::Int),
@@ -20,7 +20,7 @@ impl ArgType {
             _ => None,
         }
     }
-    pub(crate) fn validate_str(&self, other: &str) -> bool {
+    pub fn validate_str(&self, other: &str) -> bool {
         match self {
             Self::Flag => true,
             Self::String => true,

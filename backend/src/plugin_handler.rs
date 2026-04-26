@@ -1,6 +1,3 @@
-use crate::arg_type::ArgType;
-use crate::plugin_error::PluginError;
-use crate::plugin_error::PluginError::*;
 use dioxus::fullstack::{get, Method};
 use dioxus::prelude::*;
 use serde::Deserialize;
@@ -11,6 +8,8 @@ use std::io::ErrorKind;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
+use models::{ArgType, PluginError};
+use models::PluginError::*;
 
 static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,

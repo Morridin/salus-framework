@@ -3,12 +3,8 @@ use dioxus::fullstack::routing::Router;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 
-pub mod handlers;
-
 pub mod api;
-mod arg_type;
 mod auth;
-mod plugin_error;
 mod plugin_handler;
 
 pub mod utils {
