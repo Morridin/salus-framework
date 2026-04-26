@@ -5,7 +5,7 @@ use crate::components::{
 use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
 use models::{
-    panel::{GroupContext, Size},
+    panel::{GroupContext, GroupOrientation, Size, Variant},
     Position,
 };
 use indexmap::IndexSet;

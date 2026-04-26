@@ -1,4 +1,4 @@
-use crate::models::panel::GroupOrientation;
+use crate::panel::GroupOrientation;
 
 #[derive(PartialEq, Clone)]
 pub enum Variant {
