@@ -7,5 +7,16 @@
     "right",
     "center",
     "all"
+  ],
+  "endpoints": [
+    {
+      "url": "/hello-world",
+      "method": "GET",
+      "handler": {
+        "command": "echo",
+        "default_args": ["{\"message\": \"Hello, dear plugin c97f!\"}"],
+        "args": []
+      }
+    }
   ]
 }

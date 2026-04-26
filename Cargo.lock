@@ -196,7 +196,9 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "models",
+ "serde",
  "serde_json",
+ "tower-http",
 ]
 
 [[package]]

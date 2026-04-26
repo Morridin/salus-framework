@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+tower-http = { version = "0.6.8", features = ["cors"] }
+
 dioxus = { workspace = true, features = ["fullstack"] }
+serde = { workspace = true }
 serde_json = { workspace = true }
 
 models = { workspace = true }
