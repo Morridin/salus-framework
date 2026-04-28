@@ -1,5 +1,7 @@
 use dioxus::fullstack::{get, Method};
 use dioxus::prelude::*;
+use models::PluginError::*;
+use models::{ArgType, PluginError};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Write};
@@ -8,8 +10,6 @@ use std::io::ErrorKind;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
-use models::{ArgType, PluginError};
-use models::PluginError::*;
 
 static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,
@@ -76,6 +76,16 @@ pub async fn get_handler(
         Ok(output) => Ok(String::from_utf8_lossy(&output.stdout).to_string()),
         Err(_) => Err(InternalFail(uuid.clone(), endpoint_name.clone()).into()),
     }
+}
+
+#[post("/{uuid}/*endpoint_name?:params", body: String)]
+pub async fn post_handler(
+    uuid: String,
+    endpoint_name: String,
+    params: HashMap<String, String>,
+) -> dioxus::Result<String> {
+    let body = body;
+    Ok(body)
 }
 
 /// This function extracts the information needed from the backend handler about the plugin
