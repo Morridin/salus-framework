@@ -3,5 +3,5 @@
   "type": "extern",
   "source": "https://tram-info.de/wagenp/muenchen_u.php",
   "dependencies": [],
-  "panels": ["center"]
+  "panels": ["bottom"]
 }
