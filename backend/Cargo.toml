@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 tower-http = { version = "0.6.8", features = ["cors"] }
+tempfile = "3.27.0"
 
 dioxus = { workspace = true, features = ["fullstack"] }
 serde = { workspace = true }
