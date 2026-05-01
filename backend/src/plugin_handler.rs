@@ -1,27 +1,36 @@
-use dioxus::fullstack::{get, Method};
+use dioxus::fullstack::{get, Method, HeaderMap};
+use dioxus::fullstack::body::Bytes;
 use dioxus::prelude::*;
 use models::PluginError::*;
 use models::{ArgType, PluginError};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::fmt::{Debug, Display, Write};
+use std::fmt::{Debug, Display};
 use std::fs;
-use std::io::ErrorKind;
+use std::io::{ErrorKind, Write};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
+use crate::auth;
+use tempfile::NamedTempFile;
 
 static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,
 > = OnceLock::new();
 
 /// Universal Get handler for all plugins.
-#[get("/{uuid}/*endpoint_name?:params")]
+#[get("/{uuid}/*endpoint_name?:params", headers: HeaderMap)]
 pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
 ) -> dioxus::Result<String> {
+    // Fail fast if request is not authenticated by token.
+    let (status, message) = auth::authorize(headers);
+    if status != StatusCode::OK {
+        return Err(HttpError::new(status, message).into());
+    }
+
     let endpoints = get_plugin_routing_by_id(&uuid)?;
     let endpoint_name = format!("/{}", endpoint_name.trim_start_matches('/'));
 
@@ -78,14 +87,80 @@ pub async fn get_handler(
     }
 }
 
-#[post("/{uuid}/*endpoint_name?:params", body: String)]
+#[post("/{uuid}/*endpoint_name?:params", headers: HeaderMap, body: Bytes)]
 pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
 ) -> dioxus::Result<String> {
-    let body = body;
-    Ok(body)
+    // Fail fast if request is not authenticated by token.
+    let (status, message) = auth::authorize(headers);
+    if status != StatusCode::OK {
+        return Err(HttpError::new(status, message).into());
+    }
+
+    let endpoints = get_plugin_routing_by_id(&uuid)?;
+    let endpoint_name = format!("/{}", endpoint_name.trim_start_matches('/'));
+
+    let endpoint = endpoints
+        .get(&endpoint_name)
+        .ok_or(NotFoundEndpoint(uuid.clone(), endpoint_name.clone()))?
+        .get(Method::POST.as_str())
+        .ok_or(BadMethod(uuid.clone(), endpoint_name.clone(), Method::POST))?;
+
+    let mut tmp_file = NamedTempFile::new()?;
+    let mut cmd = Command::new(&endpoint.command);
+    let mut cmd = cmd.args(&endpoint.default_args);
+
+    for argument in &endpoint.args {
+        let arg_type = ArgType::from_str(&argument.arg_type).ok_or(InternalReadManifest(uuid.clone()))?;
+        // Body type arguments need special treatment.
+        if arg_type == ArgType::Body {
+            tmp_file.write_all(&body)?;
+            let path = tmp_file.path();
+            cmd = cmd.arg(argument.name.clone()).arg(path);
+            continue;
+        }
+        let value = match params.get(&argument.display_name) {
+            Some(value) => value,
+            None => {
+                // Flag type arguments set program arguments that have no value (such as `-a` on ls).
+                if argument.optional || arg_type == ArgType::Flag {
+                    continue;
+                } else {
+                    return Err(BadRequestParamMissing(
+                        uuid,
+                        endpoint_name,
+                        argument.display_name.clone(),
+                    )
+                        .into());
+                }
+            }
+        };
+
+        if !arg_type.validate_str(value) {
+            return Err(BadRequestInvalidParam(
+                uuid,
+                endpoint_name,
+                argument.display_name.clone(),
+                arg_type,
+                value.clone(),
+            )
+                .into());
+        }
+        let validated = value;
+
+        cmd = cmd.arg(argument.name.clone());
+        if arg_type != ArgType::Flag {
+            cmd = cmd.arg(validated);
+        }
+    }
+
+    cmd = cmd.stdout(Stdio::piped());
+    match cmd.output() {
+        Ok(output) => Ok(String::from_utf8_lossy(&output.stdout).to_string()),
+        Err(_) => Err(InternalFail(uuid.clone(), endpoint_name.clone()).into()),
+    }
 }
 
 /// This function extracts the information needed from the backend handler about the plugin
