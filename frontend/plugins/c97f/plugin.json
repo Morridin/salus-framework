@@ -11,11 +11,18 @@
   "endpoints": [
     {
       "url": "/hello-world",
-      "method": "GET",
+      "method": "POST",
       "handler": {
-        "command": "echo",
-        "default_args": ["{\"message\": \"Hello, dear plugin c97f!\"}"],
-        "args": []
+        "command": "/bin/bash",
+        "default_args": ["cmd.sh"],
+        "args": [
+          {
+            "name": "",
+            "type": "body",
+            "display_name": "body",
+            "optional": false
+          }
+        ]
       }
     }
   ]

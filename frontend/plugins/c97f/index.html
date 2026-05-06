@@ -8,9 +8,9 @@
         async function loadExternalContent() {
             let request = {
                 origin: location.href,
-                method: "GET",
+                method: "POST",
                 endpoint: "hello-world",
-                body: null,
+                body: "./index.html",
             }
             window.parent.postMessage(JSON.stringify(request));
         }
