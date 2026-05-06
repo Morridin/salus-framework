@@ -1,5 +1,6 @@
-use dioxus::fullstack::{get, Method, HeaderMap};
+use crate::auth;
 use dioxus::fullstack::body::Bytes;
+use dioxus::fullstack::{get, HeaderMap, Method};
 use dioxus::prelude::*;
 use models::PluginError::*;
 use models::{ArgType, PluginError};
@@ -7,11 +8,10 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display};
 use std::fs;
-use std::io::{ErrorKind, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
-use crate::auth;
 use tempfile::NamedTempFile;
 
 static PLUGIN_CACHE: OnceLock<
@@ -19,7 +19,7 @@ static PLUGIN_CACHE: OnceLock<
 > = OnceLock::new();
 
 /// Universal Get handler for all plugins.
-#[get("/{uuid}/*endpoint_name?:params", headers: HeaderMap)]
+#[get("/{uuid}/*endpoint_name?:params", headers:HeaderMap)]
 pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
@@ -44,33 +44,37 @@ pub async fn get_handler(
     let mut cmd = cmd.args(&endpoint.default_args);
 
     for argument in &endpoint.args {
-        let arg_type =
-            ArgType::from_str(&argument.arg_type).ok_or(InternalReadManifest(uuid.clone()))?;
+        let arg_type = ArgType::from_str(&argument.arg_type)
+            .ok_or(InternalReadManifest(uuid.clone()))?;
         let value = match params.get(&argument.display_name) {
             Some(value) => value,
             None => {
                 if argument.optional || arg_type == ArgType::Flag {
                     continue;
                 } else {
-                    return Err(BadRequestParamMissing(
-                        uuid,
-                        endpoint_name,
-                        argument.display_name.clone(),
-                    )
-                    .into());
+                    return Err(
+                        BadRequestParamMissing(
+                                uuid,
+                                endpoint_name,
+                                argument.display_name.clone(),
+                            )
+                            .into(),
+                    );
                 }
             }
         };
 
         if !arg_type.validate_str(value) {
-            return Err(BadRequestInvalidParam(
-                uuid,
-                endpoint_name,
-                argument.display_name.clone(),
-                arg_type,
-                value.clone(),
-            )
-            .into());
+            return Err(
+                BadRequestInvalidParam(
+                        uuid,
+                        endpoint_name,
+                        argument.display_name.clone(),
+                        arg_type,
+                        value.clone(),
+                    )
+                    .into(),
+            );
         }
         let validated = value;
 
@@ -87,7 +91,7 @@ pub async fn get_handler(
     }
 }
 
-#[post("/{uuid}/*endpoint_name?:params", headers: HeaderMap, body: Bytes)]
+#[post("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
@@ -110,10 +114,11 @@ pub async fn post_handler(
 
     let mut tmp_file = NamedTempFile::new()?;
     let mut cmd = Command::new(&endpoint.command);
-    let mut cmd = cmd.args(&endpoint.default_args);
+    let mut cmd = cmd.current_dir(format!("plugins/{uuid}/")).args(&endpoint.default_args);
 
     for argument in &endpoint.args {
-        let arg_type = ArgType::from_str(&argument.arg_type).ok_or(InternalReadManifest(uuid.clone()))?;
+        let arg_type = ArgType::from_str(&argument.arg_type)
+            .ok_or(InternalReadManifest(uuid.clone()))?;
         // Body type arguments need special treatment.
         if arg_type == ArgType::Body {
             tmp_file.write_all(&body)?;
@@ -128,25 +133,29 @@ pub async fn post_handler(
                 if argument.optional || arg_type == ArgType::Flag {
                     continue;
                 } else {
-                    return Err(BadRequestParamMissing(
-                        uuid,
-                        endpoint_name,
-                        argument.display_name.clone(),
-                    )
-                        .into());
+                    return Err(
+                        BadRequestParamMissing(
+                                uuid,
+                                endpoint_name,
+                                argument.display_name.clone(),
+                            )
+                            .into(),
+                    );
                 }
             }
         };
 
         if !arg_type.validate_str(value) {
-            return Err(BadRequestInvalidParam(
-                uuid,
-                endpoint_name,
-                argument.display_name.clone(),
-                arg_type,
-                value.clone(),
-            )
-                .into());
+            return Err(
+                BadRequestInvalidParam(
+                        uuid,
+                        endpoint_name,
+                        argument.display_name.clone(),
+                        arg_type,
+                        value.clone(),
+                    )
+                    .into(),
+            );
         }
         let validated = value;
 
@@ -156,11 +165,20 @@ pub async fn post_handler(
         }
     }
 
-    cmd = cmd.stdout(Stdio::piped());
-    match cmd.output() {
-        Ok(output) => Ok(String::from_utf8_lossy(&output.stdout).to_string()),
-        Err(_) => Err(InternalFail(uuid.clone(), endpoint_name.clone()).into()),
-    }
+    let mut cmd = cmd
+        .stdout(Stdio::piped())
+        .spawn()
+        .map_err(|error| InternalSubProcess(error.to_string()))?;
+
+    let mut result = String::new();
+
+    cmd.stdout
+        .take()
+        .ok_or_else(|| InternalFail(uuid.clone(), endpoint_name.clone()))?
+        .read_to_string(&mut result)
+        .map_err(|_| InternalFail(uuid.clone(), endpoint_name.clone()))?;
+
+    Ok(result)
 }
 
 /// This function extracts the information needed from the backend handler about the plugin
@@ -173,7 +191,8 @@ fn get_plugin_routing_by_id(
     id: &str,
 ) -> Result<HashMap<String, HashMap<String, EndpointHandler>>, PluginError> {
     // Sanity checking
-    let checked_id = u16::from_str_radix(&id, 16).or(Err(BadRequestInvalid(id.to_string())))?;
+    let checked_id = u16::from_str_radix(&id, 16)
+        .or(Err(BadRequestInvalid(id.to_string())))?;
     if checked_id == 0 {
         // Return None as we can't handle requests to the framework in the general handler.
         // Requests to the framework must be handled in a separate handler.
@@ -184,19 +203,17 @@ fn get_plugin_routing_by_id(
 
     let plugin_cache = PLUGIN_CACHE.get_or_init(|| RwLock::new(HashMap::new()));
 
-    if !plugin_cache
-        .read()
-        .or(Err(InternalReadCache))?
-        .contains_key(&checked_id)
-    {
+    if !plugin_cache.read().or(Err(InternalReadCache))?.contains_key(&checked_id) {
         // Read manifest file
         let plugin = match fs::read(format!("plugins/{id}/plugin.json")) {
             Ok(plugin) => plugin,
             Err(error) => {
-                return Err(match error.kind() {
-                    ErrorKind::NotFound => NotFoundId(id.to_string()),
-                    _ => InternalReadManifest(id.to_string()),
-                });
+                return Err(
+                    match error.kind() {
+                        ErrorKind::NotFound => NotFoundId(id.to_string()),
+                        _ => InternalReadManifest(id.to_string()),
+                    },
+                );
             }
         };
 
@@ -215,10 +232,7 @@ fn get_plugin_routing_by_id(
         }
 
         // Move into cache
-        plugin_cache
-            .write()
-            .or(Err(InternalWriteCache))?
-            .insert(checked_id, routes);
+        plugin_cache.write().or(Err(InternalWriteCache))?.insert(checked_id, routes);
     }
 
     plugin_cache

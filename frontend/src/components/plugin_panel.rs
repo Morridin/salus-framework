@@ -91,7 +91,7 @@ pub fn PluginPanel(
             let message = format!(
                 r#"document.getElementById("{}").contentWindow.postMessage({}, "*");"#,
                 plugin.uuid(),
-                serde_json::to_string(&*message).unwrap_or("null".to_string())
+                &*message
             );
             let eval = document::eval(&message);
             message_received.set(false);
@@ -170,7 +170,7 @@ async fn make_backend_request(
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();
 
-    let address = "127.0.0.1:8082";
+    let address = "127.0.0.1:8080";
 
     // Retrieve token
     static TOKEN: Asset = asset!("../../token");

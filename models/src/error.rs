@@ -77,6 +77,7 @@ pub enum PluginError {
     InternalWriteCache,
     InternalReadManifest(String),
     InternalFail(String, String),
+    InternalSubProcess(String),
 }
 
 impl PluginError {
@@ -94,6 +95,7 @@ impl PluginError {
             InternalWriteCache => StatusCode::INTERNAL_SERVER_ERROR,
             InternalReadManifest(_) => StatusCode::INTERNAL_SERVER_ERROR,
             InternalFail(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
+            InternalSubProcess(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -119,6 +121,7 @@ impl Display for PluginError {
             InternalWriteCache => f.write_str("Could not write plugin cache"),
             InternalReadManifest(uuid) => f.write_fmt(format_args!("Error reading manifest file for plugin {uuid}")),
             InternalFail(uuid, endpoint) => f.write_fmt(format_args!("Error executing plugin {uuid}, endpoint {endpoint}")),
+            InternalSubProcess(error) => f.write_fmt(format_args!("Error executing plugin backend: \n {error}")),
         }
     }
 }
