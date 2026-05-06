@@ -1,4 +1,5 @@
 use crate::components::{Panel, PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
+use crate::components::panel::on_mounted;
 use models::{
     panel::{GroupContext, GroupOrientation, Size},
     plugin::Manifest,
@@ -49,6 +50,7 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
         div {
             class: "panel tabbed",
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
+            onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
             div {
                 class: "tabbed-header",
                 div {
