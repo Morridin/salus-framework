@@ -7,6 +7,7 @@ edition = "2024"
 dioxus-free-icons = { version = "0.10.0", features = ["lucide"] }
 web-sys = "0.3.85"
 wasm-bindgen = "0.2.108"
+indexmap = "2.14.0"
 
 dioxus = { workspace = true, features = ["fullstack"] }
 serde_json = { workspace = true }
@@ -14,6 +15,10 @@ uuid = { workspace = true }
 
 backend = { workspace = true }
 models = { workspace = true }
+
+# TODO: Implement MA-58
+# jsonwebtoken = "10.3.0"
+# axum-jwt-auth = "0.6.3"
 
 [features]
 default = []

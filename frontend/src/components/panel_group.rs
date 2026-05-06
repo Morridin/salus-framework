@@ -2,6 +2,7 @@ use models::panel::{GroupContext, GroupOrientation, Size};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
+use crate::components::panel::on_mounted;
 
 /// Generic grouping element for Panel Elements and ResizeHandle Elements.
 /// The user is responsible to input the elements in the correct order.
@@ -15,9 +16,10 @@ pub fn PanelGroup(
     orientation: GroupOrientation,
     children: Element,
     #[props(default = 0)] min_size: i32,
+    #[props(default)] uuid: Option<Uuid>,
 ) -> Element {
     let members = use_signal(|| HashMap::new());
-    let uuid = use_signal(|| Uuid::new_v4());
+    let uuid = use_signal(move || uuid.unwrap_or(Uuid::new_v4()));
 
     let context: Option<GroupContext> = try_use_context();
 
@@ -33,24 +35,9 @@ pub fn PanelGroup(
         div {
             class: "panel-group",
             class: "{orientation}",
+            "data-testvalue": "{min_size}",
             flex_basis: if let Some(size) = size { "{size.size()}px" } else { "auto" },
-            onmounted: move |e: MountedEvent| async move {
-                if context.is_none() {
-                    return
-                }
-                let context = context.unwrap();
-                let bounding_rect = e.get_client_rect().await;
-                if let Ok(bounding_rect) = bounding_rect {
-                    let range = context
-                        .orientation()
-                        .as_range()
-                        .extract_range(bounding_rect);
-                    context
-                    .children()
-                    .write()
-                    .insert(uuid(), Size::new(range.start, range.end, min_size));
-                }
-            },
+            onmounted: move |e: MountedEvent| async move { on_mounted(e, context, uuid(), min_size).await },
             { children },
         }
     }
