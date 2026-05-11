@@ -3,6 +3,23 @@
 This project is intended to provide an open-source framework software for medical software to live in and be run from.
 The framework is distributed with a web-based user-interface that can be used with any browser.
 
+This user interface does not provide any relevant functionality by itself other than the ability to start plugins, similar to how one would open a browser tab.
+This is intended design as this project's aim is only to provide a framework for other software to live within.
+
+As usual with web-based applications, this framwork is split into a frontend and a backend. 
+The frontend is intended to mainly do rendering tasks and present the user interface while the backend is intended for computationally heavier tasks such as calculations or chunking and caching of very large images.
+For technical reaons, the backend is not entirely separate from the frontend, however, as the server that hosts the frontend and delivers it to the user's client, is the same as the backend server. 
+Nevertheless, don't perform heavy calculations on the frontend as they might run directly on the user's client PC (so, within a browser).
+
+This has a significant advantage, namely, that calling functions of the backend, which, in most other cases, requires rather complex syntax with explicit requests to the server, can just be done by calling that function from within the code, while the programming framework in use handles the rest.
+
+For the plugins, however, this procedure stays a little bit more complex than just calling a function.
+The Salus framework provides an API to the plugins living within it for the purpose of backend communication.
+The API mainly relays on the postMessage API on the frontend and a specific JSON format to direct the program calls in the backend.
+Plugins don't need to know how the messages are processed and transported internally, just, how to call the API.
+
+And that's the main point of this framework: provide a platform for distributed execution of programs that takes care of authentication (not implemented yet) and network communication and gives the contained programs a rather high degree of freedom in what they do and how they work, while also providing a simple solution to the problem of designing asthetic user interfaces as web technologies are 
+
 ## Installation
 Note: Subject to change - as soon as I made a release version of the framework program.
 
