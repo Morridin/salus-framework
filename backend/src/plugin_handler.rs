@@ -41,7 +41,7 @@ pub async fn get_handler(
         .ok_or(BadMethod(uuid.clone(), endpoint_name.clone(), Method::GET))?;
 
     let mut cmd = Command::new(&endpoint.command);
-    let mut cmd = cmd.args(&endpoint.default_args);
+    let mut cmd = cmd.current_dir(format!("plugins/{uuid}/")).args(&endpoint.default_args);
 
     for argument in &endpoint.args {
         let arg_type = ArgType::from_str(&argument.arg_type)
