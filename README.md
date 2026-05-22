@@ -181,7 +181,7 @@ In success case, the framework will issue a `message` event to the iframe in whi
 |`body`|`string | null`|The HTTP request body associated with this request. Currently, its type is defined as string, but in the long run, anything should be fine. If there is no body in this request, set this value to null. _Please note that some HTTP request methods do not allow request bodies._|
 
 Example:
-```JSON
+```json
 {
   "origin": "localhost:8080",
   "method": "GET",
