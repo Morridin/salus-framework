@@ -89,7 +89,8 @@ First, we'll discuss the heartpiece of each and every plugin - its manifest file
 ```
 The following table gives information about the keys (and their possible values) within the file:
 #### `PluginManifest`
-||Key||Type||Explanation/Possible Values||
+|Key|Type|Explanation/Possible Values|
+|---|---|---|
 |`name`|`string`|The display name of the plugin. May be anything.|
 |`type`|`string`|The type of the plugin. For a detailed explanation, please refer to the Plugin Types section.<br/>Possible values: `static`, `dynamic`, `extern`, `rust`, `component`|
 |`source`|`string`|The relative path to the file to use as source file for display in the browser or the URL of the webpage this plugin is.|
@@ -98,19 +99,22 @@ The following table gives information about the keys (and their possible values)
 |`endpoints`|`list[PluginEndpoint]`|The backend endpoints this plugin defines for itself. For details, see next section.|
 
 #### `PluginEndpoint`
-||Key||Type||Explanation/Possible Values||
+|Key|Type|Explanation/Possible Values|
+|---|---|---|
 |`url`|`string`|The URL path of the endpoint defined by this object. There is no requirement for the path to be unique, note, however that only the first endpoint with matching path and method will be considered by the backend.|
 |`method`|`string`|The HTTP request method for this endpoint.<br/>Possible values: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`<br/>Currently, the only supported values are `GET` and `POST`. Please note, that the framework (more specifically, the JS `fetch` API does not support GET requests with body as [those are strongly discouraged](https://datatracker.ietf.org/doc/html/rfc9110#section-9.3.1). |
 |`handler`|`CommandTemplate`|The program call that is executed when the plugin calls this endpoint. For details, see next section.|
 
 #### `CommandTemplate`
-||Key||Type||Explanation/Possible Values||
+|Key|Type|Explanation/Possible Values|
+|---|---|---|
 |`command`|`string`|The command to be executed. Please note that spaces within this field are treated as spaces within filenames but not as end of program name or the like!|
 |`default_args`|`list[string]`|Arguments to the program call that are equal for all possible calls to this endpoint (e.g. the actual python script when having `python` as value for `command`). Default arguments are always passed before any other arguments!<br/>Please note that, usually, spaces within the command line separate arguments. Hence, split your default input accordingly, as spaces within strings are treated as escaped, literal spaces within the argument.|
 |`args`|`list[CommandArgument]`|A list of commands that this endpoint requires or accepts. For details, see next section.|
 
 #### `CommandArgument`
-||Key||Type||Explanation/Possible Values||
+|Key|Type|Explanation/Possible Values|
+|---|---|---|
 |`display_name`|`string`|The name of the argument as query parameter or similar, hence, for the frontend of the plugin.|
 |`name`|`string`|The actual name of the argument, hence what is put into the command call.|
 |`type`|`string`|The type of the argument. There may be some type checking performed prior to handing the argument over to the command.<br/>The special type `flag` stands for arguments that have no value, such as the `-l` argument to `ls`. Arguments with this type are added if the key is present in the request, while the value associated with the key in the request is discarded. By their nature, arguments of `flag` type are optional.<br/>The special type `body` collects the request body into a temporary file which is then passed to the called command by its file name. Defining multiple arguments with type `body` results in undefined behaviour, so do so on your own risk.<br/>Possible Values: `string`, `int`, `float`, `bool`, `flag`, `body`|
@@ -169,6 +173,14 @@ However, you can look them up in your browser console's network tab.
 In success case, the framework will issue a `message` event to the iframe in which the plugin lives which needs to be collected by a corresponding event handler within the plugin.
 
 #### `PluginFrontendRequest`
+|Key|Type|Explanation/Possible Values|
+|---|---|---|
+|`origin`|`string`|The address of the request origin. Usually, you can just put `location.href` in there.|
+|`method`|`string`|The HTTP request method for this request. For supported/allowed values, please refer to the `PluginEndpoint` object section.|
+|`endpoint`|`string`|The path of the endpoint as defined within the plugin manifest.|
+|`body`|`string | null`|The HTTP request body associated with this request. Currently, its type is defined as string, but in the long run, anything should be fine. If there is no body in this request, set this value to null. _Please note that some HTTP request methods do not allow request bodies._|
+
+Example:
 ```JSON
 {
   "origin": "localhost:8080",
@@ -177,11 +189,6 @@ In success case, the framework will issue a `message` event to the iframe in whi
   "body": null
 }
 ```
-||Key||Type||Explanation/Possible Values||
-|`origin`|`string`|The address of the request origin. Usually, you can just put `location.href` in there.|
-|`method`|`string`|The HTTP request method for this request. For supported/allowed values, please refer to the `PluginEndpoint` object section.|
-|`endpoint`|`string`|The path of the endpoint as defined within the plugin manifest.|
-|`body`|`string | null`|The HTTP request body associated with this request. Currently, its type is defined as string, but in the long run, anything should be fine. If there is no body in this request, set this value to null. _Please note that some HTTP request methods do not allow request bodies._|
 
 ### Plugin installation
 Put the collection of files forming your plugin into a folder named with some yet unused 32-bit UUID and move the folder to the directory `frontend/plugins`.
