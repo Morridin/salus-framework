@@ -100,7 +100,7 @@ The following table gives information about the keys (and their possible values)
 #### `PluginEndpoint`
 ||Key||Type||Explanation/Possible Values||
 |`url`|`string`|The URL path of the endpoint defined by this object. There is no requirement for the path to be unique, note, however that only the first endpoint with matching path and method will be considered by the backend.|
-|`method`|`string`|The HTTP request method for this endpoint.<br/>Possible values: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`<br/>Currently, the only supported values are `GET` and `POST`.|
+|`method`|`string`|The HTTP request method for this endpoint.<br/>Possible values: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`<br/>Currently, the only supported values are `GET` and `POST`. Please note, that the framework (more specifically, the JS `fetch` API does not support GET requests with body as [those are strongly discouraged](https://datatracker.ietf.org/doc/html/rfc9110#section-9.3.1). |
 |`handler`|`CommandTemplate`|The program call that is executed when the plugin calls this endpoint. For details, see next section.|
 
 #### `CommandTemplate`
@@ -153,8 +153,7 @@ Usage of the backend server goes as follows:
 
 In detail:
 
-The framework uses the postMessage API for communication between plugins and framework in the frontend.
-Regarding the API, please read up on MDN. TODO: Provide Hyperlink
+The framework uses the [`postMessage` API](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) for communication between plugins and framework in the frontend.
 
 The plugin can make a request by calling `window.parent.postMessage(<JSON>);` with `<JSON>` being a `PluginFrontendRequest` object, see the respective section.
 
