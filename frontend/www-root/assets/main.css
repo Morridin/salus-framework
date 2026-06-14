@@ -124,9 +124,10 @@ button {
         }
     }
 
-    &:hover {
+    &:hover, &:focus {
         color: var(--green-color);
         background-color: color-mix(in oklch shorter hue, currentColor 25%, transparent);
+        outline: none;
     }
 }
 
@@ -217,12 +218,34 @@ iframe {
 }
 
 .context-menu {
-    background: #fff;
-    color: #000;
     position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 2000;
+    padding: 1em;
+    border: 1px solid var(--violet-color);
+    background-color: var(--primary-background-color);
+
+    h2 {
+        margin: 0;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 1em 0 .5em;
+    }
 
     .context-menu-entry {
         cursor: default;
+        padding: .5em .5em;
+        border: 1px solid transparent;
+        border-bottom: 1px solid var(--violet-color-darken-20);
+
+        &:focus {
+            border: 1px solid var(--green-color);
+            outline: 0;
+        }
     }
 }

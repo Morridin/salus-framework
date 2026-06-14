@@ -1,7 +1,0 @@
-{
-  "name": "Plugin of the Year",
-  "type": "extern",
-  "source": "https://tram-info.de/wagenp/muenchen_u.php",
-  "dependencies": [],
-  "panels": ["bottom"]
-}

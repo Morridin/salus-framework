@@ -1,5 +1,8 @@
+use dioxus::html::a::height;
 use crate::components::{Panel, PanelGroup, PluginPanel, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
+use dioxus_free_icons::Icon;
+use dioxus_free_icons::icons::ld_icons::LdPlus;
 use models::{panel::GroupOrientation, plugin::Manifest, Position};
 
 #[component]
@@ -17,6 +20,20 @@ pub fn App() -> Element {
             TabbedGroup {
                 min_size: 288,
                 position: Position::West,
+                h1 {
+                    "Short User Guide",
+                }
+                p {
+                    "To open a plug-in, click on a \"+\" button and, in the pop-up menu, select the plug-in of your choice.",
+                },
+                p {
+                    "You can close any plug-in by clicking the \"X\" button in the corresponding tab header."
+                },
+                p {
+                    "You can resize any panel by dragging along the gap between two panels, when highlighted in green.",
+                    br {},
+                    "Please note that all panels have a minimum size below which they can't be reduced.",
+                },
             },
             ResizeHandler {},
             PanelGroup {
@@ -24,17 +41,29 @@ pub fn App() -> Element {
                 min_size: 500,
                 TabbedGroup {
                     position: Position::North,
+                    h1 {
+                        "Welcome to Salus!",
+                    },
+                    p {
+                        "For an overview of possible actions, please refer to the left panel.",
+                    },
                 },
                 ResizeHandler {},
                 TabbedGroup {
                     min_size: 200,
                     position: Position::South,
+                    p {
+                        i { "There is currently no plug-in running here.", },
+                    },
                 },
             },
             ResizeHandler {},
             TabbedGroup {
                 min_size: 288,
                 position: Position::East,
+                p {
+                    i { "You won't ever need this panel.", },
+                },
             },
         }
     }
