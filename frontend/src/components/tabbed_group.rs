@@ -16,8 +16,9 @@ use uuid::Uuid;
 /// # Props
 /// - `position`: One of either `North`, `East`, `South` or `West`. Determines some behavioural traits with respect to rendering.
 /// - `min_size`: The minimum size this element may be shrinked to.
+/// - `children`: Child elements to display in the empty panel body as placeholder text.
 #[component]
-pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> Element {
+pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32, children: Element) -> Element {
     let uuid = use_signal(|| Uuid::new_v4());
     let mut open_plugins = use_signal(|| TabbedPlugins::new());
     let mut active_tab = use_signal(|| None);
@@ -93,8 +94,7 @@ pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32) -> E
             else {
                 div {
                     class: "panel-body",
-                    h1 { "Welcome to Salus!", },
-                    p { "To start, please select a plugin on the left panel!", },
+                    { children },
                 },
             }
         }

@@ -1,13 +1,12 @@
-use models::{plugin, Position};
 use backend::api;
 use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
-use dioxus_free_icons::icons::ld_icons::LdPlus;
 use dioxus_free_icons::{
-    icons::ld_icons::{LdMaximize2, LdMinimize2, LdX},
+    icons::ld_icons::{LdMaximize2, LdMinimize2, LdPlus, LdX},
     Icon,
 };
 use models::plugin::Manifest;
+use models::{plugin, Position};
 
 #[component]
 pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
@@ -94,42 +93,73 @@ fn ContextMenu(
         }
     };
 
+    let mut select_option = async move |uuid: String| {
+        let manifest = api::get_plugin_by_id(uuid).await;
+        life_line.set(None);
+
+        match manifest {
+            Ok(manifest) => {
+                selection.set(Some(manifest));
+            }
+            Err(_) => {
+                selection.set(None);
+            }
+        }
+    };
+
     match options {
         Ok(options) => rsx! {
-            ul {
+            div {
                 class: "context-menu",
-                left: "{position.x}px",
-                top: "{position.y}px",
-                for plugin::Name { uuid, name } in options {
-                    li {
-                        class: "context-menu-entry",
-                        onclick: move |_| {
-                            let uuid = uuid.clone();
-                            async move {
-                                let manifest = api::get_plugin_by_id(uuid).await;
-                                life_line.set(None);
-
-                                match manifest {
-                                    Ok(manifest) => {
-                                        selection.set(Some(manifest));
-                                    },
-                                    Err(_) => {
-                                        selection.set(None);
-                                    }
-                                }
-                            }
-                        },
-                        "{name}",
-                    },
+                h2 {
+                    "Select a plug-in from the list below"
                 }
+                ul {
+                    for plugin::Name { uuid, name } in options {
+                        {
+                            let uuid_click = uuid.clone();
+                            let uuid_keydown = uuid.clone();
+                            rsx! {
+                            li {
+                                class: "context-menu-entry",
+                                role: "button",
+                                tabindex: 0,
+                                onclick: move |_| {
+                                    let uuid = uuid_click.clone();
+
+                                    async move {
+                                        select_option(uuid).await;
+                                    }
+                                },
+                                onkeydown: move |event: KeyboardEvent| {
+                                    let uuid = uuid_keydown.clone();
+                                    let key = event.key();
+
+                                    async move {
+                                        if key != Key::Enter && key != Key::Character(" ".to_string()) {
+                                            if key == Key::Escape {
+                                                event.prevent_default();
+                                                life_line.set(None);
+                                            }
+
+                                            return;
+                                        }
+
+                                        event.prevent_default();
+                                        select_option(uuid).await;
+                                    }
+                                },
+                                "{name}",
+                            },}
+                        },
+                    }
+                },
             },
             { backdrop },
         },
         Err(error) => rsx! {
             div {
                 class: "context-menu plugin-error",
-                left: "{position.x}px",
-                top: "{position.y}px",
                 onclick: move |_| life_line.set(None),
                 "{error}"
             },
