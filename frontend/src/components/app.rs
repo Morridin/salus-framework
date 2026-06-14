@@ -53,7 +53,7 @@ pub fn App() -> Element {
                     min_size: 200,
                     position: Position::South,
                     p {
-                        "Place some legend down here."
+                        i { "There is currently no plug-in running here.", },
                     },
                 },
             },
@@ -62,7 +62,7 @@ pub fn App() -> Element {
                 min_size: 288,
                 position: Position::East,
                 p {
-                    "You won't ever need this panel."
+                    i { "You won't ever need this panel.", },
                 },
             },
         }
