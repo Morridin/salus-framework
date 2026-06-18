@@ -1,8 +1,5 @@
-use dioxus::html::a::height;
-use crate::components::{Panel, PanelGroup, PluginPanel, ResizeHandler, TabbedGroup};
+use crate::components::{PanelGroup, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
-use dioxus_free_icons::Icon;
-use dioxus_free_icons::icons::ld_icons::LdPlus;
 use models::{panel::GroupOrientation, plugin::Manifest, Position};
 
 #[component]

@@ -1,7 +1,7 @@
 use models::{Position, plugin};
 use dioxus::CapturedError;
 use dioxus::prelude::*;
-use std::io::{Read, Write};
+use std::io::Write;
 use std::{fs, io};
 
 #[get("/api/list-plugins")]

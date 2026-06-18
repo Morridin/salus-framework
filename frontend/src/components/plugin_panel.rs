@@ -1,11 +1,7 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
 use models::{plugin, BackendRequestError, Message, Position};
-use dioxus::fullstack::reqwest::Response;
-use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
-use wasm_bindgen::prelude::*;
-use web_sys::{window, MessageEvent};
 
 #[component]
 pub fn PluginPanel(

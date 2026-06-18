@@ -6,11 +6,9 @@ use models::PluginError::*;
 use models::{ArgType, PluginError};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::fmt::{Debug, Display};
 use std::fs;
 use std::io::{ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
-use std::str::FromStr;
 use std::sync::{OnceLock, RwLock};
 use tempfile::NamedTempFile;
 

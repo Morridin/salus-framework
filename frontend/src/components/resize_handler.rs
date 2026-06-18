@@ -1,13 +1,10 @@
 use dioxus::{
     prelude::*,
-    html::geometry::{PixelsRect, PixelsVector2D},
+    html::geometry::PixelsRect,
 };
-use std::{
-    fmt::Debug,
-    ops::Range,
-};
+use std::ops::Range;
 use uuid::Uuid;
-use models::panel::{GroupContext, GroupOrientation};
+use models::panel::GroupContext;
 
 #[component]
 pub fn ResizeHandler() -> Element {
