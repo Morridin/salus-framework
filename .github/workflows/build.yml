@@ -51,4 +51,4 @@ jobs:
         shell: bash
         run: |
           cd ${{ env.MAIN_PACKAGE }}
-          dx build --verbose
+          dx build --fullstack --verbose
