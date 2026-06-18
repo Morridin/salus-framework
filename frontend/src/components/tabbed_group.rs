@@ -1,13 +1,12 @@
-use crate::components::{Panel, PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
+use crate::components::{PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
 use crate::components::panel::on_mounted;
 use models::{
-    panel::{GroupContext, GroupOrientation, Size},
+    panel::GroupContext,
     plugin::Manifest,
     Position,
 };
 use dioxus::prelude::*;
 use std::collections::HashMap;
-use std::slice::Iter;
 use std::vec::IntoIter;
 use uuid::Uuid;
 

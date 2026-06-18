@@ -1,4 +1,3 @@
-use dioxus::logger::tracing::span::Attributes;
 use dioxus::prelude::*;
 
 #[component]
