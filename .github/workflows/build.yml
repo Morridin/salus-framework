@@ -27,10 +27,10 @@ jobs:
 #            name: "Apple"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Setup toolchain
+      - name: Setup Toolchain
         shell: bash
         run: |
           rustup default stable
@@ -40,6 +40,12 @@ jobs:
       - name: Install Dioxus CLI
         shell: bash
         run: cargo install dioxus-cli --locked
+
+      - name: Prepare Build
+        shell: bash
+        run: |
+          cd ${{ env.MAIN_PACKAGE }}
+          printf "Test-Token" > token
 
       - name: Build Application
         shell: bash
