@@ -3,7 +3,6 @@ use dioxus::{
     html::geometry::PixelsRect,
 };
 use std::ops::Range;
-use uuid::Uuid;
 use models::panel::GroupContext;
 
 #[component]

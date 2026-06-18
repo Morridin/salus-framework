@@ -1,7 +1,10 @@
 use models::{Position, plugin};
+#[cfg(feature = "server")]
 use dioxus::CapturedError;
 use dioxus::prelude::*;
+#[cfg(feature = "server")]
 use std::io::Write;
+#[cfg(feature = "server")]
 use std::{fs, io};
 
 #[get("/api/list-plugins")]
@@ -61,6 +64,7 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
     }
 }
 
+#[cfg(feature = "server")]
 fn generate_plugin_list() -> Result<Vec<String>> {
     let mut plugin_list = fs::read_dir("plugins")?
         .map(|result| result.ok())

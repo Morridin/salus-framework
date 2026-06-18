@@ -1,3 +1,4 @@
+#![cfg(feature = "server")]
 use crate::auth;
 use dioxus::fullstack::body::Bytes;
 use dioxus::fullstack::{get, HeaderMap, Method};

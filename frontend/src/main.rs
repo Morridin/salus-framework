@@ -1,5 +1,6 @@
 use crate::components::App;
-use dioxus::{logger::tracing::Level, prelude::*};
+#[cfg(feature = "web")]
+use dioxus::logger::tracing::Level;
 
 mod components;
 
