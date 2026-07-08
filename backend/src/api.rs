@@ -7,6 +7,17 @@ use std::io::Write;
 #[cfg(feature = "server")]
 use std::{fs, io};
 
+/// Generates a list of all available plug-ins and saves it to a static JSON file.
+///
+/// Scans the plugins directory, compiles the IDs, and writes the pretty-printed
+/// result to `plugins/plugin-list.json`.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// * The plug-in list generation fails.
+/// * The file cannot be created or written to.
+/// * The buffer cannot be flushed properly.
 #[get("/api/list-plugins")]
 pub async fn list_plugins() -> Result<()> {
     let plugin_list = generate_plugin_list()?;
@@ -22,6 +33,19 @@ pub async fn list_plugins() -> Result<()> {
     }
 }
 
+/// Retrieves a list of plug-in names, optionally filtered by their UI position.
+///
+/// Iterates through all discovered plugins, fetches their manifests, and filters
+/// them based on whether they support the requested panel layout position.
+///
+/// # Arguments
+///
+/// * `position` - An optional target UI position (e.g., `"center"`) to filter the plugins.
+///
+/// # Errors
+///
+/// Returns an error if the underlying plug-in list generation fails. Individual
+/// plug-in loading failures are silently skipped.
 #[get("/api/plugins?position")]
 pub async fn plugins(position: Option<Position>) -> Result<Vec<plugin::Name>> {
     let plugin_list = generate_plugin_list()?;
@@ -46,6 +70,21 @@ pub async fn plugins(position: Option<Position>) -> Result<Vec<plugin::Name>> {
     Ok(output)
 }
 
+/// Fetches and validates the manifest for a single plug-in by its hex ID.
+///
+/// Reads the corresponding plug-in manifest JSON file from the filesystem and constructs
+/// a validated manifest instance.
+///
+/// # Arguments
+///
+/// * `id` - The hex-encoded string identifier of the plugin.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// * The `id` cannot be parsed as a base-16 number.
+/// * The ID is `0` (reserved for the framework).
+/// * The manifest file cannot be read or fails validation.
 #[get("/api/plugins/{id}")]
 pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
     let checked_id = u16::from_str_radix(&id, 16)?;
@@ -64,6 +103,15 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
     }
 }
 
+/// Scans the `plugins` directory and returns a sorted list of directory names, resembling the
+/// currently available plug-ins.
+///
+/// Filters the contents of the plug-ins folder to ensure only valid directories
+/// (representing plugin UUIDs) are collected.
+///
+/// # Errors
+///
+/// Returns an I/O error if the `plugins` directory cannot be read.
 #[cfg(feature = "server")]
 fn generate_plugin_list() -> Result<Vec<String>> {
     let mut plugin_list = fs::read_dir("plugins")?
@@ -78,7 +126,3 @@ fn generate_plugin_list() -> Result<Vec<String>> {
     Ok(plugin_list)
 }
 
-#[get("/login")]
-pub async fn login() -> Result<String> {
-    Ok("Hello world!".to_string())
-}
