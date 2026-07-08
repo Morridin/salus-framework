@@ -1,8 +1,5 @@
 use std::fs;
-use dioxus::fullstack::axum_core::response::{IntoResponse, Response};
 use dioxus::fullstack::{HeaderMap, StatusCode};
-use dioxus::fullstack::body::Body;
-use dioxus::fullstack::http::{header, Version};
 
 pub fn authorize(headers: HeaderMap) -> (StatusCode, String) {
     let auth_header = match headers.get("Authorization") {
