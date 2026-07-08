@@ -22,8 +22,8 @@ use std::{fs, io};
 pub async fn list_plugins() -> Result<()> {
     let plugin_list = generate_plugin_list()?;
 
-    let plugin_list_file = fs::File::create("plugins/plugin-list.json");
-    let mut writer = io::BufWriter::new(plugin_list_file?);
+    let plugin_list_file = fs::File::create("plugins/plugin-list.json")?;
+    let mut writer = io::BufWriter::new(plugin_list_file);
 
     serde_json::to_writer_pretty(&mut writer, &plugin_list)?;
 
