@@ -1,7 +1,7 @@
-/// Represents the dimensional metrics of a [`Panel`][`salus::frontend::components::Panel`]
+/// Represents the dimensional metrics of a [`Panel`][`frontend::components::Panel`]
 /// along its resizable axis (either horizontal or vertical).
 ///
-/// It keeps track of where the `Panel` starts along this axis, its current size, and its minimum
+/// It keeps track of where the [`Panel`][`frontend::components::Panel`] starts along this axis, its current size, and its minimum
 /// size to handle resizing operations smoothly.
 #[derive(Clone, Copy, PartialEq)]
 pub struct Size {
@@ -45,13 +45,13 @@ impl Size {
         }
     }
 
-    /// Updates the `Panel` size from the left/top side, moving the edge by the given delta pixels.
+    /// Updates the [`Panel`][`frontend::components::Panel`] size from the left/top side, moving the edge by the given delta pixels.
     ///
-    /// The function performs boundary checks to ensure that the `Panel` always stays above its minimal size.
+    /// The function performs boundary checks to ensure that the [`Panel`][`frontend::components::Panel`] always stays above its minimal size.
     /// There is no check performed against moving the edge out of the screen.
     ///
     /// # Returns
-    /// The actual value (in pixels) the `Panel` was resized by.
+    /// The actual value (in pixels) the [`Panel`][`frontend::components::Panel`] was resized by.
     pub fn update_left(&mut self, delta: i32) -> i32 {
         let delta = self.check_update_left(delta);
         self.start += delta;
@@ -59,30 +59,30 @@ impl Size {
         delta
     }
 
-    /// Updates the `Panel` size from the right/bottom side, moving the edge by the given delta pixels.
+    /// Updates the [`Panel`][`frontend::components::Panel`] size from the right/bottom side, moving the edge by the given delta pixels.
     ///
-    /// The function performs boundary checks to ensure that the `Panel` always stays above its minimal size.
+    /// The function performs boundary checks to ensure that the [`Panel`][`frontend::components::Panel`] always stays above its minimal size.
     /// There is no check performed against moving the edge out of the screen.
     ///
     /// # Returns
-    /// The actual value (in pixels) the `Panel` was resized by.
+    /// The actual value (in pixels) the [`Panel`][`frontend::components::Panel`] was resized by.
     pub fn update_right(&mut self, delta: i32) -> i32 {
         let delta = self.check_update_right(delta);
         self.size += delta;
         delta
     }
 
-    /// Returns the start coordinate of the `Panel` along its resizable axis.
+    /// Returns the start coordinate of the [`Panel`][`frontend::components::Panel`] along its resizable axis.
     pub fn start(&self) -> i32 {
         self.start
     }
 
-    /// Returns the calculated end coordinate of the `Panel` along its resizable axis.
+    /// Returns the calculated end coordinate of the [`Panel`][`frontend::components::Panel`] along its resizable axis.
     pub fn end(&self) -> i32 {
         self.start + self.size
     }
 
-    /// Returns the current size (width or height) of the `Panel` along its resizable axis.
+    /// Returns the current size (width or height) of the [`Panel`][`frontend::components::Panel`] along its resizable axis.
     pub fn size(&self) -> i32 {
         self.size
     }

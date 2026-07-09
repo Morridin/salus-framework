@@ -4,7 +4,7 @@ use dioxus::{
 };
 use std::{fmt, ops::Range};
 
-/// Defines the layout flow direction of a [`PanelGroup`].
+/// Defines the layout flow direction of a [`PanelGroup`][`frontend::components::PanelGroup`].
 #[derive(PartialEq, Eq, Clone, Copy, Hash)]
 pub enum GroupOrientation {
     /// Panels are arranged side-by-side (left to right), resizing within the `PanelGroup` is possible horizontally.
@@ -40,7 +40,7 @@ pub trait PointerPosition: RangeExtractor {
     fn translation_vector(&self, length: f64) -> PixelsVector2D;
 }
 
-/// Concrete strategy for horizontal panel resizing operations inside a [`PanelGroup`].
+/// Concrete strategy for horizontal panel resizing operations inside a [`PanelGroup`][`frontend::components::PanelGroup`].
 pub struct Horizontal;
 
 impl RangeExtractor for Horizontal {
@@ -58,7 +58,7 @@ impl PointerPosition for Horizontal {
     }
 }
 
-/// Concrete strategy for vertical panel resizing operations inside a [`PanelGroup`].
+/// Concrete strategy for vertical panel resizing operations inside a [`PanelGroup`][`frontend::components::PanelGroup`].
 pub struct Vertical;
 
 impl RangeExtractor for Vertical {
