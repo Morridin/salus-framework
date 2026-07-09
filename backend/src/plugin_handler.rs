@@ -59,7 +59,7 @@ pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     // Fail fast if request is not authenticated by token.
     let (status, message) = auth::authorize(headers);
     if status != StatusCode::OK {
@@ -164,7 +164,7 @@ pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     // Fail fast if request is not authenticated by token.
     let (status, message) = auth::authorize(headers);
     if status != StatusCode::OK {
@@ -180,7 +180,7 @@ pub async fn post_handler(
         .get(Method::POST.as_str())
         .ok_or(BadMethod(uuid.clone(), endpoint_name.clone(), Method::POST))?;
 
-    let mut tmp_file = NamedTempFile::new()?;
+    let mut tmp_file = NamedTempFile::new().map_err(|_| InternalFail(uuid.clone(), endpoint_name.clone()))?;
     let mut cmd = Command::new(&endpoint.command);
     let mut cmd = cmd.current_dir(format!("plugins/{uuid}/")).args(&endpoint.default_args);
 
@@ -189,7 +189,7 @@ pub async fn post_handler(
             .ok_or(InternalReadManifest(uuid.clone()))?;
         // Body type arguments need special treatment.
         if arg_type == ArgType::Body {
-            tmp_file.write_all(&body)?;
+            tmp_file.write_all(&body).map_err(|_| InternalFail(uuid.clone(), endpoint_name.clone()))?;
             let path = tmp_file.path();
             cmd = cmd.arg(argument.name.clone()).arg(path);
             continue;
