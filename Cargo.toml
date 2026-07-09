@@ -14,3 +14,7 @@ uuid = { version = "1.23.0", features = ["serde", "js", "v4"] }
 
 backend = { path = "backend" }
 models = { path = "models" }
+
+[workspace.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--document-private-items"]
