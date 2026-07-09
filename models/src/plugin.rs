@@ -29,22 +29,18 @@ struct RawPluginManifest {
 }
 
 impl Manifest {
-    pub fn create(uuid: String, raw_bytes: &[u8]) -> Self {
-        let manifest = serde_json::from_slice(raw_bytes).unwrap_or_else(|e| RawPluginManifest {
-            error: Some(format!(
-                "Error parsing plugin manifest for {}!\n\n{}\n",
-                uuid, e
-            )),
-            ..Default::default()
-        });
-        Self { uuid, manifest }
-    }
-
-    pub fn create_invalid(uuid: String, error_message: String) -> Self {
-        let manifest = RawPluginManifest {
-            error: Some(error_message),
-            ..Default::default()
+    pub fn new(uuid: String, raw_bytes: &[u8]) -> Self {
+        let manifest = match serde_json::from_slice(raw_bytes) {
+            Ok(m) => m,
+            Err(e) => RawPluginManifest {
+                error: Some(format!(
+                    "Error parsing plug-in manifest for {}!\n\n{}\n",
+                    uuid, e
+                )),
+                ..Default::default()
+            },
         };
+
         Self { uuid, manifest }
     }
 

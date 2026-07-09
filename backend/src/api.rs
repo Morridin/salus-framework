@@ -95,7 +95,7 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
     }
 
     let plugin_manifest = fs::read(format!("plugins/{id}/plugin.json"))?;
-    let plugin_manifest = plugin::Manifest::create(id, &plugin_manifest);
+    let plugin_manifest = plugin::Manifest::new(id, &plugin_manifest);
     if plugin_manifest.is_valid() {
         Ok(plugin_manifest)
     } else {
