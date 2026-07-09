@@ -1,4 +1,5 @@
-# Salus Image Viewer
+# Salus Framework
+[![Build Status](https://github.com/Morridin/salus-framework/actions/workflows/build.yml/badge.svg)](https://github.com/Morridin/salus-framework/actions/workflows/build.yml)
 
 This project is intended to provide an open-source framework software for medical software to live in and be run from.
 The framework is distributed with a web-based user-interface that can be used with any browser.

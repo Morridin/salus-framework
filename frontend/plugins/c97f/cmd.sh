@@ -1,3 +1,3 @@
-file=$(cat "$2" | tr -d "\r\n[:space:]")
-res=$(cat "$file")
-echo "<pre>" $res "</pre>"
+file=$(tr -d "\r\n[:space:]" < "$2");
+res=$(cat "$file");
+echo "<pre>" $res "</pre>";

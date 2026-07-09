@@ -23,9 +23,9 @@ pub fn Panel(
     position: Position,
     children: Element,
 ) -> Element {
-    let mut panel_minimised = use_signal(|| false);
+    let panel_minimised = use_signal(|| false);
     let mut panel_closed = use_signal(|| false);
-    let mut context_menu_open = use_signal(|| None);
+    let context_menu_open = use_signal(|| None);
     let mut variant = use_signal(|| Variant::Leaf);
     let uuid = use_signal(|| Uuid::new_v4());
 

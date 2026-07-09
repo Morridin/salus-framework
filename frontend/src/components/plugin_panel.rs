@@ -1,11 +1,7 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
 use models::{plugin, BackendRequestError, Message, Position};
-use dioxus::fullstack::reqwest::Response;
-use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
-use wasm_bindgen::prelude::*;
-use web_sys::{window, MessageEvent};
 
 #[component]
 pub fn PluginPanel(
@@ -18,7 +14,7 @@ pub fn PluginPanel(
     children: Element,
 ) -> Element {
     // Signals
-    let mut active_plugin = use_signal(|| None);
+    let active_plugin = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
@@ -45,7 +41,7 @@ pub fn PluginPanel(
 
                 let message = match Message::create(data.as_str()) {
                     Ok(message) => message,
-                    Err(error) => continue, // TODO: Implement Error Handling!
+                    Err(_) => continue, // TODO: Implement Error Handling!
                 };
 
                 // Get origin, check actual UUID in it and leave if not matching
@@ -76,7 +72,7 @@ pub fn PluginPanel(
         });
     });
 
-    let backend_request = use_resource(move || async move {
+    use_resource(move || async move {
         let plugin = plugin.read();
         let message = message_data.read();
 
@@ -103,7 +99,7 @@ pub fn PluginPanel(
                 plugin.uuid(),
                 &*message
             );
-            let eval = document::eval(&message);
+            document::eval(&message);
             message_received.set(false);
         }
     });

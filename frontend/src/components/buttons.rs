@@ -81,7 +81,6 @@ fn ContextMenu(
         return rsx! {};
     }
 
-    let position = life_line.unwrap();
     let backdrop = rsx! {
         div {
             class: "backdrop",
