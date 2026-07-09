@@ -18,7 +18,7 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn create(raw_bytes: &str) -> Result<Self, serde_json::Error> {
+    pub fn new(raw_bytes: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(raw_bytes)
     }
 

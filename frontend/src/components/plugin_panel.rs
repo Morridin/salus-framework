@@ -45,7 +45,7 @@ pub fn PluginPanel(
                     None => continue,
                 };
 
-                let message = match Message::create(data.as_str()) {
+                let message = match Message::new(data.as_str()) {
                     Ok(message) => message,
                     Err(_) => continue, // TODO: Implement Error Handling!
                 };
