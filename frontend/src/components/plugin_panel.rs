@@ -49,6 +49,16 @@ pub fn PluginPanel(
                 };
 
                 // Get origin, check actual UUID in it and leave if not matching
+				// The first split is an artifact of the asset loading construction: 
+				// The plugins folder's name is accessible by its name with a hash 
+				// appended after a dash. As the plugins folder is the first part 
+				// of the of the resource path of the plugin file URL, it is included 
+				// that way. Tbf, this approach doesn't make much sense, isn't 
+				// documented, blocks extensibility and generates a bunch of other 
+				// problems. 
+				// TODO: include this into the future work and the results section
+				// TODO: mention this in the user guide
+				
                 match message.origin().split_once("plugins-") {
                     Some((_, origin)) => match origin.split("/").skip(1).next() {
                         Some(uuid) => {
