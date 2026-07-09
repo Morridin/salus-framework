@@ -125,4 +125,3 @@ fn generate_plugin_list() -> Result<Vec<String>> {
     plugin_list.sort();
     Ok(plugin_list)
 }
-
