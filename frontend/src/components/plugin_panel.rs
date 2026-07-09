@@ -173,7 +173,7 @@ async fn make_backend_request(
     let uuid = plugin.uuid();
 
     let address = web_sys::window()
-        .map_err(|_| BackendRequestError::NoAddress)?
+        .ok_or(BackendRequestError::NoAddress)?
         .location().origin().map_err(|_| BackendRequestError::NoAddress)?;
     // For elegant error handling, use serde_wasm_bindgen::from_value::<String>()
 
