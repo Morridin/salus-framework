@@ -23,7 +23,8 @@ pub enum BackendRequestError {
     UTF8Conversion(FromUtf8Error),
     InvalidMethod(InvalidMethod),
     RequestError(reqwest::Error),
-    NoPlugin(),
+    NoPlugin,
+    NoAddress,
 }
 
 impl Display for BackendRequestError {
@@ -33,7 +34,8 @@ impl Display for BackendRequestError {
             Self::UTF8Conversion(e) => write!(f, "Error reading file:\n{e}"),
             Self::InvalidMethod(e) => write!(f, "Invalid HTTP request method:\n{e}"),
             Self::RequestError(e) => write!(f, "Error sending request to backend:\n{e}"),
-            Self::NoPlugin() => write!(f, "No plugin loaded."),
+            Self::NoPlugin => write!(f, "No plugin loaded."),
+            Self::NoAddress => write!(f, "No host address available."),
         }
     }
 }

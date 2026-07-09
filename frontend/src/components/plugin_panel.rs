@@ -18,7 +18,13 @@ pub fn PluginPanel(
     let mut external_message = use_signal(|| String::new());
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
-    let plugin = use_memo(move || if external_plugin().is_some() { external_plugin() } else { active_plugin() });
+    let plugin = use_memo(move || {
+        if external_plugin().is_some() {
+            external_plugin()
+        } else {
+            active_plugin()
+        }
+    });
 
     // Handlers for Plugin-MPI
     use_effect(move || {
@@ -166,7 +172,10 @@ async fn make_backend_request(
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();
 
-    let address = "127.0.0.1:8080";
+    let address = web_sys::window()
+        .ok_or(BackendRequestError::NoAddress)?
+        .location().origin().map_err(|_| BackendRequestError::NoAddress)?;
+    // For elegant error handling, use serde_wasm_bindgen::from_value::<String>()
 
     // Retrieve token
     static TOKEN: Asset = asset!("../../token");
@@ -174,7 +183,7 @@ async fn make_backend_request(
     let token = String::from_utf8(bytes)?;
 
     Ok(message_data
-        .get_request(address, uuid)
+        .get_request(&address, uuid)
         .await?
         .bearer_auth(token)
         .send()
