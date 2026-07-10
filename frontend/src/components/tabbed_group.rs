@@ -82,6 +82,7 @@ pub fn TabbedGroup(
             for tab in open_plugins() {
                 div {
                     class: if active_tab().unwrap() == tab { "tabbed-body" } else { "tabbed-body hidden" },
+                    key: "{tab}",
                     PluginPanel {
                         headless: true,
                         position: position.clone(),
