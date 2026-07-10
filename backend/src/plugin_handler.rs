@@ -11,7 +11,9 @@ use std::fs;
 use std::io::{ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::sync::{OnceLock, RwLock};
+use std::time::Duration;
 use tempfile::NamedTempFile;
+use wait_timeout::ChildExt;
 
 static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,
@@ -27,7 +29,7 @@ pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     universal_handler(uuid, endpoint_name, Method::GET, params, headers, body).await
 }
 
@@ -41,7 +43,7 @@ pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     universal_handler(uuid, endpoint_name, Method::POST, params, headers, body).await
 }
 
@@ -55,7 +57,7 @@ pub async fn put_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     universal_handler(uuid, endpoint_name, Method::PUT, params, headers, body).await
 }
 
@@ -69,7 +71,7 @@ pub async fn patch_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     universal_handler(uuid, endpoint_name, Method::PATCH, params, headers, body).await
 }
 
@@ -83,7 +85,7 @@ pub async fn delete_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     universal_handler(uuid, endpoint_name, Method::DELETE, params, headers, body).await
 }
 
@@ -122,92 +124,43 @@ pub async fn delete_handler(
 ///   is Ok anyway, this function returns an HttpError, usually derived from the `PluginError` enum.
 async fn universal_handler(
     uuid: String,
-    endpoint_name: String,
+    mut endpoint_name: String,
     method: Method,
     params: HashMap<String, String>,
     headers: HeaderMap,
     body: Bytes,
-) -> dioxus::Result<String> {
+) -> Result<String, HttpError> {
     // Fail fast if request is not authenticated by token.
     let (status, message) = auth::authorize(headers);
     if status != StatusCode::OK {
-        return Err(HttpError::new(status, message).into());
+        return Err(HttpError::new(status, message));
+    }
+
+    if !endpoint_name.starts_with('/') {
+        endpoint_name.insert(0, '/');
     }
 
     let endpoints = get_plugin_routing_by_id(&uuid)?;
-    let endpoint_name = format!("/{}", endpoint_name.trim_start_matches('/'));
-
     let endpoint = endpoints
         .get(&endpoint_name)
-        .ok_or(NotFoundEndpoint(uuid.clone(), endpoint_name.clone()))?
+        .ok_or_else(|| NotFoundEndpoint(uuid.clone(), endpoint_name.clone()))?
         .get(method.as_str())
-        .ok_or(BadMethod(uuid.clone(), endpoint_name.clone(), method))?;
+        .ok_or_else(|| BadMethod(uuid.clone(), endpoint_name.clone(), method))?;
 
-    let mut tmp_file = NamedTempFile::new()?;
     let mut cmd = Command::new(&endpoint.command);
-    let mut cmd = cmd
-        .current_dir(format!("plugins/{uuid}/"))
+    cmd.current_dir(format!("plugins/{uuid}/"))
         .args(&endpoint.default_args);
 
-    for argument in &endpoint.args {
-        let arg_type =
-            ArgType::from_str(&argument.arg_type).ok_or(InternalReadManifest(uuid.clone()))?;
-        // Body type arguments need special treatment.
-        if arg_type == ArgType::Body {
-            tmp_file.write_all(&body)?;
-            let path = tmp_file.path();
-            cmd = cmd.arg(argument.name.clone()).arg(path);
-            continue;
-        }
-        let value = match params.get(&argument.display_name) {
-            Some(value) => value,
-            None => {
-                // Flag type arguments set program arguments that have no value (such as `-a` on ls).
-                if argument.optional || arg_type == ArgType::Flag {
-                    continue;
-                } else {
-                    return Err(BadRequestParamMissing(
-                        uuid,
-                        endpoint_name,
-                        argument.display_name.clone(),
-                    )
-                    .into());
-                }
-            }
-        };
+    let _temp_file = build_command_args(
+        &mut cmd,
+        &endpoint.args,
+        &params,
+        &body,
+        &uuid,
+        &endpoint_name,
+    );
 
-        if !arg_type.validate_str(value) {
-            return Err(BadRequestInvalidParam(
-                uuid,
-                endpoint_name,
-                argument.display_name.clone(),
-                arg_type,
-                value.clone(),
-            )
-            .into());
-        }
-        let validated = value;
-
-        cmd = cmd.arg(argument.name.clone());
-        if arg_type != ArgType::Flag {
-            cmd = cmd.arg(validated);
-        }
-    }
-
-    let mut cmd = cmd
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(|error| InternalSubProcess(error.to_string()))?;
-
-    let mut result = String::new();
-
-    cmd.stdout
-        .take()
-        .ok_or_else(|| InternalFail(uuid.clone(), endpoint_name.clone()))?
-        .read_to_string(&mut result)
-        .map_err(|_| InternalFail(uuid.clone(), endpoint_name.clone()))?;
-
-    Ok(result)
+    execute_subprocess(cmd, &uuid, &endpoint_name).map_err(|e| e.into())
 }
 
 /// This function extracts the information needed from the backend handler about the plugin
@@ -274,6 +227,130 @@ fn get_plugin_routing_by_id(
         .get(&checked_id)
         .cloned()
         .ok_or(NotFoundId(id.to_string()))
+}
+
+/// Evaluates the request parameters and assembles the subprocess program call.
+///
+/// # Arguments
+/// * `cmd` - The command to be assembled after parameter evaluation.
+/// * `endpoint_args` - The list of arguments the plug-in manifest defines for the endpoint.
+/// * `provided_args` - A [`HashMap`] of arguments provided with the HTTP request to the endpoint.
+/// * `body` - The request body to be incorporated in a temp file if the endpoint requires it.
+/// * `uuid` - The plug-in UUID, for error message detailing only.
+/// * `endpoint_name` - The called endpoint name, for error message detailing only.
+///
+/// # Returns
+/// If anything goes wrong, a [`PluginError`] variant is returned inside an `Err`.
+/// Else, the created [`NamedTempFile`], if any,  is returned in an `Option` for lifetime reasons.
+fn build_command_args(
+    cmd: &mut Command,
+    endpoint_args: &[CommandArg],
+    provided_args: &HashMap<String, String>,
+    body: &Bytes,
+    uuid: &str,
+    endpoint_name: &str,
+) -> Result<Option<NamedTempFile>, PluginError> {
+    let mut optional_temp_file = None;
+
+    for argument in endpoint_args {
+        let arg_type = ArgType::from_str(&argument.arg_type)
+            .ok_or_else(|| InternalReadManifest(uuid.to_string()))?;
+
+        // Body type arguments need special treatment.
+        if arg_type == ArgType::Body {
+            let temp_file = optional_temp_file.get_or_insert(
+                NamedTempFile::new()
+                    .map_err(|_| InternalFail(uuid.to_string(), endpoint_name.to_string()))?,
+            );
+            temp_file
+                .write_all(&body)
+                .map_err(|_| InternalFail(uuid.to_string(), endpoint_name.to_string()))?;
+            let path = temp_file.path();
+            cmd.arg(argument.name.clone()).arg(path);
+            continue;
+        }
+
+        let value = match provided_args.get(&argument.display_name) {
+            Some(value) => value,
+            None if argument.optional || arg_type == ArgType::Flag => continue,
+            None => {
+                return Err(BadRequestParamMissing(
+                    uuid.to_string(),
+                    endpoint_name.to_string(),
+                    argument.display_name.clone(),
+                ));
+            }
+        };
+
+        if !arg_type.validate_str(value) {
+            return Err(BadRequestInvalidParam(
+                uuid.to_string(),
+                endpoint_name.to_string(),
+                argument.display_name.clone(),
+                arg_type,
+                value.clone(),
+            ));
+        }
+
+        cmd.arg(argument.name.clone());
+        if arg_type != ArgType::Flag {
+            cmd.arg(value);
+        }
+    }
+    Ok(optional_temp_file)
+}
+
+/// Executes a readily assembled subprocess, terminates it after 1 second, if necessary and collects
+/// the results.
+///
+/// # Arguments
+/// * `cmd` - The `Command` struct that resembles the assembled subprocess call template.
+/// * `uuid` - The plug-in UUID, for error message detailing only.
+/// * `endpoint_name` - The called endpoint name, for error message detailing only.
+///
+/// # Returns
+/// See [`universal_handler`].
+fn execute_subprocess(
+    mut cmd: Command,
+    uuid: &str,
+    endpoint_name: &str,
+) -> Result<String, PluginError> {
+    let internal_fail = InternalFail(uuid.to_string(), endpoint_name.to_string());
+
+    let mut subprocess = cmd
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| InternalSubProcess(error.to_string()))?;
+
+    let timeout = Duration::from_secs(1);
+    let status_code = match subprocess.wait_timeout(timeout) {
+        Ok(Some(status)) => status.code(),
+        Ok(None) => {
+            subprocess.kill().map_err(|_| internal_fail)?;
+            return Err(InternalTimeout(uuid.to_string(), endpoint_name.to_string()));
+        }
+        Err(_) => return Err(internal_fail),
+    };
+
+    let mut result = String::new();
+    if status_code == Some(0) {
+        subprocess
+            .stdout
+            .take()
+            .ok_or_else(|| internal_fail.clone())?
+            .read_to_string(&mut result)
+            .map_err(|_| internal_fail)?;
+        Ok(result)
+    } else {
+        subprocess
+            .stderr
+            .take()
+            .ok_or_else(|| internal_fail.clone())?
+            .read_to_string(&mut result)
+            .map_err(|_| internal_fail)?;
+        Err(InternalSubProcess(result))
+    }
 }
 
 #[derive(Deserialize, Clone)]

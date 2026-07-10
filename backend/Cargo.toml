@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 tower-http = { version = "0.6.8", features = ["cors"] }
 tempfile = "3.27.0"
+wait-timeout = { version = "0.2.1", optional = true }
 
 dioxus = { workspace = true, features = ["fullstack"] }
 serde = { workspace = true }
@@ -14,4 +15,4 @@ serde_json = { workspace = true }
 models = { workspace = true }
 
 [features]
-server = ["dioxus/server"]
+server = ["dioxus/server", "dep:wait-timeout"]
