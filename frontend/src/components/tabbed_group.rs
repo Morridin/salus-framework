@@ -1,11 +1,10 @@
-use crate::components::{PanelHeader, PluginPanel, buttons::{AddButton, CloseButton}};
 use crate::components::panel::on_mounted;
-use models::{
-    panel::GroupContext,
-    plugin::Manifest,
-    Position,
+use crate::components::{
+    buttons::{AddButton, CloseButton}, PanelHeader,
+    PluginPanel,
 };
 use dioxus::prelude::*;
+use models::{panel::GroupContext, plugin::Manifest, Position};
 use std::collections::HashMap;
 use std::vec::IntoIter;
 use uuid::Uuid;
@@ -17,34 +16,31 @@ use uuid::Uuid;
 /// - `min_size`: The minimum size this element may be shrinked to.
 /// - `children`: Child elements to display in the empty panel body as placeholder text.
 #[component]
-pub fn TabbedGroup(position: Position, #[props(default = 0)] min_size: i32, children: Element) -> Element {
+pub fn TabbedGroup(
+    position: Position,
+    #[props(default = 0)] min_size: i32,
+    children: Element,
+) -> Element {
     let uuid = use_signal(|| Uuid::new_v4());
     let mut open_plugins = use_signal(|| TabbedPlugins::new());
     let mut active_tab = use_signal(|| None);
     let mut new_plugin = use_signal(|| None);
     let active_plugin = use_memo(move || open_plugins().filter(&active_tab().unwrap_or_default()).first().cloned());
 
-    use_effect(move || if new_plugin().is_some() {
-        let id = open_plugins.write().insert(new_plugin.take().unwrap());
-        active_tab.set(Some(id));
+    use_effect(move || {
+        if new_plugin().is_some() {
+            let id = open_plugins.write().insert(new_plugin.take().unwrap());
+            active_tab.set(Some(id));
+        }
     });
 
     let context: Option<GroupContext> = try_use_context();
-    let mut plugin_manifests: Signal<Vec<Manifest>> = use_context();
 
     let size = if let Some(context) = context {
         context.children().read().get(&uuid.peek()).cloned()
     } else {
         None
     };
-
-    for i in 0..plugin_manifests.len() {
-        let mut plugin_manifests = plugin_manifests.write();
-        let positions = plugin_manifests.get(i).unwrap().panels();
-        if positions.first().is_some_and(|p| p == &position) {
-            open_plugins.write().insert(plugin_manifests.remove(i));
-        }
-    }
 
     rsx! {
         div {
