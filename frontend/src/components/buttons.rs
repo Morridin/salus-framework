@@ -1,3 +1,6 @@
+//! Standard action buttons for various controls (closing, minimising, adding a plug-in)
+//! including the associated context menu for plug-in selection.
+
 use backend::api;
 use dioxus::html::geometry::PagePoint;
 use dioxus::prelude::*;
@@ -8,12 +11,17 @@ use dioxus_free_icons::{
 use models::plugin::Manifest;
 use models::{plugin, Position};
 
+/// A button utilised to close an active panel or plug-in view.
+/// The button does not close the component it is placed in per sé when clicked.
+/// Instead, the event handler provided via its `onclick` argument is executed.
+///
+/// The button features an X symbol that is widely used to symbolise closing something.
 #[component]
-pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
+pub fn CloseButton(onclick: EventHandler<MouseEvent>) -> Element {
     rsx! {
         button {
             class: "icon-btn close-btn",
-            onclick: on_panel_close,
+            onclick,
             Icon {
                 icon: LdX,
             },
@@ -21,6 +29,12 @@ pub fn CloseButton(on_panel_close: EventHandler<MouseEvent>) -> Element {
     }
 }
 
+/// A button used to toggle the minimised state of a panel.
+/// The state is passed as [`Signal`] via the button's only argument.
+///
+/// The button changes its appearance from two arrows diagonally pointing towards the centre if the
+/// minimised state evaluates to `false` and two arrows diagonally pointing outwards if the same
+/// state evaluates to `true`.
 #[component]
 pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
     rsx! {
@@ -41,6 +55,13 @@ pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
     }
 }
 
+/// A button that asynchronously fetches available plug-ins for a
+/// specific position upon click, opening a selection context menu.
+///
+/// # Arguments
+/// * `position` - A [`Position`] variant indicating the [`Panel`] in which the plug-in shall be opened.
+/// * `opened_plugin` - A reactive Dioxus [`Signal`] that not only indicates via its [`Option`]
+///   variant whether a plug-in was selected or not, but also, in the `Some` case, which plug-in.
 #[component]
 pub fn AddButton(position: Position, opened_plugin: Signal<Option<Manifest>>) -> Element {
     let available_plugins = use_resource(move || {
@@ -71,6 +92,16 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<Manifest>>) ->
     }
 }
 
+/// An overlay menu for keyboard- and mouse-based selection of a plug-in from a list.
+/// Currently, it is always shown centered on the screen, due to unresolved problems with mouse
+/// pointer based positioning close to the lower and right screen edge.
+///
+/// # Arguments
+/// * `life_line` - A reactive Dioxus [`Signal`] that originally steered both the context menu's
+///   position on the screen via [`PagePoint`] contained inside its `Option` and its visibility
+///   via the `Option` state itself. Setting this to `None` closes the context menu.
+/// * `options` - A list of plug-in display names with their associated ID to be shown by the menu.
+/// * `selection` - The plug-in selected, if any.
 #[component]
 fn ContextMenu(
     life_line: Signal<Option<PagePoint>>,
@@ -87,7 +118,7 @@ fn ContextMenu(
             onclick: move |_| life_line.set(None),
             oncontextmenu: move |event| {
                 event.prevent_default();
-                life_line.set(Some(event.page_coordinates()));
+                life_line.set(None);
             }
         }
     };

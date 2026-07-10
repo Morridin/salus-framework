@@ -3,6 +3,16 @@ use crate::components::buttons::AddButton;
 use models::{plugin, BackendRequestError, Message, Position};
 use dioxus::prelude::*;
 
+/// A [`Panel`] dedicated to hosting and rendering a specific plug-in.
+///
+/// Encapsulates the plug-in inside an HTML `iframe` enforced with custom sandbox
+/// restrictions, managing token-authorised message-passing to the back-end.
+///
+/// # Arguments
+/// Most of this panel's arguments/props are equal in meaning to those of the default [`Panel`].
+/// Hence, we only cover the additional `external_plugin` argument here.
+/// * `external_plugin` - Set to a [`Manifest`][plugin::Manifest] value to provide the plug-in panel
+///   with a pre-set plug-in. For reference, this is used in the [`TabbedGroup`] component.
 #[component]
 pub fn PluginPanel(
     #[props(default)] panel_name: String,
@@ -26,7 +36,9 @@ pub fn PluginPanel(
         }
     });
 
-    // Handlers for Plugin-MPI
+    // Handlers for Plug-in-MPI
+
+    // Registers the panel-local event listener for the postMessage protocol of the iframes.
     use_effect(move || {
         let mut eval = document::eval(
             r#"
@@ -52,9 +64,9 @@ pub fn PluginPanel(
 
                 // Get origin, check actual UUID in it and leave if not matching
 				// The first split is an artifact of the asset loading construction: 
-				// The plugins folder's name is accessible by its name with a hash 
-				// appended after a dash. As the plugins folder is the first part 
-				// of the of the resource path of the plugin file URL, it is included 
+				// The plug-ins folder's name is accessible by its name with a hash
+				// appended after a dash. As the plug-ins folder is the first part
+				// of the of the resource path of the plug-in file URL, it is included
 				// that way. Tbf, this approach doesn't make much sense, isn't 
 				// documented, blocks extensibility and generates a bunch of other 
 				// problems. 
@@ -78,6 +90,7 @@ pub fn PluginPanel(
         });
     });
 
+    // Processes incoming messages and dispatches back-end API requests.
     use_resource(move || async move {
         let plugin = plugin.read();
         let message = message_data.read();
@@ -94,6 +107,7 @@ pub fn PluginPanel(
         }
     });
 
+    // Forwards back-end responses back into the plug-in's iframe using postMessage.
     use_effect(move || {
         let message = external_message.read();
 
@@ -109,7 +123,7 @@ pub fn PluginPanel(
             message_received.set(false);
         }
     });
-    // END: Plugin MPI Handlers
+    // END: Plug-in MPI Handlers
 
     static PLUGIN_FOLDER: Asset = asset!("/plugins/");
 
@@ -176,6 +190,15 @@ pub fn PluginPanel(
     }
 }
 
+/// Issues an authorised API request to the backend, secured via a local asset token file.
+/// Again the hint that this mode of authorisation and authentication is not effective and needs
+/// to be resolved ASAP.
+///
+/// # Arguments
+/// * `plugin` - The [`Manifest`][plugin::Manifest] that holds all front-end-relevant information
+///   about the requesting plug-in.
+/// * `message_data` - The Rust wrapper of the JS `PluginFrontendRequest` object that is issued
+///   by the plug-in front-end when initialising a request to its back-end.
 async fn make_backend_request(
     plugin: &plugin::Manifest,
     message_data: &Message,
