@@ -1,9 +1,17 @@
+//! Application entry point for the Salus framework front-end and server components.
+//!
+//! Configures logging and launches the framework depending on the target
+//! environment (client-side web or server-side rendering).
+
 use crate::components::App;
 #[cfg(feature = "web")]
 use dioxus::logger::tracing::Level;
 
 mod components;
 
+/// Initialises the application and handles binary-dependent startup:
+/// For the back-end binary, the server is equipped with the relevant routers and middleware layers,
+/// and for the front-end the application is launched.
 fn main() {
     #[cfg(feature = "web")]
     {
