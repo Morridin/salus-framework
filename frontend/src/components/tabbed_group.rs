@@ -53,7 +53,7 @@ pub fn TabbedGroup(
                     class: "tabbed-header-panel-group",
                     for uuid in open_plugins() {
                         PanelHeader {
-                            class: if active_tab.peek().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
+                            class: if active_tab.read().unwrap_or_default() == uuid { Some("tabbed-active".to_string()) } else { None },
                             panel_name: open_plugins().get(&uuid).unwrap().to_string(),
                             buttons: rsx! {
                                 CloseButton {
