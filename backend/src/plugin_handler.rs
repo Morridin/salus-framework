@@ -17,7 +17,11 @@ static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,
 > = OnceLock::new();
 
-/// Universal Get handler for all plugins.
+/// The universal GET handler for all plug-ins.
+/// Plug-in HTTP GET requests end up here, are forwarded to the general universal handler
+/// function whose result is awaited and returned.
+///
+/// For parameters and further details, please see [`universal_handler`].
 #[get("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn get_handler(
     uuid: String,
@@ -27,6 +31,11 @@ pub async fn get_handler(
     universal_handler(uuid, endpoint_name, Method::GET, params, headers, body).await
 }
 
+/// The universal POST handler for all plug-ins.
+/// Plug-in HTTP POST requests end up here, are forwarded to the general universal handler
+/// function whose result is awaited and returned.
+///
+/// For parameters and further details, please see [`universal_handler`].
 #[post("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn post_handler(
     uuid: String,
@@ -36,6 +45,11 @@ pub async fn post_handler(
     universal_handler(uuid, endpoint_name, Method::POST, params, headers, body).await
 }
 
+/// The universal PUT handler for all plug-ins.
+/// Plug-in HTTP PUT requests end up here, are forwarded to the general universal handler
+/// function whose result is awaited and returned.
+///
+/// For parameters and further details, please see [`universal_handler`].
 #[put("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn put_handler(
     uuid: String,
@@ -45,6 +59,11 @@ pub async fn put_handler(
     universal_handler(uuid, endpoint_name, Method::PUT, params, headers, body).await
 }
 
+/// The universal PATCH handler for all plug-ins.
+/// Plug-in HTTP PATCH requests end up here, are forwarded to the general universal handler
+/// function whose result is awaited and returned.
+///
+/// For parameters and further details, please see [`universal_handler`].
 #[patch("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn patch_handler(
     uuid: String,
@@ -54,6 +73,11 @@ pub async fn patch_handler(
     universal_handler(uuid, endpoint_name, Method::PATCH, params, headers, body).await
 }
 
+/// The universal DELTE handler for all plug-ins.
+/// Plug-in HTTP DELETE requests end up here, are forwarded to the general universal handler
+/// function whose result is awaited and returned.
+///
+/// For parameters and further details, please see [`universal_handler`].
 #[delete("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn delete_handler(
     uuid: String,
@@ -63,6 +87,39 @@ pub async fn delete_handler(
     universal_handler(uuid, endpoint_name, Method::DELETE, params, headers, body).await
 }
 
+/// The universal back-end request handler for all plug-ins and methods.
+///
+/// **Any** HTTP request any plug-in makes to its back-end ends up here.
+/// The handler disassembles the request into plug-in ID, requested endpoint and transmitted
+/// parameters.
+/// Then, it starts the program defined in the plug-in manifest corresponding to the
+/// calling plug-in and returns an HTTP response with the `stdout` or `stderr` contents of the
+/// program.
+/// If errors occur prior to program execution, the handler terminates and responds with the
+/// correct status code indicating an error and a short message with information about the cause.
+///
+/// # Arguments
+/// * `uuid` - The instance-global unique identification number (UUID) of the called plug-in.
+/// * `endpoint_name` - Effectively the url resource path part after the UUID.
+///   Determines which program is called by the handler and which parameters are required.
+/// * `method` - A [`Method`] variant out of `GET`, `POST`, `PUT`, `PATCH`, `DELETE`.
+///   `HEAD` is already handled by Dioxus/Axum and transformed to `GET` internally.
+/// * `params` - The contents of the query string which are disassembled into a hashmap, hence
+///   not allowing duplicate query string keys. Whether they are mandatory or not and which
+///   parameters are even relevant is entirely dependent on the plug-in endpoint.
+/// * `headers` - An `http::HeaderMap` object containing all headers from the HTTP request
+///   triggering this handler.
+/// * `body` - This parameter contains the HTTP request body as Bytes object. Without any further
+///   adjustment, its contents are written into a temporary file, which is then handed over to the
+///   plug-in's program per its file name if the plug-in manifest defines such a parameter for
+///   the endpoint.
+///
+/// # Returns
+/// Returns a `dioxus::Result<String>`:
+/// * `Ok(String)` - If and only if the program defined by the plug-in manifest has returned with
+///   return code 0, the `stdout` buffer's contents are returned as is in an HTTP response.
+/// * `Err(HttpError)` - Except for those cases where parameter parsing fails or the return value
+///   is Ok anyway, this function returns an HttpError, usually derived from the `PluginError` enum.
 async fn universal_handler(
     uuid: String,
     endpoint_name: String,
