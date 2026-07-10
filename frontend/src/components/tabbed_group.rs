@@ -79,14 +79,17 @@ pub fn TabbedGroup(
                     }
                 }
             }
-            if active_tab().is_some() {
-                PluginPanel {
-                    headless: true,
-                    position,
-                    external_plugin: active_plugin,
+            for tab in open_plugins() {
+                div {
+                    class: if active_tab().unwrap() == tab { "tabbed-body" } else { "tabbed-body hidden" },
+                    PluginPanel {
+                        headless: true,
+                        position: position.clone(),
+                        external_plugin: open_plugins().get(&tab).cloned(),
+                    }
                 }
             }
-            else {
+            if active_tab().is_none() {
                 div {
                     class: "panel-body",
                     { children },
