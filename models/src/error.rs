@@ -80,6 +80,8 @@ pub enum PluginError {
     InternalReadManifest(String),
     InternalFail(String, String),
     InternalSubProcess(String),
+    /// The plug-in back-end program did not finish in time and was terminated.
+    InternalTimeout(String, String),
 }
 
 impl PluginError {
@@ -98,6 +100,7 @@ impl PluginError {
             InternalReadManifest(_) => StatusCode::INTERNAL_SERVER_ERROR,
             InternalFail(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
             InternalSubProcess(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            InternalTimeout(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -124,6 +127,7 @@ impl Display for PluginError {
             InternalReadManifest(uuid) => f.write_fmt(format_args!("Error reading manifest file for plugin {uuid}")),
             InternalFail(uuid, endpoint) => f.write_fmt(format_args!("Error executing plugin {uuid}, endpoint {endpoint}")),
             InternalSubProcess(error) => f.write_fmt(format_args!("Error executing plugin backend: \n {error}")),
+            InternalTimeout(uuid, endpoint) => f.write_fmt(format_args!("The back-end program for plug-in {uuid}, endpoint {endpoint} was terminated after hitting its wall time.")),
         }
     }
 }
