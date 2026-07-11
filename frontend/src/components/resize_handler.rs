@@ -9,7 +9,7 @@ use models::panel::GroupContext;
 ///
 /// Listens for mouse down and move events, computes the directional delta,
 /// and updates the layout tracking context to adjust flex-basis constraints, hence providing
-/// resizing for adjacent [`Panel`]s.
+/// resizing for adjacent [`Panel`][crate::components::Panel]s.
 #[component]
 pub fn ResizeHandler() -> Element {
     let mut resize_active = use_signal(|| false);
