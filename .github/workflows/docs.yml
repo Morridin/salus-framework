@@ -36,5 +36,5 @@ jobs:
       - name: Upload as Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: salus
+          name: docs
           path: target/doc
