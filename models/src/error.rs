@@ -84,17 +84,21 @@ pub enum PluginError {
     /// The requested plug-in ID is reserved for the framework itself.
     BadRequestFramework,
     /// A required query or body argument for a plug-in endpoint was not provided.
+    ///
     /// Format: `(plugin_uuid, endpoint, argument_name)`
     BadRequestParamMissing(String, String, String),
     /// An argument failed type validation.
+    ///
     /// Format: `(plugin_uuid, endpoint, argument_name, expected_type, raw_value)`
     BadRequestInvalidParam(String, String, String, ArgType, String),
     /// No plug-in matching the specified UUID could be found.
     NotFoundId(String),
     /// The requested endpoint does not exist on the specified plug-in.
+    ///
     /// Format: `(plugin_uuid, endpoint)`
     NotFoundEndpoint(String, String),
     /// The requested plug-in endpoint is not defined for this HTTP method.
+    ///
     /// Format: `(plugin_uuid, endpoint, method)`
     BadMethod(String, String, Method),
     /// The global plug-in runtime cache could not be accessed.
@@ -110,6 +114,8 @@ pub enum PluginError {
     InternalFail(String, String),
     /// The plug-in's back-end program did not return successfully (return code 0).
     InternalSubProcess(String),
+    /// The plug-in back-end program did not finish in time and was terminated.
+    InternalTimeout(String, String),
 }
 
 impl PluginError {
@@ -129,6 +135,7 @@ impl PluginError {
             InternalReadManifest(_) => StatusCode::INTERNAL_SERVER_ERROR,
             InternalFail(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
             InternalSubProcess(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            InternalTimeout(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -155,6 +162,7 @@ impl Display for PluginError {
             InternalReadManifest(uuid) => f.write_fmt(format_args!("Error reading manifest file for plug-in {uuid}")),
             InternalFail(uuid, endpoint) => f.write_fmt(format_args!("Error executing plug-in {uuid}, endpoint {endpoint}")),
             InternalSubProcess(error) => f.write_fmt(format_args!("Error executing plug-in back-end: \n {error}")),
+            InternalTimeout(uuid, endpoint) => f.write_fmt(format_args!("The back-end program for plug-in {uuid}, endpoint {endpoint} was terminated after hitting its wall time.")),
         }
     }
 }

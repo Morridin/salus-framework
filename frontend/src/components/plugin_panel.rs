@@ -20,7 +20,7 @@ pub fn PluginPanel(
     position: Position,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
-    #[props(default)] external_plugin: ReadSignal<Option<plugin::Manifest>>,
+    #[props(default)] external_plugin: Option<plugin::Manifest>,
     children: Element,
 ) -> Element {
     // Signals
@@ -29,8 +29,8 @@ pub fn PluginPanel(
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
     let plugin = use_memo(move || {
-        if external_plugin().is_some() {
-            external_plugin()
+        if external_plugin.is_some() {
+            external_plugin.clone()
         } else {
             active_plugin()
         }
@@ -63,16 +63,16 @@ pub fn PluginPanel(
                 };
 
                 // Get origin, check actual UUID in it and leave if not matching
-				// The first split is an artifact of the asset loading construction: 
+				// The first split is an artifact of the asset loading construction:
 				// The plug-ins folder's name is accessible by its name with a hash
 				// appended after a dash. As the plug-ins folder is the first part
 				// of the of the resource path of the plug-in file URL, it is included
-				// that way. Tbf, this approach doesn't make much sense, isn't 
-				// documented, blocks extensibility and generates a bunch of other 
-				// problems. 
+				// that way. Tbf, this approach doesn't make much sense, isn't
+				// documented, blocks extensibility and generates a bunch of other
+				// problems.
 				// TODO: include this into the future work and the results section
 				// TODO: mention this in the user guide
-				
+
                 match message.origin().split_once("plugins-") {
                     Some((_, origin)) => match origin.split("/").skip(1).next() {
                         Some(uuid) => {

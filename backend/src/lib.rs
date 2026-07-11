@@ -3,9 +3,11 @@ use dioxus::fullstack::routing::Router;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 
-pub mod api;
 mod auth;
 mod plugin_handler;
+
+/// General API handlers.
+pub mod api;
 
 /// Public utility functions re-exported for convenience across the backend.
 pub mod utils {
