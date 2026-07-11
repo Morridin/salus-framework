@@ -35,7 +35,7 @@ user interfaces.
 Note: Subject to change - as soon as I made a release version of the framework program.
 
 Until then, first download the framework program from its repository.
-Then get yourself an up-to-date Rust version (see here: https://rust-lang.org).
+Then get yourself an up-to-date Rust version (see here: <https://rust-lang.org>).
 
 If you are on Windows, for your own sanity, install Rust inside a WSL container and start the program from within the WSL.
 
