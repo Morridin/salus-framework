@@ -3,10 +3,9 @@ use dioxus::fullstack::routing::Router;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 
-pub mod api;
 mod auth;
 mod plugin_handler;
-
+pub mod api;
 pub mod utils {
     pub use crate::auth::authorize;
 }

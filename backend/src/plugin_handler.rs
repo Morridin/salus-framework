@@ -19,8 +19,9 @@ static PLUGIN_CACHE: OnceLock<
     RwLock<HashMap<u16, HashMap<String, HashMap<String, EndpointHandler>>>>,
 > = OnceLock::new();
 
-/// The universal GET handler for all plug-ins.
-/// Plug-in HTTP GET requests end up here, are forwarded to the general universal handler
+/// The universal `GET` handler for all plug-ins.
+///
+/// Plug-in HTTP `GET` requests end up here, are forwarded to the general universal handler
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`universal_handler`].
@@ -33,8 +34,9 @@ pub async fn get_handler(
     universal_handler(uuid, endpoint_name, Method::GET, params, headers, body).await
 }
 
-/// The universal POST handler for all plug-ins.
-/// Plug-in HTTP POST requests end up here, are forwarded to the general universal handler
+/// The universal `POST` handler for all plug-ins.
+///
+/// Plug-in HTTP `POST` requests end up here, are forwarded to the general universal handler
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`universal_handler`].
@@ -47,8 +49,9 @@ pub async fn post_handler(
     universal_handler(uuid, endpoint_name, Method::POST, params, headers, body).await
 }
 
-/// The universal PUT handler for all plug-ins.
-/// Plug-in HTTP PUT requests end up here, are forwarded to the general universal handler
+/// The universal `PUT` handler for all plug-ins.
+///
+/// Plug-in HTTP `PUT` requests end up here, are forwarded to the general universal handler
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`universal_handler`].
@@ -61,8 +64,9 @@ pub async fn put_handler(
     universal_handler(uuid, endpoint_name, Method::PUT, params, headers, body).await
 }
 
-/// The universal PATCH handler for all plug-ins.
-/// Plug-in HTTP PATCH requests end up here, are forwarded to the general universal handler
+/// The universal `PATCH` handler for all plug-ins.
+///
+/// Plug-in HTTP `PATCH` requests end up here, are forwarded to the general universal handler
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`universal_handler`].
@@ -75,8 +79,9 @@ pub async fn patch_handler(
     universal_handler(uuid, endpoint_name, Method::PATCH, params, headers, body).await
 }
 
-/// The universal DELTE handler for all plug-ins.
-/// Plug-in HTTP DELETE requests end up here, are forwarded to the general universal handler
+/// The universal `DELETE` handler for all plug-ins.
+///
+/// Plug-in HTTP `DELETE` requests end up here, are forwarded to the general universal handler
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`universal_handler`].
@@ -109,7 +114,7 @@ pub async fn delete_handler(
 /// * `params` - The contents of the query string which are disassembled into a hashmap, hence
 ///   not allowing duplicate query string keys. Whether they are mandatory or not and which
 ///   parameters are even relevant is entirely dependent on the plug-in endpoint.
-/// * `headers` - An `http::HeaderMap` object containing all headers from the HTTP request
+/// * `headers` - An [`HeaderMap`] object containing all headers from the HTTP request
 ///   triggering this handler.
 /// * `body` - This parameter contains the HTTP request body as Bytes object. Without any further
 ///   adjustment, its contents are written into a temporary file, which is then handed over to the
@@ -121,7 +126,7 @@ pub async fn delete_handler(
 /// * `Ok(String)` - If and only if the program defined by the plug-in manifest has returned with
 ///   return code 0, the `stdout` buffer's contents are returned as is in an HTTP response.
 /// * `Err(HttpError)` - Except for those cases where parameter parsing fails or the return value
-///   is Ok anyway, this function returns an HttpError, usually derived from the `PluginError` enum.
+///   is Ok anyway, this function returns an HttpError, usually derived from the [`PluginError`] enum.
 async fn universal_handler(
     uuid: String,
     mut endpoint_name: String,
