@@ -10,7 +10,7 @@ pub fn PluginPanel(
     position: Position,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
-    #[props(default)] external_plugin: ReadSignal<Option<plugin::Manifest>>,
+    #[props(default)] external_plugin: Option<plugin::Manifest>,
     children: Element,
 ) -> Element {
     // Signals
@@ -19,8 +19,8 @@ pub fn PluginPanel(
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
     let plugin = use_memo(move || {
-        if external_plugin().is_some() {
-            external_plugin()
+        if external_plugin.is_some() {
+            external_plugin.clone()
         } else {
             active_plugin()
         }

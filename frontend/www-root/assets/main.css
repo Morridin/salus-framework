@@ -205,6 +205,15 @@ iframe {
             padding: 0.25em;
         }
     }
+
+    .tabbed-body {
+        display: flex;
+        height: 100%;
+
+        &.hidden {
+            display: none;
+        }
+    }
 }
 
 .backdrop {
