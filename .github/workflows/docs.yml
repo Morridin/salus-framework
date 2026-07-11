@@ -6,7 +6,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  MAIN_PACKAGE: frontend
 
 jobs:
   gen-docs:
@@ -23,6 +22,12 @@ jobs:
           rustup default stable
           rustup update stable
           rustup target add wasm32-unknown-unknown
+
+      - name: Prepare Build
+        shell: bash
+        run: |
+          cd frontend
+          printf "Test-Token" > token
 
       - name: Generate Documentation
         shell: bash
