@@ -61,7 +61,7 @@ static PLUGIN_CACHE: OnceLock<
 ///   return code 0, the `stdout` buffer's contents are returned as is in an HTTP response.
 /// * `Err(HttpError)` - Except for those cases where parameter parsing fails or the return value
 ///   is Ok anyway, this function returns an HttpError, usually derived from the `PluginError` enum.
-#[get("/{uuid}/*endpoint_name?:params", headers:HeaderMap)]
+#[get("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
