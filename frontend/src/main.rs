@@ -1,9 +1,5 @@
 #![doc = include_str!("../../README.md")]
 #![doc(issue_tracker_base_url = "https://github.com/Morridin/salus-framework/issues/")]
-//! Application entry point for the Salus framework front-end and server components.
-//!
-//! Configures logging and launches the framework depending on the target
-//! environment (client-side web or server-side rendering).
 
 use crate::components::App;
 #[cfg(feature = "web")]
