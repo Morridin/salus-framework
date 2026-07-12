@@ -36,11 +36,12 @@ user interfaces.
 This section will be amended accordingly and stay only relevant for people wanting to develop on the framework. 
 
 Until then, first download the framework program from [its repository](https://github.com/Morridin/salus-framework).
-Then get yourself an up-to-date Rust version (see here: <https://rust-lang.org>).
 
+Then get yourself an up-to-date Rust version (see here: <https://rust-lang.org>).
+Follow the instructions on the website to install Rust.
 If you are on Windows, for your own sanity, install Rust inside a WSL container and start the program from within the WSL.
 
-Then, install Dioxus following these steps:
+Then, install Dioxus by executing these steps in a terminal:
 ```bash
 rustup toolchain install stable
 rustup target add wasm32-unknown-unknown
@@ -162,6 +163,25 @@ However, you can have multiple `CommandArgument` objects consuming the same valu
 | `type`         | `string` | The type of the argument. The framework validates `int`, `float` and `bool` type arguments and aborts the program call on failure.<br/>The special type `flag` stands for arguments that have no value, such as `-l` in `ls -l`. Arguments with this type are added if the key is present in the request, while any value associated with the key in the request is discarded. By their nature, arguments of `flag` type are optional.<br/>The special type `body` collects the request body into a temporary file which is then passed to the called command by its file name. Defining multiple arguments with type `body` results in undefined behaviour, so do so on your own risk. As `body` type argument values are not sent in the query string, their `display_name` is irrelevant.<br/>Possible Values: `string`, `int`, `float`, `bool`, `flag`, `body` |
 | `optional`     | `bool`   | Set to true, if this argument may be omitted. Is already included within the `flag` argument type.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
+A `CommandArgument` object defined as such:
+```json
+{
+  "display_name": "q",
+  "name": "Question",
+  "type": "string",
+  "optional": false
+}
+```
+would show up as `?q=of%20Life%2C%20the%20Universe%2C%20and%20Everything` (or with a leading `&` instead of the question
+mark) in the query string of the request, provided, the value transmitted for this argument was "of Life, the Universe, 
+and Everything". 
+
+As the argument has `string` type, its validation always succeeds and it is appended like so to the plug-in's program 
+call: `Question "of Life, the Universe, and Everything"` (or rather as list slice consisting of `Question` and `of Life,
+the Universe, and Everything`).
+If the argument's validation had failed or the argument wasn't there at all, the framework would exit here and provide a 
+status 400 response indicating the cause with a standardised, JSON-formatted message. 
+
 ### Plugin Types
 Currently, there are five different plug-in types defined, of which three are supported: `static`, `dynamic`, `extern`.
 
@@ -272,7 +292,10 @@ results from the detached process asynchronously.
 
 ### Plugin installation
 Put the collection of files forming your plug-in into a folder named with some yet unused 4-digit hex number and move 
-the folder to the directory `frontend/plugins`.
+the folder to the directory `frontend/plugins`. The folder's name is from that point on the plug-in's instance-local 
+UUID.
+It must not be `0000` as this value is reserved for the framework itself.
+Requests to a "plug-in" with ID `0000` are responded with a status code 400 and a corresponding message.  
 
 On the next Ctrl-F5 reload, you should see your plug-in appear in the list of available plug-ins when starting a plug-in 
 by clicking the "+" button in a matching panel.
