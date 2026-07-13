@@ -1,0 +1,339 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Salus Framework"><title>frontend - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-e56847b5.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="frontend" data-themes="" data-resource-suffix="" data-rustdoc-version="1.91.1 (ed61e7d7e 2025-11-07)" data-channel="1.91.1" data-search-js="search-e256b49e.js" data-stringdex-js="stringdex-c3e638e9.js" data-settings-js="settings-c38705f0.js" ><script src="../static.files/storage-e2aeef58.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-6dc2a7f3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate frontend</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../frontend/index.html">frontend</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#salus-framework" title="Salus Framework">Salus Framework</a><ul><li><a href="#installation" title="Installation">Installation</a></li><li><a href="#how-to-start-the-program" title="How to start the program">How to start the program</a></li><li><a href="#plugins" title="Plugins">Plugins</a></li><li><a href="#an-example-plug-in" title="An Example plug-in">An Example plug-in</a></li><li><a href="#frequently-asked-questions" title="Frequently Asked Questions">Frequently Asked Questions</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>frontend</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/frontend/main.rs.html#1-29">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="salus-framework"><a class="doc-anchor" href="#salus-framework">§</a>Salus Framework</h2>
+<p><a href="https://github.com/Morridin/salus-framework/actions/workflows/build.yml"><img src="https://github.com/Morridin/salus-framework/actions/workflows/build.yml/badge.svg" alt="Build Status" /></a></p>
+<p>This project is intended to provide an open-source framework for medical software to live in and be run from.
+The framework is distributed with a web-based user-interface that can be used with any modern browser.</p>
+<p>By design, the Salus framework’s user interface does not provide any relevant functionality by itself other than
+the ability to start plug-ins similar to how one would open a browser tab.
+For future versions, we plan to integrate user authentication into the framework’s functionalities.</p>
+<p>As usual for web-based applications, this framework is split into a front-end and a back-end.
+The front-end is intended to mainly perform rendering tasks and present the user interface while the back-end is
+intended for computationally heavier tasks such as calculations or chunking and caching of very large images.
+For technical reasons, the back-end is not entirely separate from the front-end.
+The server that hosts the front-end and delivers it to the user’s browser is the same as the back-end server.</p>
+<p>This architectural approach with two separate application parts has the significant advantage that calling functions of
+the back-end can just be done by calling that function from within the code, while Dioxus, the framework powering Salus,
+handles the rest.
+Normally such actions require rather complex syntax with explicit requests to the server and similarly intricate code in
+the back-end side handler.</p>
+<p>For the plug-ins, however, this procedure stays a little bit more complex than just calling a function.
+The Salus framework provides an API to the plug-ins living within it for the purpose of back-end communication.
+The API mainly relays on the <code>postMessage</code> API on the front-end and a specific JSON format to direct the program calls
+in the back-end.
+Plug-ins don’t need to know how the messages are processed and transported in the framework, but only how to call the API.</p>
+<p>And that’s the main point of this framework: provide a platform for distributed execution of programs that takes care of
+authentication (not implemented yet) and network communication and gives the contained programs a rather high degree of
+freedom in what they do and how they work, while also providing a simple solution to the problem of designing aesthetic
+user interfaces.</p>
+<h3 id="installation"><a class="doc-anchor" href="#installation">§</a>Installation</h3>
+<p><strong>Note</strong>: We plan to provide the framework as ready-to-use binary files starting from version 0.2.
+This section will be amended accordingly and stay only relevant for people wanting to develop on the framework.</p>
+<p>Until then, first download the framework program from <a href="https://github.com/Morridin/salus-framework">its repository</a>.</p>
+<p>Then get yourself an up-to-date Rust version (see here: <a href="https://rust-lang.org">https://rust-lang.org</a>).
+Follow the instructions on the website to install Rust.
+If you are on Windows, for your own sanity, install Rust inside a WSL container and start the program from within the WSL.</p>
+<p>Then, install Dioxus by executing these steps in a terminal:</p>
+<div class="example-wrap"><pre class="language-bash"><code>rustup toolchain install stable
+rustup target add wasm32-unknown-unknown
+
+curl -sSL https://dioxus.dev/install.sh | bash</code></pre></div>
+<p>You might need to install some additional dependencies, but only do so if you see errors while
+building and running the program.
+For reference on the additional dependencies and their installation, please refer to the <a href="https://dioxuslabs.com/learn/0.7/getting_started/#platform-specific-dependencies">Dioxus website</a>.</p>
+<h3 id="how-to-start-the-program"><a class="doc-anchor" href="#how-to-start-the-program">§</a>How to start the program</h3>
+<p>Navigate to the <code>frontend</code> directory and type into the terminal the command</p>
+<div class="example-wrap"><pre class="language-bash"><code>dx serve</code></pre></div>
+<p>The Salus framework will build and then run.</p>
+<h3 id="plugins"><a class="doc-anchor" href="#plugins">§</a>Plugins</h3>
+<p>The core of this framework are plug-ins that introduce functionality into the program.
+The Salus Image Viewer was intended to be the first and most prominent example for such a plug-in.
+However, it was postponed until further notice to allow for a better integrated framework.</p>
+<p>A plug-in generally consists of a collection of one or more files centered around a manifest file named <code>plugin.json</code>.
+That manifest controls all properties of the plug-in, starting with its name, over the front-end entry point to
+The plug-in manifest is always at the root level of a plug-in’s file tree.
+Depending on the plug-ins design and properties, there may be additional files present in the same directory as the
+manifest or its child directories.
+In the following image, you can see the file structure of our sample plug-in that we will discuss in-depth in the
+final section of this document.</p>
+<p>For now, we will focus on the plug-in manifest and other technical details required to understand and
+develop your own plug-ins for the Salus framework.</p>
+<h4 id="the-plugin-manifest"><a class="doc-anchor" href="#the-plugin-manifest">§</a>The Plugin Manifest</h4>
+<p>First, we’ll discuss the heartpiece of each and every plug-in - its manifest file <code>plugin.json</code>, of which you can see
+a complete schematic below:</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+  &quot;name&quot;: &quot;Test Plugin&quot;,
+  &quot;type&quot;: &quot;dynamic&quot;,
+  &quot;source&quot;: &quot;index.html&quot;,
+  &quot;dependencies&quot;: [],
+  &quot;panels&quot;: [&quot;center&quot;, &quot;all&quot;],
+  &quot;endpoints&quot;: [
+    {
+      &quot;url&quot;: &quot;/test&quot;,
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;handler&quot;: {
+        &quot;command&quot;: &quot;ls&quot;,
+        &quot;default_args&quot;: [&quot;-a&quot;],
+        &quot;args&quot;: [
+          {
+            &quot;display_name&quot;: &quot;long&quot;,
+            &quot;name&quot;: &quot;-l&quot;,
+            &quot;type&quot;: &quot;flag&quot;,
+            &quot;optional&quot;: true
+          }
+        ]
+      }
+    }
+  ]
+}</code></pre></div>
+<p>The following tables provide information about the objects (and their possible values) serialised within the file:</p>
+<h5 id="pluginmanifest"><a class="doc-anchor" href="#pluginmanifest">§</a><code>PluginManifest</code></h5>
+<p>This is the root element of the manifest file.</p>
+<div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation/Allowed Values</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td><code>string</code></td><td>The display name of the plug-in. May be any valid UTF-8 string.</td></tr>
+<tr><td><code>type</code></td><td><code>string</code></td><td>The type of the plug-in. The meaning of each type is covered in the Plug-in Types section later in this document.<br/>Allowed values: <code>static</code>, <code>dynamic</code>, <code>extern</code>, <code>rust</code>, <code>component</code></td></tr>
+<tr><td><code>source</code></td><td><code>string</code></td><td>The path to the file that serves as the plug-in’s entry point when displayed in the framework’s front-end, relative to the manifest.<br/>Alternatively, you can set this value to the URL of any website serving the same purpose.</td></tr>
+<tr><td><code>dependencies</code></td><td><code>list[string]</code></td><td>Currently not used.<br/>In the future, it will be possible to define other plug-ins that are launched as a consequence of launching this plug-in. Then, you put the UUIDs of these dependency plug-ins into this list.</td></tr>
+<tr><td><code>panels</code></td><td><code>list[string]</code></td><td>The panel(s) in which this plug-in may be started. The key <code>all</code> is translated into a list of the other existing keys. Duplicates, are allowed but won’t have any effect. The same goes for anything outside the allowed values.<br/>Allowed values: <code>all</code>, <code>right</code>, <code>left</code>, <code>center</code>, <code>bottom</code></td></tr>
+<tr><td><code>endpoints</code></td><td><code>list[PluginEndpoint]</code></td><td>The back-end endpoints this plug-in defines for itself. For details, see next section.</td></tr>
+</tbody></table>
+</div><h5 id="pluginendpoint"><a class="doc-anchor" href="#pluginendpoint">§</a><code>PluginEndpoint</code></h5>
+<p>These objects each define a plug-in endpoint that can be accessed through the framework’s API.</p>
+<div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation/Allowed Values</th></tr></thead><tbody>
+<tr><td><code>url</code></td><td><code>string</code></td><td>The URL path of the endpoint defined by this object. There is no requirement for the path to be unique, however, note that only the first endpoint with matching path and method will be considered by the back-end.</td></tr>
+<tr><td><code>method</code></td><td><code>string</code></td><td>The HTTP request method for this endpoint.<br/>Allowed values: <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, <code>PATCH</code>, <code>HEAD</code><br/>Please note that the framework (more specifically, the JS <code>fetch</code> API) enforces the recommendations of <a href="https://datatracker.ietf.org/doc/html/rfc9110#section-9.3.1">RFC-9110</a>, and disallows <code>GET</code> requests with request body.</td></tr>
+<tr><td><code>handler</code></td><td><code>CommandTemplate</code></td><td>The program call to be executed when the plug-in calls this endpoint. For details, see next section.</td></tr>
+</tbody></table>
+</div><h5 id="commandtemplate"><a class="doc-anchor" href="#commandtemplate">§</a><code>CommandTemplate</code></h5>
+<p>This type is the wrapper for a program call that the framework’s back-end will perform on behalf of a plug-in.
+For all values contained inside the <code>CommandTemplate</code>, spaces are treated as sort of escaped, and so as part of the
+program or argument name, or corresponding value.
+The arguments list of the executed program will have the value in <code>command</code> in the first entry, followed by the entries
+of <code>default_args</code> followed by entries for each element in <code>args</code>.</p>
+<div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation</th></tr></thead><tbody>
+<tr><td><code>command</code></td><td><code>string</code></td><td>The command to be executed. Please note that spaces within this field are treated as spaces within filenames but not as end of program name or the like!</td></tr>
+<tr><td><code>default_args</code></td><td><code>list[string]</code></td><td>Arguments to the program call that are equal for all possible calls to this endpoint (e.g. the actual python script when having <code>python</code> as value for <code>command</code>). The framework always passes default arguments before any other arguments!</td></tr>
+<tr><td><code>args</code></td><td><code>list[CommandArgument]</code></td><td>A list of commands that this endpoint requires or accepts. For details, see next section.</td></tr>
+</tbody></table>
+</div><h5 id="commandargument"><a class="doc-anchor" href="#commandargument">§</a><code>CommandArgument</code></h5>
+<p>This type provides the relevant information for the back-end to process the plug-in program’s arguments correctly.
+Depending on the value type, each filled argument will result in one or two list entries in the arguments list of the
+executed program.
+The first entry is always the value in <code>name</code>.
+Depending on the value type, the second value is omitted or filled with either a temporary file path or the value
+provided to the back-end handler via the query string.</p>
+<p>The dynamic arguments represented by this type are evaluated by iterating over the owning <code>CommandTemplate</code>’s <code>args</code> field.
+Hence, you cannot reuse a <code>CommandArgument</code> to have a program take multiple arguments of the same name (with possibly
+different values).
+However, you can have multiple <code>CommandArgument</code> objects consuming the same value from the request’s query string!</p>
+<div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation/Allowed Values</th></tr></thead><tbody>
+<tr><td><code>display_name</code></td><td><code>string</code></td><td>The name of the argument in the plug-in’s front-end. This value will be used as key in the query string when calling the associated endpoint. Duplicate keys in the query string will result in parsing errors in the back-end.</td></tr>
+<tr><td><code>name</code></td><td><code>string</code></td><td>The actual name of the argument, or what is put into the command call, including all dashes.</td></tr>
+<tr><td><code>type</code></td><td><code>string</code></td><td>The type of the argument. The framework validates <code>int</code>, <code>float</code> and <code>bool</code> type arguments and aborts the program call on failure.<br/>The special type <code>flag</code> stands for arguments that have no value, such as <code>-l</code> in <code>ls -l</code>. Arguments with this type are added if the key is present in the request, while any value associated with the key in the request is discarded. By their nature, arguments of <code>flag</code> type are optional.<br/>The special type <code>body</code> collects the request body into a temporary file which is then passed to the called command by its file name. Defining multiple arguments with type <code>body</code> results in undefined behaviour, so do so on your own risk. As <code>body</code> type argument values are not sent in the query string, their <code>display_name</code> is irrelevant.<br/>Possible Values: <code>string</code>, <code>int</code>, <code>float</code>, <code>bool</code>, <code>flag</code>, <code>body</code></td></tr>
+<tr><td><code>optional</code></td><td><code>bool</code></td><td>Set to true, if this argument may be omitted. Is already included within the <code>flag</code> argument type.</td></tr>
+</tbody></table>
+</div>
+<p>A <code>CommandArgument</code> object defined as such:</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+  &quot;display_name&quot;: &quot;q&quot;,
+  &quot;name&quot;: &quot;Question&quot;,
+  &quot;type&quot;: &quot;string&quot;,
+  &quot;optional&quot;: false
+}</code></pre></div>
+<p>would show up as <code>?q=of%20Life%2C%20the%20Universe%2C%20and%20Everything</code> (or with a leading <code>&amp;</code> instead of the question
+mark) in the query string of the request, provided, the value transmitted for this argument was “of Life, the Universe,
+and Everything”.</p>
+<p>As the argument has <code>string</code> type, its validation always succeeds and it is appended like so to the plug-in’s program
+call: <code>Question "of Life, the Universe, and Everything"</code> (or rather as list slice consisting of <code>Question</code> and <code>of Life, the Universe, and Everything</code>).
+If the argument’s validation had failed or the argument wasn’t there at all, the framework would exit here and provide a
+status 400 response indicating the cause with a standardised, JSON-formatted message.</p>
+<h4 id="plugin-types"><a class="doc-anchor" href="#plugin-types">§</a>Plugin Types</h4>
+<p>Currently, there are five different plug-in types defined, of which three are supported: <code>static</code>, <code>dynamic</code>, <code>extern</code>.</p>
+<ul>
+<li><code>static</code> type plug-ins may consist of static HTML pages without any JavaScript.</li>
+<li><code>dynamic</code> type plug-ins may consist of HTML pages without any further restriction. Especially, they are allowed to
+perform requests to the framework back-end using JavaScript.</li>
+<li><code>extern</code> type plug-ins may consist of an external website. That website may run JavaScript and anything, however, it
+must allow the execution from within an <code>iframe</code>.</li>
+<li><code>rust</code> type plug-ins are thought to be Rust executables that are executed as sort of DLL’s within the framework.
+<strong>Currently not supported.</strong></li>
+<li><code>component</code> type plug-ins are thought to be web-components that are directly integrated into the frameworks user
+interface. <strong>Currently not supported.</strong></li>
+</ul>
+<p>Trying to start plug-ins of unsupported or unknown type will result in an error that is shown on the user interface.</p>
+<h4 id="additional-files"><a class="doc-anchor" href="#additional-files">§</a>Additional files</h4>
+<p>When your plug-in requires additional files, e.g. images which are included inside your HTML file or executables that
+are run when making calls to the back-end, you must provide them together with the plug-in manifest in the same folder.</p>
+<p>Except for URLs to external websites, all paths provided anywhere within the plug-in <strong>must be RELATIVE</strong> to this exact
+folder where the plug-in’s manifest resides in.
+This affects all paths provided, regardless if in the plug-in manifest or in any other file within the plug-in folder.
+Especially, you cannot rely on any folder name or path elements closer to root than your plug-in manifest.
+E.g. the entry point file <code>index.html</code> residing at the plug-in folder’s root would be referenced exactly as <code>index.html</code>.</p>
+<p>In addition to being relative to the plug-in manifest, paths provided within a plug-in must not reach outside the
+plug-in folder.
+Reaching outside is forbidden, however, this restriction is not enforced yet.
+The status regarding enforcement may change at any time, without notice and may result in <em>a silent failure</em>.
+Hence, it is the plug-in’s author’s obligation to introduce measures against illegal file paths.</p>
+<p>For long-term stability, please provide your plug-in’s back-end executables as standalone binaries that don’t require
+external dependencies to run. E.g., if your plug-in needs python, provide a working python instance with your plug-in.</p>
+<h4 id="communication-with-the-back-end"><a class="doc-anchor" href="#communication-with-the-back-end">§</a>Communication with the back-end</h4>
+<p>Whenever a plug-in has to perform computationally heavy or difficult tasks, it should relay on the resources of the
+back-end server instead of running such calculations within the browser window.</p>
+<p>You can have anything as back-end part of your plug-in that is self-contained and runs on an out-of-the-box Linux system.
+If you have any special requirements, please ask your administrator to take care.</p>
+<p>Usage of the back-end server goes as follows:</p>
+<ul>
+<li>The front-end of the plug-in sends a <code>postMessage</code> request to the framework’s front-end, which in turn, calls the
+back-end.</li>
+<li>The back-end calls the program specified for the respective handler, pumps in the arguments provided and collects
+<em>everything that is written into the standard output</em>.</li>
+<li>The collected output is returned to the framework and the framework relays it as is to the front-end of the plug-in.</li>
+</ul>
+<p>In detail:</p>
+<p>The framework uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage"><code>postMessage</code> API</a> for communication with plug-ins in the front-end.</p>
+<p>The plug-in can initialise a request by calling <code>window.parent.postMessage(&lt;JSON&gt;);</code> with <code>&lt;JSON&gt;</code> being a serialised
+<code>PluginFrontendRequest</code> object, see the respective, following section.</p>
+<p>The framework then handles the request by unpacking the JSON, and assembling an HTTP request from its contents.</p>
+<p>The back-end will try to execute the command defined within the endpoint with all the provided arguments, and
+in success case return a status 200 and the contents of STDOUT in the response body.</p>
+<p>In all other cases a corresponding HTTP status indicating an error will be returned, together with a message hinting to
+the error source.
+In case the plug-in’s back-end program returned with a non-zero status code, a status 500 is responded, together with
+the contents of the program’s output to <code>stderr</code>.</p>
+<p>All response bodies are relayed to the plug-in front-end by calling <code>postMessage</code> on the plug-in’s <code>iframe</code>.
+The result is a <code>message</code> event in the plug-in front-end that contains the response, usually as plain text, in its
+<code>data</code> attribute.
+It can be collected with a corresponding event handler.
+Due to an implementation flaw, valid JSON is deserialised between extraction from the HTTP response and
+arrival as <code>message</code> event at the plug-in.
+As a result, all messages containing valid JSON arrive as objects instead of strings!
+This is especially relevant to error messages, which are JSON formatted by the back-end, but also if your plug-in
+communicates with JSON-based messages by default.</p>
+<h5 id="pluginfrontendrequest"><a class="doc-anchor" href="#pluginfrontendrequest">§</a><code>PluginFrontendRequest</code></h5><div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation/Allowed Values</th></tr></thead><tbody>
+<tr><td><code>origin</code></td><td><code>string</code></td><td>The address of the request origin. Put the value of <code>location.href</code> here, except for the case of <code>extern</code> type plug-ins. In this case you need to find a way to provide the plug-in manifest’s path instead.</td></tr>
+<tr><td><code>method</code></td><td><code>string</code></td><td>The HTTP request method for this request. For supported/allowed values, please refer to the <code>PluginEndpoint</code> object section.</td></tr>
+<tr><td><code>endpoint</code></td><td><code>string</code></td><td>The path of the endpoint as defined within the plug-in manifest.</td></tr>
+<tr><td><code>body</code></td><td><code>string | null</code></td><td>The HTTP request body associated with this request. Currently, its type is defined as string, but in the long run, anything should be fine. If there is no body in this request, set this value to null. <em>Please note that some HTTP request methods discourage request bodies.</em></td></tr>
+</tbody></table>
+</div>
+<p>Example:</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+  &quot;origin&quot;: &quot;http://localhost:8080/plugins-dxh1234567890abcdef0/0042/index.html&quot;,
+  &quot;method&quot;: &quot;GET&quot;,
+  &quot;endpoint&quot;: &quot;/test&quot;,
+  &quot;body&quot;: null
+}</code></pre></div><h4 id="general-design-information"><a class="doc-anchor" href="#general-design-information">§</a>General Design Information</h4>
+<p>When designing a plug-in, you do not need to worry about naming conflicts with other plug-ins.
+The framework takes care of this for you and isolates plug-ins from each other.
+This is also the main reason, why reaching out of a plug-ins directory is prohibited and
+may stop working without prior notice.</p>
+<p>Never perform heavy calculations in the plug-in’s front-end.
+They will run directly on the user’s browser with all the disadvantages resulting from this, including,
+limited resources.
+With the back-end there is a better option available that has near infinite resources (or at least you may assume this).
+Please note, however, that the back-end will terminate any plug-in subprocess after one second of run time in order to
+achieve a fast-responding service with good availability, but also to ensure that processes don’t get stuck.
+You can work around this limitation by starting long-running processes detached and offer an endpoint that can collect
+results from the detached process asynchronously.</p>
+<h4 id="plugin-installation"><a class="doc-anchor" href="#plugin-installation">§</a>Plugin installation</h4>
+<p>Put the collection of files forming your plug-in into a folder named with some yet unused 4-digit hex number and move
+the folder to the directory <code>frontend/plugins</code>. The folder’s name is from that point on the plug-in’s instance-local
+UUID.
+It must not be <code>0000</code> as this value is reserved for the framework itself.
+Requests to a “plug-in” with ID <code>0000</code> are responded with a status code 400 and a corresponding message.</p>
+<p>On the next Ctrl-F5 reload, you should see your plug-in appear in the list of available plug-ins when starting a plug-in
+by clicking the “+” button in a matching panel.</p>
+<p>Please note that changes to plug-in files directly used by the front-end may only show after a restart of the
+framework due to caching.</p>
+<h3 id="an-example-plug-in"><a class="doc-anchor" href="#an-example-plug-in">§</a>An Example plug-in</h3>
+<p>This section is not ready yet.
+Expect something that uses like everything the framework has to offer.</p>
+<h3 id="frequently-asked-questions"><a class="doc-anchor" href="#frequently-asked-questions">§</a>Frequently Asked Questions</h3>
+<p>Since our first framework evaluation, several questions turned up frequently.</p>
+<h4 id="how-can-i-debug-my-plug-ins-effectively"><a class="doc-anchor" href="#how-can-i-debug-my-plug-ins-effectively">§</a>How can I debug my plug-ins effectively?</h4>
+<p>Unfortunately, this is currently unnecessary complex.
+The main reason for this is that Dioxus does not hot-reload assets on change if they are folders.
+The only workaround is to mirror your changes directly to the live assets folder (usually under <code>target/dx/frontend/debug/web/public/assets/plugins-dxh...</code>)
+of your currently running framework.</p>
+<p>We’re working on improving this situation, expect a solution in version 0.2.</p>
+<p>Apart from that, your browser’s dev tool’s network tab will be a great help.
+If a plug-in’s back-end request does not show there, it gets eaten by the front-end.
+There are two main reasons for this behaviour:</p>
+<ol>
+<li>The front-end is not satisfied by the <code>origin</code> value of your <code>PluginFrontendRequest</code> object.</li>
+<li>It is forced to send <code>GET</code> or <code>DELETE</code> requests with body, which won’t work due to the <code>fetch</code> API’s restrictions.</li>
+</ol>
+<p>Additionally, it is always a good idea to add handling for JS objects of the following structure.
+The framework provides you certain information when requests fail in the back-end for some reason this way.</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+  &quot;message&quot;: &quot;Computer says &#39;No&#39;&quot;,
+  &quot;code&quot;: 418
+}</code></pre></div><h5 id="backenderrormessage"><a class="doc-anchor" href="#backenderrormessage">§</a><code>BackendErrorMessage</code></h5><div><table><thead><tr><th>Key</th><th>Type</th><th>Explanation</th></tr></thead><tbody>
+<tr><td><code>message</code></td><td><code>string</code></td><td>The framework’s error message. Usually gives a hint to the error source.</td></tr>
+<tr><td><code>code</code></td><td><code>int</code></td><td>The framework’s response’s HTTP status code.</td></tr>
+</tbody></table>
+</div><h4 id="what-exactly-is-cached-how-does-caching-work-in-this-framework-and-why-is-it-important"><a class="doc-anchor" href="#what-exactly-is-cached-how-does-caching-work-in-this-framework-and-why-is-it-important">§</a>What exactly is cached, how does caching work in this framework and why is it important?</h4>
+<p>Dioxus caches and hashes its asset file in the target directory, and for single-file assets updates them as soon as it
+detects changes to the file.
+However, this update mechanism does not happen for folder type assets which we use to load plug-ins into the front-end’s
+user interface.
+There is no option to turn off this behaviour.</p>
+<p>As Dioxus caches its files as long as the application runs, this behaviour imposes a severe road block to plug-in
+debugging.
+The only way to directly counter it is described in the previous question on debugging.
+Alternatively, you must restart the framework after each change.</p>
+<h4 id="how-is-error-handling-designed-in-the-salus-framework"><a class="doc-anchor" href="#how-is-error-handling-designed-in-the-salus-framework">§</a>How is Error Handling designed in the Salus framework?</h4>
+<p>An earlier version of this document stated that error messages are silently discarded.</p>
+<p>While this is still true for most errors occurring in the front-end, errors originating from the back-end are handed to
+the plug-ins as-is, with the small restrictions that their JSON is transformed to a JavaScrip object (see above).</p>
+<p>We’re working on improving error handling in the front-end, but, compared to resolving the plug-in debugging issue, this
+is currently not a priority to us.</p>
+<h4 id="how-does-the-response-format-of-plug-in-back-end-requests-look-like"><a class="doc-anchor" href="#how-does-the-response-format-of-plug-in-back-end-requests-look-like">§</a>How does the response format of plug-in back-end requests look like?</h4>
+<p>See the section “Communication with the back-end” further up in this document.
+In general, the response format of successful responses (those with status code 200) is defined entirely by your
+plug-in’s back-end.
+It reaches your plug-ins front-end in the <code>data</code> field of the <code>message</code> event that is issued when the response arrives
+at the framework’s front-end.</p>
+<p>In case your communication is formatted using valid JSON, the response arrives deserialised as JS object, in all other
+cases as-is as <code>string</code>.</p>
+<p>Error messages are always JSON-formatted and thus arrive as native JS objects, see above question on debugging and the
+included <code>BackendErrorMessage</code> type annotation for more information.</p>
+<h4 id="how-are-arguments-assembled-in-the-back-end"><a class="doc-anchor" href="#how-are-arguments-assembled-in-the-back-end">§</a>How are arguments assembled in the back-end?</h4>
+<p>See above <code>CommandArgument</code> section.
+Generally, you can think of them being assembled with spaces in between arguments and/or values.
+Also, expect that spaces you enter in any of your arguments are escaped before command assembly.</p>
+<p>For reference, you can look up the exact behaviour here: <a href="https://doc.rust-lang.org/stable/std/process/struct.Command.html#method.arg">Rust Command documentation</a>.</p>
+<h4 id="whats-the-working-directory-for-my-plug-ins-back-end-programs"><a class="doc-anchor" href="#whats-the-working-directory-for-my-plug-ins-back-end-programs">§</a>What’s the working directory for my plug-in’s back-end programs?</h4>
+<p>Your plug-in back-end’s working directory is always the directory where your plug-in’s manifest file resides in.
+Please keep all your intra-plug-in links relative to and inside this directory (as long as your plug-in is not of type
+<code>extern</code>, in which case this is only relevant for potential back-end handlers).</p>
+<h4 id="does-the-salus-framework-provide-any-measures-to-assign-responses-to-their-corresponding-requests-my-plug-in-issues"><a class="doc-anchor" href="#does-the-salus-framework-provide-any-measures-to-assign-responses-to-their-corresponding-requests-my-plug-in-issues">§</a>Does the Salus framework provide any measures to assign responses to their corresponding requests my plug-in issues?</h4>
+<p>No, the Salus framework does not provide any mechanism that provides information to a plug-in which response belongs to
+which request.
+This is intended behaviour.</p>
+<p>By the framework’s design, it is the <strong>plug-in’s task</strong> to introduce appropriate measures to assign identification
+properties to requests and responses.</p>
+<h4 id="how-do-body-type-arguments-work"><a class="doc-anchor" href="#how-do-body-type-arguments-work">§</a>How do <code>body</code> type arguments work?</h4>
+<p>Quite simple: when providing a <code>body</code> type argument in an endpoint definition, you provide a value to it by sending
+a request body with your plug-in’s request to that endpoint.
+For details on how to achieve that, please refer to the section “Communication with the back-end” of this document and
+the associated <code>PluginFrontendRequest</code> type annotation table.</p>
+<p>The request body is copied as-is into a temporary file when the back-end evaluates the corresponding <code>CommandArgument</code>.
+The temporary file’s path is added as value to the command parameter you defined within said <code>CommandArgument</code>.
+Your plug-in’s back-end program can then read this file and process its contents.</p>
+<p>The temporary file is deleted as soon as the back-end endpoint handler finishes its execution.
+If you have a long-running task, please ensure you moved the data from the file in time.</p>
+<h4 id="how-can-i-send-binary-data-to-and-from-the-back-end"><a class="doc-anchor" href="#how-can-i-send-binary-data-to-and-from-the-back-end">§</a>How can I send binary data to and from the back-end?</h4>
+<p>The original plan was to allow sending file names which the back-end then can load as additional resources.
+However, due to Dioxus’ caching (see above), this is currently not working.
+Expect this to change with version 0.2.</p>
+<p>For the time being, you can use base64 encoding to transform your binary data into a valid UTF-8 string, which you then
+can send the same ways as any other text-based data.</p>
+<h4 id="how-can-i-have-background-tasks-that-run-for-more-than-one-second-in-the-back-end"><a class="doc-anchor" href="#how-can-i-have-background-tasks-that-run-for-more-than-one-second-in-the-back-end">§</a>How can I have background tasks that run for more than one second in the back-end?</h4>
+<p>As the plug-in back-end handler by design only terminates the program that it called directly, all you need to do is
+to create a detached sub-process.</p>
+<p>In the following you can interact with the detached process or poll its results with subsequent requests to another
+endpoint that executes a program that can read the detached process’s outputs.</p>
+<p>This contraption is also useful for database services and similar that should be available during an entire plug-in
+live time (or even always).</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="components/index.html" title="mod frontend::components">components</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Module declarations and public API re-exports for all front-end layout interface elements.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.main.html" title="fn frontend::main">main</a><span title="Restricted Visibility">&nbsp;🔒</span> </dt><dd>Initialises the application and handles binary-dependent startup:
+For the back-end binary, the server is equipped with the relevant routers and middleware layers,
+and for the front-end the application is launched.</dd></dl></section></div></main></body></html>
