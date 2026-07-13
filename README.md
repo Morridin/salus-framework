@@ -423,3 +423,6 @@ endpoint that executes a program that can read the detached process's outputs.
 This contraption is also useful for database services and similar that should be available during an entire plug-in
 live time (or even always).
 
+### Where can I find the code documentation?
+You can find the code documentation (including this user guide) right here in the repository, 
+in the root-level folder `doc`.
