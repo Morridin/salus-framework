@@ -217,9 +217,9 @@ async fn universal_handler(
 /// # Errors
 ///
 /// Returns a [`PluginError`] in the following cases:
-/// * [`BadRequestInvalid`][PluginError::BadRequestInvalid] - If the `id` cannot be parsed as a base-16 `u16`.
-/// * [`BadRequestFramework`][PluginError::BadRequestFramework] - If the parsed ID is `0` (reserved for the framework).
-/// * [`NotFoundId`][PluginError::NotFoundId] - If the plugin directory or manifest does not exist.
+/// * [`BadRequestInvalid`] - If the `id` cannot be parsed as a base-16 `u16`.
+/// * [`BadRequestFramework`] - If the parsed ID is `0` (reserved for the framework).
+/// * [`NotFoundId`] - If the plugin directory or manifest does not exist.
 /// * Internal errors (`InternalReadCache`, `InternalWriteCache`, `InternalReadManifest`) if filesystem or cache operations fail.
 fn get_plugin_routing_by_id(
     id: &str,

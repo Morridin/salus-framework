@@ -3,7 +3,7 @@ use dioxus::html::InteractionElementOffset;
 use serde::{Deserialize, Serialize};
 
 /// This Enum specifies the screen edge on which a UI element, specifically a
-/// [`Panel`][salus::frontend::components::Panel] and related components, is placed.
+/// [`Panel`][frontend::components::Panel] and related components, is placed.
 ///
 /// Provides layout behaviours and resizing math tailored to each screen orientation
 /// via the [`as_trait`][Self::as_trait] method.
