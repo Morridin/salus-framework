@@ -156,7 +156,7 @@ Hence, you cannot reuse a `CommandArgument` to have a program take multiple argu
 different values).
 However, you can have multiple `CommandArgument` objects consuming the same value from the request's query string!
 
-| Key            | Type     | Explanation/Possible Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Key            | Type     | Explanation/Allowed Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |----------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `display_name` | `string` | The name of the argument in the plug-in's front-end. This value will be used as key in the query string when calling the associated endpoint. Duplicate keys in the query string will result in parsing errors in the back-end.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `name`         | `string` | The actual name of the argument, or what is put into the command call, including all dashes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -258,7 +258,7 @@ This is especially relevant to error messages, which are JSON formatted by the b
 communicates with JSON-based messages by default.
 
 #### `PluginFrontendRequest`
-| Key        | Type             | Explanation/Possible Values                                                                                                                                                                                                                                                      |
+| Key        | Type             | Explanation/Allowed Values                                                                                                                                                                                                                                                       |
 |------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `origin`   | `string`         | The address of the request origin. Put the value of `location.href` here, except for the case of `extern` type plug-ins. In this case you need to find a way to provide the plug-in manifest's path instead.                                                                     |
 | `method`   | `string`         | The HTTP request method for this request. For supported/allowed values, please refer to the `PluginEndpoint` object section.                                                                                                                                                     |
@@ -268,7 +268,7 @@ communicates with JSON-based messages by default.
 Example:
 ```json
 {
-  "origin": "http://localhost:8080/plugins-123456/0042/index.html",
+  "origin": "http://localhost:8080/plugins-dxh1234567890abcdef0/0042/index.html",
   "method": "GET",
   "endpoint": "/test",
   "body": null
@@ -304,4 +304,122 @@ Please note that changes to plug-in files directly used by the front-end may onl
 framework due to caching.
 
 ## An Example plug-in
+This section is not ready yet.
+Expect something that uses like everything the framework has to offer.
+
+## Frequently Asked Questions
+Since our first framework evaluation, several questions turned up frequently.
+
+### How can I debug my plug-ins effectively?
+Unfortunately, this is currently unnecessary complex.
+The main reason for this is that Dioxus does not hot-reload assets on change if they are folders.
+The only workaround is to mirror your changes directly to the live assets folder (usually under `target/dx/frontend/debug/web/public/assets/plugins-dxh...`)
+of your currently running framework. 
+
+We're working on improving this situation, expect a solution in version 0.2.
+
+Apart from that, your browser's dev tool's network tab will be a great help.
+If a plug-in's back-end request does not show there, it gets eaten by the front-end.
+There are two main reasons for this behaviour: 
+1. The front-end is not satisfied by the `origin` value of your `PluginFrontendRequest` object.
+2. It is forced to send `GET` or `DELETE` requests with body, which won't work due to the `fetch` API's restrictions.
+
+Additionally, it is always a good idea to add handling for JS objects of the following structure.
+The framework provides you certain information when requests fail in the back-end for some reason this way.
+```json
+{
+  "message": "Computer says 'No'",
+  "code": 418
+}
+```
+#### `BackendErrorMessage`
+| Key       | Type     | Explanation                                                              |
+|-----------|----------|--------------------------------------------------------------------------|
+| `message` | `string` | The framework's error message. Usually gives a hint to the error source. |
+| `code`    | `int`    | The framework's response's HTTP status code.                             |
+
+### What exactly is cached, how does caching work in this framework and why is it important?
+Dioxus caches and hashes its asset file in the target directory, and for single-file assets updates them as soon as it 
+detects changes to the file.
+However, this update mechanism does not happen for folder type assets which we use to load plug-ins into the front-end's
+user interface.
+There is no option to turn off this behaviour.
+
+As Dioxus caches its files as long as the application runs, this behaviour imposes a severe road block to plug-in 
+debugging. 
+The only way to directly counter it is described in the previous question on debugging.
+Alternatively, you must restart the framework after each change.
+
+### How is Error Handling designed in the Salus framework?
+An earlier version of this document stated that error messages are silently discarded.
+
+While this is still true for most errors occurring in the front-end, errors originating from the back-end are handed to
+the plug-ins as-is, with the small restrictions that their JSON is transformed to a JavaScrip object (see above).
+
+We're working on improving error handling in the front-end, but, compared to resolving the plug-in debugging issue, this
+is currently not a priority to us.
+
+### How does the response format of plug-in back-end requests look like?
+See the section "Communication with the back-end" further up in this document.
+In general, the response format of successful responses (those with status code 200) is defined entirely by your
+plug-in's back-end.
+It reaches your plug-ins front-end in the `data` field of the `message` event that is issued when the response arrives
+at the framework's front-end. 
+
+In case your communication is formatted using valid JSON, the response arrives deserialised as JS object, in all other
+cases as-is as `string`.
+
+Error messages are always JSON-formatted and thus arrive as native JS objects, see above question on debugging and the 
+included `BackendErrorMessage` type annotation for more information.
+
+### How are arguments assembled in the back-end?
+See above `CommandArgument` section.
+Generally, you can think of them being assembled with spaces in between arguments and/or values.
+Also, expect that spaces you enter in any of your arguments are escaped before command assembly.
+
+For reference, you can look up the exact behaviour here: [Rust Command documentation](https://doc.rust-lang.org/stable/std/process/struct.Command.html#method.arg).
+
+### What's the working directory for my plug-in's back-end programs?
+Your plug-in back-end's working directory is always the directory where your plug-in's manifest file resides in.
+Please keep all your intra-plug-in links relative to and inside this directory (as long as your plug-in is not of type
+`extern`, in which case this is only relevant for potential back-end handlers). 
+
+### Does the Salus framework provide any measures to assign responses to their corresponding requests my plug-in issues?
+No, the Salus framework does not provide any mechanism that provides information to a plug-in which response belongs to
+which request.
+This is intended behaviour.
+
+By the framework's design, it is the **plug-in's task** to introduce appropriate measures to assign identification 
+properties to requests and responses.
+
+### How do `body` type arguments work?
+Quite simple: when providing a `body` type argument in an endpoint definition, you provide a value to it by sending 
+a request body with your plug-in's request to that endpoint. 
+For details on how to achieve that, please refer to the section "Communication with the back-end" of this document and
+the associated `PluginFrontendRequest` type annotation table.
+
+The request body is copied as-is into a temporary file when the back-end evaluates the corresponding `CommandArgument`.
+The temporary file's path is added as value to the command parameter you defined within said `CommandArgument`.
+Your plug-in's back-end program can then read this file and process its contents.
+
+The temporary file is deleted as soon as the back-end endpoint handler finishes its execution.
+If you have a long-running task, please ensure you moved the data from the file in time.
+
+### How can I send binary data to and from the back-end?
+The original plan was to allow sending file names which the back-end then can load as additional resources.
+However, due to Dioxus' caching (see above), this is currently not working. 
+Expect this to change with version 0.2.
+
+For the time being, you can use base64 encoding to transform your binary data into a valid UTF-8 string, which you then 
+can send the same ways as any other text-based data.
+
+### How can I have background tasks that run for more than one second in the back-end?
+As the plug-in back-end handler by design only terminates the program that it called directly, all you need to do is 
+to create a detached sub-process.
+
+In the following you can interact with the detached process or poll its results with subsequent requests to another 
+endpoint that executes a program that can read the detached process's outputs.
+
+This contraption is also useful for database services and similar that should be available during an entire plug-in
+live time (or even always).
 
