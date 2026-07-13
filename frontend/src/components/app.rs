@@ -1,15 +1,14 @@
-use dioxus::html::a::height;
-use crate::components::{Panel, PanelGroup, PluginPanel, ResizeHandler, TabbedGroup};
+use crate::components::{PanelGroup, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
-use dioxus_free_icons::Icon;
-use dioxus_free_icons::icons::ld_icons::LdPlus;
-use models::{panel::GroupOrientation, plugin::Manifest, Position};
+use models::{panel::GroupOrientation, Position};
 
+/// Main entry point for the front-end of the Salus framework.
+///
+/// Constructs the initial panel layout consisting of two side panels, a larger central panel and
+/// a bottom panel, as is common among IDEs.
+/// Also includes the stylesheet into the front-end.
 #[component]
 pub fn App() -> Element {
-    // Required for plugin handling
-    let plugin_manifests: Signal<Vec<Manifest>> = use_signal(|| vec![]);
-    use_context_provider(|| plugin_manifests);
 
     rsx! {
         document::Stylesheet {

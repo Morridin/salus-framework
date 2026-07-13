@@ -1,9 +1,28 @@
 use std::fs;
-use dioxus::fullstack::axum_core::response::{IntoResponse, Response};
 use dioxus::fullstack::{HeaderMap, StatusCode};
-use dioxus::fullstack::body::Body;
-use dioxus::fullstack::http::{header, Version};
 
+/// Validates the incoming request headers for a valid Bearer authentication token.
+///
+/// This function extracts the `Authorization` header, ensures it uses the `Bearer` scheme,
+/// and compares the provided token against a secret token stored locally in a file named `token`.
+///
+/// # Arguments
+///
+/// * `headers` - The HTTP header map from the incoming request.
+///
+/// # Returns
+///
+/// Returns a tuple containing:
+/// * `StatusCode` - The HTTP status reflecting the outcome of the authorization check.
+/// * `String` - A descriptive message accompanything the status (e.g., `"OK"` or an error description).
+///
+/// # Status Codes
+///
+/// * `200 OK` - If the token matches the server's expected token.
+/// * `400 BAD_REQUEST` - If the token cannot be properly parsed after the prefix.
+/// * `401 UNAUTHORIZED` - If the header is missing, malformed, or doesn't start with `"Bearer "`.
+/// * `403 FORBIDDEN` - If the token is syntactically valid but does not match the stored token.
+/// * `500 INTERNAL_SERVER_ERROR` - If the server fails to read the local `token` file from disk.
 pub fn authorize(headers: HeaderMap) -> (StatusCode, String) {
     let auth_header = match headers.get("Authorization") {
         Some(auth_header) => {

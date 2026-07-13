@@ -1,12 +1,18 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
 use models::{plugin, BackendRequestError, Message, Position};
-use dioxus::fullstack::reqwest::Response;
-use dioxus::fullstack::reqwest::header::ACCEPT;
 use dioxus::prelude::*;
-use wasm_bindgen::prelude::*;
-use web_sys::{window, MessageEvent};
 
+/// A [`Panel`] dedicated to hosting and rendering a specific plug-in.
+///
+/// Encapsulates the plug-in inside an HTML `iframe` enforced with custom sandbox
+/// restrictions, managing token-authorised message-passing to the back-end.
+///
+/// # Arguments
+/// Most of this panel's arguments/props are equal in meaning to those of the default [`Panel`].
+/// Hence, we only cover the additional `external_plugin` argument here.
+/// * `external_plugin` - Set to a [`Manifest`][plugin::Manifest] value to provide the plug-in panel
+///   with a pre-set plug-in. For reference, this is used in the [`TabbedGroup`] component.
 #[component]
 pub fn PluginPanel(
     #[props(default)] panel_name: String,
@@ -14,17 +20,25 @@ pub fn PluginPanel(
     position: Position,
     #[props(default)] min_size: i32,
     #[props(default = true)] required: bool,
-    #[props(default)] external_plugin: ReadSignal<Option<plugin::Manifest>>,
+    #[props(default)] external_plugin: Option<plugin::Manifest>,
     children: Element,
 ) -> Element {
     // Signals
-    let mut active_plugin = use_signal(|| None);
+    let active_plugin = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
     let mut message_data = use_signal(|| None);
     let mut message_received = use_signal(|| false);
-    let plugin = use_memo(move || if external_plugin().is_some() { external_plugin() } else { active_plugin() });
+    let plugin = use_memo(move || {
+        if external_plugin.is_some() {
+            external_plugin.clone()
+        } else {
+            active_plugin()
+        }
+    });
 
-    // Handlers for Plugin-MPI
+    // Handlers for Plug-in-MPI
+
+    // Registers the panel-local event listener for the postMessage protocol of the iframes.
     use_effect(move || {
         let mut eval = document::eval(
             r#"
@@ -43,12 +57,22 @@ pub fn PluginPanel(
                     None => continue,
                 };
 
-                let message = match Message::create(data.as_str()) {
+                let message = match Message::new(data.as_str()) {
                     Ok(message) => message,
-                    Err(error) => continue, // TODO: Implement Error Handling!
+                    Err(_) => continue, // TODO: Implement Error Handling!
                 };
 
                 // Get origin, check actual UUID in it and leave if not matching
+				// The first split is an artifact of the asset loading construction:
+				// The plug-ins folder's name is accessible by its name with a hash
+				// appended after a dash. As the plug-ins folder is the first part
+				// of the of the resource path of the plug-in file URL, it is included
+				// that way. Tbf, this approach doesn't make much sense, isn't
+				// documented, blocks extensibility and generates a bunch of other
+				// problems.
+				// TODO: include this into the future work and the results section
+				// TODO: mention this in the user guide
+
                 match message.origin().split_once("plugins-") {
                     Some((_, origin)) => match origin.split("/").skip(1).next() {
                         Some(uuid) => {
@@ -66,7 +90,8 @@ pub fn PluginPanel(
         });
     });
 
-    let backend_request = use_resource(move || async move {
+    // Processes incoming messages and dispatches back-end API requests.
+    use_resource(move || async move {
         let plugin = plugin.read();
         let message = message_data.read();
 
@@ -82,6 +107,7 @@ pub fn PluginPanel(
         }
     });
 
+    // Forwards back-end responses back into the plug-in's iframe using postMessage.
     use_effect(move || {
         let message = external_message.read();
 
@@ -93,11 +119,11 @@ pub fn PluginPanel(
                 plugin.uuid(),
                 &*message
             );
-            let eval = document::eval(&message);
+            document::eval(&message);
             message_received.set(false);
         }
     });
-    // END: Plugin MPI Handlers
+    // END: Plug-in MPI Handlers
 
     static PLUGIN_FOLDER: Asset = asset!("/plugins/");
 
@@ -164,13 +190,25 @@ pub fn PluginPanel(
     }
 }
 
+/// Issues an authorised API request to the backend, secured via a local asset token file.
+/// Again the hint that this mode of authorisation and authentication is not effective and needs
+/// to be resolved ASAP.
+///
+/// # Arguments
+/// * `plugin` - The [`Manifest`][plugin::Manifest] that holds all front-end-relevant information
+///   about the requesting plug-in.
+/// * `message_data` - The Rust wrapper of the JS `PluginFrontendRequest` object that is issued
+///   by the plug-in front-end when initialising a request to its back-end.
 async fn make_backend_request(
     plugin: &plugin::Manifest,
     message_data: &Message,
 ) -> Result<String, BackendRequestError> {
     let uuid = plugin.uuid();
 
-    let address = "127.0.0.1:8080";
+    let address = web_sys::window()
+        .ok_or(BackendRequestError::NoAddress)?
+        .location().origin().map_err(|_| BackendRequestError::NoAddress)?;
+    // For elegant error handling, use serde_wasm_bindgen::from_value::<String>()
 
     // Retrieve token
     static TOKEN: Asset = asset!("../../token");
@@ -178,7 +216,7 @@ async fn make_backend_request(
     let token = String::from_utf8(bytes)?;
 
     Ok(message_data
-        .get_request(address, uuid)
+        .get_request(&address, uuid)
         .await?
         .bearer_auth(token)
         .send()

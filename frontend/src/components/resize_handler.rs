@@ -1,20 +1,20 @@
 use dioxus::{
     prelude::*,
-    html::geometry::{PixelsRect, PixelsVector2D},
+    html::geometry::PixelsRect,
 };
-use std::{
-    fmt::Debug,
-    ops::Range,
-};
-use uuid::Uuid;
-use models::panel::{GroupContext, GroupOrientation};
+use std::ops::Range;
+use models::panel::GroupContext;
 
+/// The UI component representing the resizable boundary bar.
+///
+/// Listens for mouse down and move events, computes the directional delta,
+/// and updates the layout tracking context to adjust flex-basis constraints, hence providing
+/// resizing for adjacent [`Panel`][crate::components::Panel]s.
 #[component]
 pub fn ResizeHandler() -> Element {
     let mut resize_active = use_signal(|| false);
     let mut last_mouse_position = use_signal(|| 0.);
     let mut data = use_signal(|| PixelsRect::zero());
-    let uuid = use_signal(|| Uuid::new_v4());
 
     let context: GroupContext = use_context();
 
@@ -53,18 +53,18 @@ pub fn ResizeHandler() -> Element {
                         data.set(translation);
                         last_mouse_position.set(current_pos);
                     },
-                    onmouseup: move |e: MouseEvent| {
-                        resize_active.set(false);
-                    },
-                    onmouseleave: move |e: MouseEvent| {
-                        resize_active.set(false);
-                    }
+                    onmouseup: move |_| resize_active.set(false),
+                    onmouseleave: move |_| resize_active.set(false)
                 },
             }
         }
     }
 }
 
+/// Computes the adjusted sizes for left/top and right/bottom sibling panels
+/// while strictly respecting specified minimum size bounds.
+///
+/// Returns the actual update the resizing operation performed.
 fn resize(delta: i32, own_range: Range<i32>, context: GroupContext) -> i32 {
     let mut siblings = context.children();
     let left_sibling = context.find_left_sibling(own_range.start);

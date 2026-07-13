@@ -5,12 +5,10 @@ edition = "2024"
 
 [dependencies]
 dioxus-free-icons = { version = "0.10.0", features = ["lucide"] }
-web-sys = "0.3.85"
-wasm-bindgen = "0.2.108"
+web-sys = "0.3.103"
 indexmap = "2.14.0"
 
 dioxus = { workspace = true, features = ["fullstack"] }
-serde_json = { workspace = true }
 uuid = { workspace = true }
 
 backend = { workspace = true }

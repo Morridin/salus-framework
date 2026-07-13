@@ -1,6 +1,10 @@
-use dioxus::logger::tracing::span::Attributes;
 use dioxus::prelude::*;
 
+/// The header component of a [`Panel`]. Also used by the [`TabbedGroup`] as tab header.
+///
+/// Renders the panel's name left-aligned and passes through a collection of
+/// control buttons (e.g. close or minimise actions) to the right side. The buttons are displayed
+/// from left to right in the order they are handed over.
 #[component]
 pub fn PanelHeader(
     panel_name: String,

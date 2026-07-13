@@ -1,16 +1,23 @@
-use models::panel::{GroupContext, GroupOrientation, Size};
+use models::panel::{GroupContext, GroupOrientation};
 use dioxus::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
 use crate::components::panel::on_mounted;
 
-/// Generic grouping element for Panel Elements and ResizeHandle Elements.
+/// Generic grouping element for [`Panel`] and [`ResizeHandle`] components.
 /// The user is responsible to input the elements in the correct order.
-/// The group will provide context for the resize handle elements so they can find out where they are.
 ///
-/// ## Props
-/// - `orientation`: One of either `[Horizontal]` or `Vertical`. Determines the flex direction of the group and hence, in which direction group members can be resized and in which direction they are placed on screen.
-/// - `children`: The group members. Prefereably, those are other `PanelGroup`s and `Panel`s, interleaved with `ResizeHandler`s.
+/// Provides a reactive [`GroupContext`] to child components, enabling layout coordination,
+/// size modifications, and axis alignment (flex direction) management.
+/// In the end, the context is the basis for the UI's resizing mechanics.
+///
+/// # Arguments
+/// - `orientation`: The [`GroupOrientation`] variant determines the flex direction of the group
+///   and hence, in which direction group members can be resized and in which direction they are
+///   placed on screen.
+/// - `children`: The group members. Preferably, those are other [`PanelGroup`]s and [`Panel`]s,
+///   interleaved with [`ResizeHandler`]s. However, you can also choose any other element. If
+///   the element supports the provided [`GroupContext`], it also can be resized.
 #[component]
 pub fn PanelGroup(
     orientation: GroupOrientation,

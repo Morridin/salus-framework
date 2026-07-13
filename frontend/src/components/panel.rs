@@ -1,3 +1,6 @@
+//! This module contains the basis of the framework's UI, the `Panel`.
+//! It supports dynamic splitting, resizing, and optionally minimising and closing.
+
 use crate::components::{
     PanelGroup, PanelHeader, ResizeHandler,
     buttons::{CloseButton, MinimiseButton},
@@ -11,7 +14,33 @@ use models::{
 use indexmap::IndexSet;
 use uuid::Uuid;
 
-/// The highest-level units the main page is built of.
+/// The primary visual unit of the user interface.
+///
+/// Can either be a fixed leaf ([`Variant::Leaf`]) displaying content, or a branch
+/// ([`Variant::Branch`]) that recursively splits into sub-panels.
+///
+/// The `Panel` contains state management logic for resizing and minimising, as well as for styling.
+/// Additionally, it contains information about its position on the screen.
+///
+/// # Arguments
+/// * `custom_classes` - An optional [`String`] containing any number of space separated CSS classes.
+///   They are added without further validation to the `class` attribute of the resulting HTML
+///   element.
+/// * `panel_name` - The optional text that is displayed inside the [`PanelHeader`] if the panel is
+///   not `headless`.
+/// * `headless` - Whether this `Panel` shall have a [`PanelHeader`] containing alongside a
+///   title string controls such as a minimise button or a close button. Default value is `false`.
+/// * `minimisable` - Set to `true` to show a minimise button in the [`PanelHeader`] if not
+///   `headless`. Default value is `true`.
+/// * `required` - Set to `false` to show a close button in the [`PanelHeader`] if not `headless`.
+///   Default value is `true`.
+/// * `min_size` - Set this value to something above 0, if you want to restrict resizing this
+///   `Panel` to at least `min_size` pixels along the resizable axis. Does not affect the other
+///   axis when the containing [`PanelGroup`] is resized. Default value is 0. Negative values, while
+///   none-sense, are acceepted and may lead to undefined behaviour.
+/// * `position` - One of the four [`Position`] variants indicating where the `Panel` is positioned
+///   on the screen.
+/// * `children` - Any Dioxus component that shall be displayed inside the `Panel`.
 #[component]
 pub fn Panel(
     #[props(default)] custom_classes: String,
@@ -23,9 +52,9 @@ pub fn Panel(
     position: Position,
     children: Element,
 ) -> Element {
-    let mut panel_minimised = use_signal(|| false);
+    let panel_minimised = use_signal(|| false);
     let mut panel_closed = use_signal(|| false);
-    let mut context_menu_open = use_signal(|| None);
+    let context_menu_open = use_signal(|| None);
     let mut variant = use_signal(|| Variant::Leaf);
     let uuid = use_signal(|| Uuid::new_v4());
 
@@ -65,7 +94,7 @@ pub fn Panel(
                                     MinimiseButton { panel_minimised },
                                 },
                                 if !required {
-                                    CloseButton { on_panel_close: move |_| panel_closed.set(true) },
+                                    CloseButton { onclick: move |_| panel_closed.set(true) },
                                 }
                             },
                         },
@@ -113,6 +142,17 @@ pub fn Panel(
     }
 }
 
+/// Registers the panel within the [`GroupContext`] post-rendering to coordinate size calculations.
+/// This is essential for panel resizing.
+///
+/// # Arguments
+/// * `event` - The mounted event triggered when the corresponding `Panel` is rendered.
+///   Contains the required information about the `Panel`'s dimensions on the screen.
+/// * `context` - The [`GroupContext`] that is available to the `Panel` registering via this
+///   function. If the `Option` is `None`, the function returns immediately.
+/// * `uuid` - A `Uuid` value assigned to each element inside a [`GroupContext`] to track them
+///   throughout layout changes.
+/// * `min_size` - The minimum display size of the registering `Panel`.
 pub async fn on_mounted(
     event: MountedEvent,
     context: Option<GroupContext>,
@@ -138,11 +178,14 @@ pub async fn on_mounted(
     }
 }
 
+/// Triggers the [`ContextMenu`] for splitting the [`Panel`].
 fn on_context_menu(event: MouseEvent, mut context_menu_open: Signal<Option<PagePoint>>) {
-    event.prevent_default();
-    context_menu_open.set(Some(event.page_coordinates()));
+    // event.prevent_default();
+    // Panel splitting is deactivated until further notice.
+    // context_menu_open.set(Some(event.page_coordinates()));
 }
 
+/// Local context menu for choosing the split direction (Horizontal/Vertical).
 #[component]
 fn ContextMenu(
     life_line: Signal<Option<PagePoint>>,

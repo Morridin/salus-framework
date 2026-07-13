@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["app","buttons","panel","panel_group","panel_header","plugin_panel","resize_handler","tabbed_group"]};

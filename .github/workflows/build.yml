@@ -1,0 +1,54 @@
+name: Build
+on:
+  push:
+    branches:
+      - "**"
+
+env:
+  CARGO_TERM_COLOR: always
+  MAIN_PACKAGE: frontend
+
+jobs:
+  build:
+    name: Build on ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+
+    strategy:
+      matrix:
+        platform:
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: "Windows"
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: "Ubuntu"
+#          - target: x86_64-apple-darwin
+#            os: macos-latest
+#            name: "Apple"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Toolchain
+        shell: bash
+        run: |
+          rustup default stable
+          rustup update stable
+          rustup target add wasm32-unknown-unknown
+
+      - name: Install Dioxus CLI
+        shell: bash
+        run: cargo install dioxus-cli --locked
+
+      - name: Prepare Build
+        shell: bash
+        run: |
+          cd ${{ env.MAIN_PACKAGE }}
+          printf "Test-Token" > token
+
+      - name: Build Application
+        shell: bash
+        run: |
+          cd ${{ env.MAIN_PACKAGE }}
+          dx build --fullstack --verbose
