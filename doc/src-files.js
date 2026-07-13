@@ -1,0 +1,2 @@
+createSrcSidebar('[["frontend",["",[["components",[],["app.rs","buttons.rs","panel.rs","panel_group.rs","panel_header.rs","plugin_panel.rs","resize_handler.rs","tabbed_group.rs"]]],["components.rs","main.rs"]]]]');
+//{"start":19,"fragment_lengths":[191]}

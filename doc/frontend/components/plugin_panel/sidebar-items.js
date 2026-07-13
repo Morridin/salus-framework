@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["PluginPanel","make_backend_request"],"struct":["PluginPanelProps"]};

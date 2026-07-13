@@ -1,3 +1,4 @@
+//! Module declarations and public API re-exports for all front-end layout interface elements.
 mod panel;
 mod plugin_panel;
 mod buttons;
@@ -7,6 +8,7 @@ mod tabbed_group;
 mod app;
 mod panel_header;
 
+// Flatten the API for a nicer look and feel.
 pub use self::app::App;
 pub use self::panel::Panel;
 pub use self::panel_header::PanelHeader;

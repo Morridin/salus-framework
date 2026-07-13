@@ -5,6 +5,11 @@ use dioxus::{
 use std::ops::Range;
 use models::panel::GroupContext;
 
+/// The UI component representing the resizable boundary bar.
+///
+/// Listens for mouse down and move events, computes the directional delta,
+/// and updates the layout tracking context to adjust flex-basis constraints, hence providing
+/// resizing for adjacent [`Panel`][crate::components::Panel]s.
 #[component]
 pub fn ResizeHandler() -> Element {
     let mut resize_active = use_signal(|| false);
@@ -56,6 +61,10 @@ pub fn ResizeHandler() -> Element {
     }
 }
 
+/// Computes the adjusted sizes for left/top and right/bottom sibling panels
+/// while strictly respecting specified minimum size bounds.
+///
+/// Returns the actual update the resizing operation performed.
 fn resize(delta: i32, own_range: Range<i32>, context: GroupContext) -> i32 {
     let mut siblings = context.children();
     let left_sibling = context.find_left_sibling(own_range.start);

@@ -1,14 +1,12 @@
-//! Main entry point for the front-end of the Salus framework.
-//!
-//! Constructs the initial panel layout consisting of two side panels, a larger central panel and
-//! a bottom panel, as is common among IDEs.
 use crate::components::{PanelGroup, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
-use models::{panel::GroupOrientation, plugin::Manifest, Position};
+use models::{panel::GroupOrientation, Position};
 
-/// The root component of the framework's front-end.
+/// Main entry point for the front-end of the Salus framework.
 ///
-/// Renders the nested grid of panels along with CSS stylesheets.
+/// Constructs the initial panel layout consisting of two side panels, a larger central panel and
+/// a bottom panel, as is common among IDEs.
+/// Also includes the stylesheet into the front-end.
 #[component]
 pub fn App() -> Element {
 

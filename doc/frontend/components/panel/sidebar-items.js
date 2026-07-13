@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["ContextMenu","Panel","on_context_menu","on_mounted"],"struct":["ContextMenuProps","PanelProps"]};

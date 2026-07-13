@@ -1,0 +1,40 @@
+name: Docs
+on:
+  push:
+    branches:
+      - "**"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  gen-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Toolchain
+        shell: bash
+        run: |
+          rustup default stable
+          rustup update stable
+          rustup target add wasm32-unknown-unknown
+
+      - name: Prepare Build
+        shell: bash
+        run: |
+          cd frontend
+          printf "Test-Token" > token
+
+      - name: Generate Documentation
+        shell: bash
+        run: cargo d --workspace --all-features --document-private-items -r
+
+      - name: Upload as Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs
+          path: target/doc

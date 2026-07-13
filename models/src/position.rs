@@ -2,17 +2,25 @@ use dioxus::events::MouseEvent;
 use dioxus::html::InteractionElementOffset;
 use serde::{Deserialize, Serialize};
 
-/// This Enum specifies where on screen an element is placed.
-/// If offers a bunch of utility function via its `as_trait` method that define behaviour adjusted to the element placement.
+/// This Enum specifies the screen edge on which a UI element, specifically a
+/// [`Panel`][frontend::components::Panel] and related components, is placed.
+///
+/// Provides layout behaviours and resizing math tailored to each screen orientation
+/// via the [`as_trait`][Self::as_trait] method.
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub enum Position {
+    /// Right side panel orientation. Appears as `"right"` in plug-in manifest files.
     East,
+    /// Bottom panel orientation. Appears as `"bottom"` in plug-in manifest files.
     South,
+    /// Left side panel orientation. Appears as `"left"` in plug-in manifest files.
     West,
+    /// Main panel orientation. Appears as `"center"` in plug-in manifest files.
     North,
 }
 
 impl Position {
+    /// Maps the enum variant to its corresponding dynamically dispatched [`PositionTrait`] implementation.
     pub fn as_trait(&self) -> &'static dyn PositionTrait {
         match self {
             Self::East => &East,
@@ -23,16 +31,28 @@ impl Position {
     }
 }
 
+/// Defines layout styles and math calculations for UI panels based on their screen position.
+///
+/// Default implementations provide a behaviour similar to that of the left side panel (like `West`).
 pub trait PositionTrait {
+    /// Returns the CSS `flex-direction` property value. Default is `"row"`.
     fn flex_direction(&self) -> String {
         "row".to_string()
     }
+
+    /// Returns the CSS `cursor` property for resizing handles. Default is `"ew-resize"`,
+    /// corresponding to a horizontal, double-pointed arrow.
     fn cursor(&self) -> String {
         "ew-resize".to_string()
     }
+
+    /// Extracts the relevant axis coordinate (X or Y) from a mouse event for resize tracking.
+    /// Default is the X coordinate.
     fn get_pointer_position(&self, event: &MouseEvent) -> f64 {
         event.coordinates().client().x
     }
+    /// Calculates the change in size based on mouse movement delta. By default, it calculates the
+    /// update for resizing along the right edge of the element.
     fn calculate_size_update(
         &self,
         current_pointer_position: f64,
@@ -41,23 +61,33 @@ pub trait PositionTrait {
         let delta = current_pointer_position - last_pointer_position;
         delta as i16
     }
+
+    /// Returns the value string for the CSS `height` property. Default is `"100%"`.
     fn height(&self, size: i16) -> String {
         _ = size;
         "100%".to_string()
     }
+
+    /// Returns the value string for the CSS `width` property. Default is `"100%"`.
     fn width(&self, size: i16) -> String {
         _ = size;
         "100%".to_string()
     }
+
+    /// Returns the value string for the CSS `flex-basis` property. By default, it returns the
+    /// input value `size` appended with the string `"px"`.
     fn flex_basis(&self, size: i16) -> String {
         format!("{size}px")
     }
 
+    /// Returns a class name to steer some styling behaviour. Default is `"side-panel"`.
     fn panel_type(&self) -> String {
         "side-panel".to_string()
     }
 }
 
+/// Layout strategy for East (right-aligned) panels.
+/// Relevant changes regard inversion of display order of child items and the size update.
 pub struct East;
 impl PositionTrait for East {
     fn flex_direction(&self) -> String {
@@ -76,6 +106,8 @@ impl PositionTrait for East {
     }
 }
 
+/// Layout strategy for South (bottom-aligned) panels.
+/// Corresponds to the East layout, just with all horizontal options changed to vertical.
 pub struct South;
 impl PositionTrait for South {
     fn flex_direction(&self) -> String {
@@ -106,6 +138,8 @@ impl PositionTrait for South {
     }
 }
 
+/// Layout strategy for West (left-aligned) panels.
+/// Takes over most of the default values of all layouts.
 pub struct West;
 impl PositionTrait for West {
     fn width(&self, size: i16) -> String {
@@ -113,6 +147,8 @@ impl PositionTrait for West {
     }
 }
 
+/// Layout strategy for North (top-aligned) panels.
+/// Corresponds to what the West strategy is to the East strategy for the South strategy.
 pub struct North;
 impl PositionTrait for North {
     fn flex_direction(&self) -> String {
