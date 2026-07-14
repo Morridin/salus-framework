@@ -66,7 +66,7 @@ The core of this framework are plug-ins that introduce functionality into the pr
 The Salus Image Viewer was intended to be the first and most prominent example for such a plug-in.
 However, it was postponed until further notice to allow for a better integrated framework.
 
-A plug-in generally consists of a collection of one or more files centered around a manifest file named `plugin.json`.
+A plug-in generally consists of a collection of one or more files centred around a manifest file named `plugin.json`.
 That manifest controls all properties of the plug-in, starting with its name, over the front-end entry point to
 The plug-in manifest is always at the root level of a plug-in's file tree.
 Depending on the plug-ins design and properties, there may be additional files present in the same directory as the 
@@ -82,24 +82,24 @@ First, we'll discuss the heartpiece of each and every plug-in - its manifest fil
 a complete schematic below:
 ```json
 {
-  "name": "Test Plugin",
+  "name": "Don't Panic!",
   "type": "dynamic",
   "source": "index.html",
   "dependencies": [],
   "panels": ["center", "all"],
   "endpoints": [
     {
-      "url": "/test",
+      "url": "/ask",
       "method": "GET",
       "handler": {
-        "command": "ls",
-        "default_args": ["-a"],
+        "command": "Deep Thought",
+        "default_args": [],
         "args": [
           {
-            "display_name": "long",
-            "name": "-l",
-            "type": "flag",
-            "optional": true
+            "display_name": "q",
+            "name": "Question",
+            "type": "string",
+            "optional": false
           }
         ]
       }
@@ -107,7 +107,7 @@ a complete schematic below:
   ]
 }
 ```
-The following tables provide information about the objects (and their possible values) serialised within the file:
+The following tables provide information about the objects (and their allowed or possible values) serialised within the file:
 
 #### `PluginManifest`
 This is the root element of the manifest file.
@@ -118,11 +118,11 @@ This is the root element of the manifest file.
 | `type`         | `string`               | The type of the plug-in. The meaning of each type is covered in the Plug-in Types section later in this document.<br/>Allowed values: `static`, `dynamic`, `extern`, `rust`, `component`                                                                                                        |
 | `source`       | `string`               | The path to the file that serves as the plug-in's entry point when displayed in the framework's front-end, relative to the manifest.<br/>Alternatively, you can set this value to the URL of any website serving the same purpose.                                                              |
 | `dependencies` | `list[string]`         | Currently not used.<br/>In the future, it will be possible to define other plug-ins that are launched as a consequence of launching this plug-in. Then, you put the UUIDs of these dependency plug-ins into this list.                                                                          |
-| `panels`       | `list[string]`         | The panel(s) in which this plug-in may be started. The key `all` is translated into a list of the other existing keys. Duplicates, are allowed but won't have any effect. The same goes for anything outside the allowed values.<br/>Allowed values: `all`, `right`, `left`, `center`, `bottom` |
+| `panels`       | `list[string]`         | The panel(s) in which this plug-in may be started. The key `all` is translated into a list of the other existing keys. Duplicates are allowed but won't have any effect. The same goes for anything outside the allowed values.<br/>Allowed values: `all`, `right`, `left`, `center`, `bottom` |
 | `endpoints`    | `list[PluginEndpoint]` | The back-end endpoints this plug-in defines for itself. For details, see next section.                                                                                                                                                                                                          |
 
 #### `PluginEndpoint`
-These objects each define a plug-in endpoint that can be accessed through the framework's API.  
+These objects each define a plug-in endpoint that can be accessed through the framework's API. 
 
 | Key       | Type              | Explanation/Allowed Values                                                                                                                                                                                                                                                                                                                         |
 |-----------|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -160,7 +160,7 @@ However, you can have multiple `CommandArgument` objects consuming the same valu
 |----------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `display_name` | `string` | The name of the argument in the plug-in's front-end. This value will be used as key in the query string when calling the associated endpoint. Duplicate keys in the query string will result in parsing errors in the back-end.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `name`         | `string` | The actual name of the argument, or what is put into the command call, including all dashes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `type`         | `string` | The type of the argument. The framework validates `int`, `float` and `bool` type arguments and aborts the program call on failure.<br/>The special type `flag` stands for arguments that have no value, such as `-l` in `ls -l`. Arguments with this type are added if the key is present in the request, while any value associated with the key in the request is discarded. By their nature, arguments of `flag` type are optional.<br/>The special type `body` collects the request body into a temporary file which is then passed to the called command by its file name. Defining multiple arguments with type `body` results in undefined behaviour, so do so on your own risk. As `body` type argument values are not sent in the query string, their `display_name` is irrelevant.<br/>Possible Values: `string`, `int`, `float`, `bool`, `flag`, `body` |
+| `type`         | `string` | The type of the argument. The framework validates `int`, `float` and `bool` type arguments and aborts the program call on failure.<br/>The special type `flag` stands for arguments that have no value, such as `-l` in `ls -l`. Arguments with this type are added if the key is present in the request, while any value associated with the key in the request is discarded. By their nature, arguments of `flag` type are optional.<br/>The special type `body` collects the request body into a temporary file which is then passed to the called command by its file name. Defining multiple `body` type arguments results in undefined behaviour, so do so on your own risk. As `body` type argument values are not sent in the query string, their `display_name` is irrelevant.<br/>Allowed Values: `string`, `int`, `float`, `bool`, `flag`, `body` |
 | `optional`     | `bool`   | Set to true, if this argument may be omitted. Is already included within the `flag` argument type.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 A `CommandArgument` object defined as such:
@@ -228,7 +228,7 @@ Usage of the back-end server goes as follows:
   back-end.
 - The back-end calls the program specified for the respective handler, pumps in the arguments provided and collects 
   _everything that is written into the standard output_.
-- The collected output is returned to the framework and the framework relays it as is to the front-end of the plug-in.
+- The collected output is returned to the framework and the framework relays it as-is to the front-end of the plug-in.
 
 In detail:
 
@@ -270,7 +270,7 @@ Example:
 {
   "origin": "http://localhost:8080/plugins-dxh1234567890abcdef0/0042/index.html",
   "method": "GET",
-  "endpoint": "/test",
+  "endpoint": "/ask",
   "body": null
 }
 ```
@@ -295,7 +295,7 @@ Put the collection of files forming your plug-in into a folder named with some y
 the folder to the directory `frontend/plugins`. The folder's name is from that point on the plug-in's instance-local 
 UUID.
 It must not be `0000` as this value is reserved for the framework itself.
-Requests to a "plug-in" with ID `0000` are responded with a status code 400 and a corresponding message.  
+Requests to a "plug-in" with ID `0000` are responded with a status code 400 and a corresponding message. 
 
 On the next Ctrl-F5 reload, you should see your plug-in appear in the list of available plug-ins when starting a plug-in 
 by clicking the "+" button in a matching panel.
@@ -303,9 +303,9 @@ by clicking the "+" button in a matching panel.
 Please note that changes to plug-in files directly used by the front-end may only show after a restart of the 
 framework due to caching.
 
-## An Example plug-in
+## An example plug-in
 This section is not ready yet.
-Expect something that uses like everything the framework has to offer.
+Expect something that uses almost everything the framework has to offer.
 
 ## Frequently Asked Questions
 Since our first framework evaluation, several questions turned up frequently.
