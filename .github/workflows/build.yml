@@ -30,6 +30,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
+      - name: Test Plugin Messaging SDK
+        shell: bash
+        run: node --test frontend/tests/salus-sdk.test.cjs
+
       - name: Setup Toolchain
         shell: bash
         run: |
