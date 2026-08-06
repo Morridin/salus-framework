@@ -146,6 +146,7 @@ pub fn PluginPanel(
                     "dynamic" => rsx!{
                         iframe {
                             id: plugin.uuid(),
+                            "data-salus-plugin-id": plugin.uuid(),
                             src: local_url,
                         },
                     },

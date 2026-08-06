@@ -216,6 +216,34 @@ Hence, it is the plug-in's author's obligation to introduce measures against ill
 For long-term stability, please provide your plug-in's back-end executables as standalone binaries that don't require 
 external dependencies to run. E.g., if your plug-in needs python, provide a working python instance with your plug-in.
 
+### Communication between plug-ins
+
+Local `dynamic` plug-ins can exchange live JSON messages through the Salus plug-in SDK. Include the shared SDK from the
+plug-in's HTML file:
+
+```html
+<script src="../salus-sdk.js"></script>
+```
+
+Send a JSON-compatible payload to another mounted plug-in using its UUID:
+
+```javascript
+salus.send("target-plugin-uuid", {text: "Hello"});
+```
+
+Register a handler in the receiving plug-in:
+
+```javascript
+const unsubscribe = salus.onMessage(message => {
+    console.log(message.sourcePluginId);
+    console.log(message.payload);
+});
+```
+
+Call `unsubscribe()` when the handler is no longer needed. Messages are delivered only while the receiving plug-in is
+mounted. If multiple mounted instances have the target UUID, every instance receives the message. Sending to an
+unavailable UUID has no effect.
+
 ### Communication with the back-end
 Whenever a plug-in has to perform computationally heavy or difficult tasks, it should relay on the resources of the 
 back-end server instead of running such calculations within the browser window.

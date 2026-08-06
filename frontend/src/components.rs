@@ -7,6 +7,7 @@ mod resize_handler;
 mod tabbed_group;
 mod app;
 mod panel_header;
+mod message_broker;
 
 // Flatten the API for a nicer look and feel.
 pub use self::app::App;
@@ -16,3 +17,4 @@ pub use self::plugin_panel::PluginPanel;
 pub use self::tabbed_group::TabbedGroup;
 pub use self::panel_group::PanelGroup;
 pub use self::resize_handler::ResizeHandler;
+pub use self::message_broker::MessageBroker;

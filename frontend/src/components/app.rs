@@ -1,4 +1,4 @@
-use crate::components::{PanelGroup, ResizeHandler, TabbedGroup};
+use crate::components::{MessageBroker, PanelGroup, ResizeHandler, TabbedGroup};
 use dioxus::prelude::*;
 use models::{panel::GroupOrientation, Position};
 
@@ -11,6 +11,7 @@ use models::{panel::GroupOrientation, Position};
 pub fn App() -> Element {
 
     rsx! {
+        MessageBroker {},
         document::Stylesheet {
             href: asset!("/www-root/assets/main.css"),
         },
