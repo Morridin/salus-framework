@@ -5,10 +5,24 @@ edition = "2024"
 
 [dependencies]
 dioxus-free-icons = { version = "0.10.0", features = ["lucide"] }
-web-sys = "0.3.103"
 indexmap = "2.14.0"
+js-sys = "0.3.103"
+wasm-bindgen = "0.2.106"
+web-sys = { version = "0.3.103", features = [
+    "Document",
+    "Element",
+    "EventTarget",
+    "HtmlIFrameElement",
+    "Location",
+    "MessageEvent",
+    "Node",
+    "NodeList",
+    "Window",
+] }
 
 dioxus = { workspace = true, features = ["fullstack"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
 uuid = { workspace = true }
 
 backend = { workspace = true }

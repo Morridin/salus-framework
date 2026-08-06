@@ -30,7 +30,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Test Plugin Messaging
+      - name: Test Plugin Messaging SDK
         shell: bash
         run: node --test frontend/tests/*.test.cjs
 
@@ -40,6 +40,10 @@ jobs:
           rustup default stable
           rustup update stable
           rustup target add wasm32-unknown-unknown
+
+      - name: Test Plugin Message Broker
+        shell: bash
+        run: cargo test -p frontend --features server
 
       - name: Install Dioxus CLI
         shell: bash

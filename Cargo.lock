@@ -1363,8 +1363,12 @@ dependencies = [
  "dioxus",
  "dioxus-free-icons",
  "indexmap",
+ "js-sys",
  "models",
+ "serde",
+ "serde_json",
  "uuid",
+ "wasm-bindgen",
  "web-sys",
 ]
 
