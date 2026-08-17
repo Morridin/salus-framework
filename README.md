@@ -221,6 +221,11 @@ external dependencies to run. E.g., if your plug-in needs python, provide a work
 Local `dynamic` plug-ins can exchange live JSON messages through the Salus plug-in SDK. Include the shared SDK from the
 plug-in's HTML file:
 
+The SDK uses the browser's `BroadcastChannel` API, so communication is limited to local plug-ins served from the same
+origin as Salus. Installed local plug-ins are currently treated as trusted application components. The SDK validates the
+message shape, protocol version and target plug-in ID, but `sourcePluginId` is routing metadata rather than cryptographic
+proof of identity.
+
 ```html
 <script src="../salus-sdk.js"></script>
 ```
