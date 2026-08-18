@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Segmentation Tools</title>
+    <link rel="stylesheet" href="main.css" />
+    <script src="main.js" defer></script>
+</head>
+<body>
+    <div class="toolbar" role="toolbar" aria-label="Segmentation tools">
+        <button type="button" data-tool="rectangle" aria-pressed="true" title="Rectangle">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="6" width="16" height="12" rx="1" />
+            </svg>
+            <span>Rectangle</span>
+        </button>
+        <button type="button" data-tool="circle" aria-pressed="false" title="Circle">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+            </svg>
+            <span>Circle</span>
+        </button>
+        <button type="button" data-tool="polygon" aria-pressed="false" title="Polygon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <polygon points="12,3 21,9 18,20 6,20 3,9" />
+            </svg>
+            <span>Polygon</span>
+        </button>
+        <button type="button" data-tool="brush" aria-pressed="false" title="Brush">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m14 4 6 6-9 9H5v-6z" />
+            </svg>
+            <span>Brush</span>
+        </button>
+        <label class="brush-size" for="brush-radius">
+            <span>Radius</span>
+            <input id="brush-radius" type="range" min="1" max="100" value="12" step="1" />
+            <output id="brush-radius-output" for="brush-radius">12 px</output>
+        </label>
+    </div>
+</body>
+</html>

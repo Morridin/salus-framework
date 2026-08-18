@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Message Receiver Plug-in</title>
+    <link rel="stylesheet" href="main.css" />
+    <script>
+        const PLUGIN_ID = "b0b0";
+        const channel = new BroadcastChannel("salus:plugin-messages");
+        let lastSenderId = "c97f";
+
+        function appendMessage(message) {
+            document.getElementById("empty-message-log")?.remove();
+            lastSenderId = message.sourcePluginId;
+            document.getElementById("reply-target").textContent = lastSenderId;
+
+            const entry = document.createElement("li");
+            const header = document.createElement("strong");
+            const payload = document.createElement("pre");
+
+            header.textContent = `${new Date().toLocaleTimeString()} from ${message.sourcePluginId}`;
+            payload.textContent = JSON.stringify(message.payload, null, 2);
+            entry.append(header, payload);
+            document.getElementById("message-log").prepend(entry);
+        }
+
+        function sendReply(event) {
+            event.preventDefault();
+
+            const status = document.getElementById("reply-status");
+            const text = document.getElementById("reply-text").value.trim();
+
+            try {
+                channel.postMessage({
+                    sourcePluginId: PLUGIN_ID,
+                    targetPluginId: lastSenderId,
+                    payload: {
+                        text,
+                        replyFrom: PLUGIN_ID,
+                    },
+                });
+                status.textContent = `Reply sent to ${lastSenderId}`;
+                status.className = "status success";
+            } catch (error) {
+                status.textContent = `Not sent: ${error.message}`;
+                status.className = "status error";
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            channel.addEventListener("message", event => {
+                if (event.data?.targetPluginId === PLUGIN_ID) {
+                    appendMessage(event.data);
+                }
+            });
+            document.getElementById("reply-form").addEventListener("submit", sendReply);
+        });
+    </script>
+</head>
+<body>
+<main>
+    <header>
+        <div>
+            <p class="eyebrow">Cross-plug-in test target</p>
+            <h1>Message receiver</h1>
+        </div>
+        <span class="plugin-id">UUID <code>b0b0</code></span>
+    </header>
+
+    <noscript>This test plug-in requires JavaScript.</noscript>
+
+    <section aria-labelledby="received-heading">
+        <div class="section-heading">
+            <h2 id="received-heading">Received messages</h2>
+            <span>Newest first</span>
+        </div>
+        <ol id="message-log" class="message-log" aria-live="polite">
+            <li id="empty-message-log" class="empty-state">
+                Waiting for a message addressed to <code>b0b0</code>.
+            </li>
+        </ol>
+    </section>
+
+    <section aria-labelledby="reply-heading">
+        <h2 id="reply-heading">Reply to <code id="reply-target">c97f</code></h2>
+        <form id="reply-form">
+            <label for="reply-text">Reply text</label>
+            <input id="reply-text" value="Hello back from b0b0" required />
+            <div class="actions">
+                <button type="submit">Send reply</button>
+                <output id="reply-status" class="status" aria-live="polite"></output>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

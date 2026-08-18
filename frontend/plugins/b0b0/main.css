@@ -1,24 +1,13 @@
 :root {
-    --font-size: 16px;
-    --font-family: "Frutiger 65", Helvetica, Arial;
-    --primary-background-color: #000;
-    --secondary-background-color: #333;
-    --violet-color: #A259FF;
-    --violet-color-darken-20: color-mix(in oklch shorter hue, var(--violet-color) 80%, transparent);
-    --green-color: #2ECC71;
-    --primary-color: #ccc;
-    --secondary-color: #fff;
-
     color-scheme: dark;
-    background-color: transparent;
+    background: transparent;
+    font-family: "Frutiger 65", Helvetica, Arial, sans-serif;
+    color: #ccc;
 }
 
 body {
     margin: 0;
-    font-family: var(--font-family), sans-serif;
-    color: var(--primary-color);
-    background-color: var(--primary-background-color);
-    font-size: var(--font-size);
+    background: #000;
 }
 
 main {
@@ -47,13 +36,13 @@ p {
 
 h1 {
     margin-bottom: 0;
-    color: var(--violet-color);
+    color: #2ecc71;
     font-size: 1.75rem;
 }
 
 h2 {
     margin-bottom: 0.75rem;
-    color: var(--secondary-color);
+    color: #fff;
     font-size: 1rem;
 }
 
@@ -91,12 +80,11 @@ form {
 }
 
 label {
-    color: var(--secondary-color);
+    color: #fff;
     font-size: 0.85rem;
 }
 
 input,
-textarea,
 button {
     box-sizing: border-box;
     border: 1px solid #555;
@@ -104,43 +92,33 @@ button {
     font: inherit;
 }
 
-input,
-textarea {
+input {
     width: 100%;
     padding: 0.65rem;
-    color: var(--secondary-color);
+    color: #fff;
     background: #080808;
-}
-
-textarea,
-pre,
-code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 button {
     padding: 0.55rem 0.8rem;
     color: #fff;
-    background: #5f24a8;
+    background: #187b45;
     cursor: pointer;
 }
 
 button:hover {
-    background: var(--violet-color-darken-20);
+    background: #219b59;
 }
 
-.status.success {
-    color: var(--green-color);
-}
-
-.status.error {
-    color: #ff7474;
+pre,
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .message-log {
     display: grid;
     gap: 0.6rem;
-    max-height: 16rem;
+    max-height: 20rem;
     margin: 0;
     padding: 0;
     overflow: auto;
@@ -149,12 +127,11 @@ button:hover {
 
 .message-log li {
     padding: 0.65rem;
-    border-left: 3px solid var(--green-color);
+    border-left: 3px solid #2ecc71;
     background: #080808;
 }
 
-.message-log pre,
-.backend-output {
+.message-log pre {
     margin: 0.4rem 0 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
@@ -165,11 +142,12 @@ button:hover {
     color: #999;
 }
 
-.backend-output {
-    min-height: 1.25rem;
-    padding: 0.65rem;
-    color: #bbb;
-    background: #080808;
+.status.success {
+    color: #2ecc71;
+}
+
+.status.error {
+    color: #ff7474;
 }
 
 @media (max-width: 32rem) {

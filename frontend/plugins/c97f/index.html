@@ -2,39 +2,134 @@
 <html lang="en-gb">
 <head>
     <meta charset="utf-8"/>
-    <title>Test Plugin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Messaging Test Plug-in</title>
     <link rel="stylesheet" href="main.css" />
     <script>
-        async function loadExternalContent() {
-            let request = {
+        const PLUGIN_ID = "c97f";
+        const channel = new BroadcastChannel("salus:plugin-messages");
+
+        function loadExternalContent() {
+            const request = {
                 origin: location.href,
                 method: "POST",
                 endpoint: "hello-world",
                 body: "./index.html",
-            }
-            window.parent.postMessage(JSON.stringify(request));
+            };
+            window.parent.postMessage(JSON.stringify(request), location.origin);
         }
 
-        window.addEventListener('message', event => {
-            if (event.origin !== location.origin) return;
-            document.getElementById("externalContent").innerHTML = event.data;
+        function appendMessage(message) {
+            document.getElementById("empty-message-log")?.remove();
 
-        })
+            const entry = document.createElement("li");
+            const header = document.createElement("strong");
+            const payload = document.createElement("pre");
+
+            header.textContent = `${new Date().toLocaleTimeString()} from ${message.sourcePluginId}`;
+            payload.textContent = JSON.stringify(message.payload, null, 2);
+            entry.append(header, payload);
+            document.getElementById("message-log").prepend(entry);
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+
+            const status = document.getElementById("send-status");
+            const targetPluginId = document.getElementById("target-plugin-id").value.trim();
+            const rawPayload = document.getElementById("message-payload").value;
+
+            try {
+                const payload = JSON.parse(rawPayload);
+                channel.postMessage({
+                    sourcePluginId: PLUGIN_ID,
+                    targetPluginId,
+                    payload,
+                });
+                status.textContent = `Sent to ${targetPluginId}`;
+                status.className = "status success";
+            } catch (error) {
+                status.textContent = `Not sent: ${error.message}`;
+                status.className = "status error";
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("plugin-id").textContent = PLUGIN_ID;
+            document.getElementById("message-form").addEventListener("submit", sendMessage);
+            document.getElementById("backend-button").addEventListener("click", loadExternalContent);
+            channel.addEventListener("message", event => {
+                if (event.data?.targetPluginId === PLUGIN_ID) {
+                    appendMessage(event.data);
+                }
+            });
+        });
+
+        window.addEventListener("message", event => {
+            if (event.origin !== location.origin) return;
+            if (event.source !== window.parent) return;
+
+            let data = event.data;
+            if (typeof data === "string") {
+                try {
+                    data = JSON.parse(data);
+                } catch (_) {
+                    // Back-end responses are allowed to be plain text.
+                }
+            }
+
+            document.getElementById("external-content").textContent =
+                typeof data === "string" ? data : JSON.stringify(data, null, 2);
+        });
     </script>
 </head>
 <body>
-<noscript>
-    JabbaScript doesn't work here. Have you declared this plug-in as static?
-</noscript>
-<h1>
-    It works!
-</h1>
-<p>
-    Hello there!
-</p>
-<button onclick="loadExternalContent();">
-    Load external content
-</button>
-<p id="externalContent"></p>
+<main>
+    <header>
+        <div>
+            <p class="eyebrow">Messaging test plug-in</p>
+            <h1>Messaging console</h1>
+        </div>
+        <span class="plugin-id">UUID <code id="plugin-id">c97f</code></span>
+    </header>
+
+    <noscript>This test plug-in requires JavaScript.</noscript>
+
+    <section aria-labelledby="send-heading">
+        <h2 id="send-heading">Send a message</h2>
+        <form id="message-form">
+            <label for="target-plugin-id">Target plug-in UUID</label>
+            <input id="target-plugin-id" value="b0b0" required />
+
+            <label for="message-payload">JSON payload</label>
+            <textarea id="message-payload" rows="5" required>{
+  "text": "Hello from c97f"
+}</textarea>
+
+            <div class="actions">
+                <button type="submit">Send message</button>
+                <output id="send-status" class="status" aria-live="polite"></output>
+            </div>
+        </form>
+    </section>
+
+    <section aria-labelledby="received-heading">
+        <div class="section-heading">
+            <h2 id="received-heading">Received messages</h2>
+            <span>Newest first</span>
+        </div>
+        <ol id="message-log" class="message-log" aria-live="polite">
+            <li id="empty-message-log" class="empty-state">
+                No messages yet. Open <strong>Message Receiver Plug-in</strong> to receive its reply.
+            </li>
+        </ol>
+    </section>
+
+    <section aria-labelledby="backend-heading">
+        <h2 id="backend-heading">Back-end request</h2>
+        <button id="backend-button" type="button">Load external content</button>
+        <pre id="external-content" class="backend-output">No response yet.</pre>
+    </section>
+</main>
 </body>
 </html>

@@ -218,36 +218,35 @@ external dependencies to run. E.g., if your plug-in needs python, provide a work
 
 ### Communication between plug-ins
 
-Local `dynamic` plug-ins can exchange live JSON messages through the Salus plug-in SDK. Include the shared SDK from the
-plug-in's HTML file:
+Local `dynamic` plug-ins can exchange live messages directly through the browser's `BroadcastChannel` API. Communication
+is limited to local plug-ins served from the same origin as Salus. Installed local plug-ins are currently treated as
+trusted application components, and `sourcePluginId` is routing metadata rather than cryptographic proof of identity.
 
-The SDK uses the browser's `BroadcastChannel` API, so communication is limited to local plug-ins served from the same
-origin as Salus. Installed local plug-ins are currently treated as trusted application components. The SDK validates the
-message shape, protocol version and target plug-in ID, but `sourcePluginId` is routing metadata rather than cryptographic
-proof of identity.
-
-```html
-<script src="../salus-sdk.js"></script>
-```
-
-Send a JSON-compatible payload to another mounted plug-in using its UUID:
+Open the shared channel and send a payload to another mounted plug-in using its UUID:
 
 ```javascript
-salus.send("target-plugin-uuid", {text: "Hello"});
-```
+const channel = new BroadcastChannel("salus:plugin-messages");
 
-Register a handler in the receiving plug-in:
-
-```javascript
-const unsubscribe = salus.onMessage(message => {
-    console.log(message.sourcePluginId);
-    console.log(message.payload);
+channel.postMessage({
+    sourcePluginId: "sender-plugin-uuid",
+    targetPluginId: "target-plugin-uuid",
+    payload: {text: "Hello"},
 });
 ```
 
-Call `unsubscribe()` when the handler is no longer needed. Messages are delivered only while the receiving plug-in is
-mounted. If multiple mounted instances have the target UUID, every instance receives the message. Sending to an
-unavailable UUID has no effect.
+Listen on the same channel and filter messages by the receiving plug-in's UUID:
+
+```javascript
+channel.addEventListener("message", event => {
+    if (event.data?.targetPluginId !== "receiver-plugin-uuid") return;
+
+    console.log(event.data.sourcePluginId);
+    console.log(event.data.payload);
+});
+```
+
+Messages are delivered only while the receiving plug-in is mounted. If multiple mounted instances listen for the target
+UUID, every instance receives the message. Sending to an unavailable UUID has no effect.
 
 ### Communication with the back-end
 Whenever a plug-in has to perform computationally heavy or difficult tasks, it should relay on the resources of the 

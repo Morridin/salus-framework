@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <radialGradient id="background" cx="48%" cy="44%" r="70%">
+      <stop offset="0" stop-color="#f5dce8"/>
+      <stop offset="0.6" stop-color="#d99bb9"/>
+      <stop offset="1" stop-color="#7c4568"/>
+    </radialGradient>
+    <filter id="soft">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="#f1eee9"/>
+  <path d="M98 515C165 163 520 64 810 146c262 74 545 8 677 270 116 230-66 452-315 480-267 30-471-60-728-17C232 915 45 790 98 515Z" fill="url(#background)"/>
+  <g fill="#8f3c76" opacity="0.5" filter="url(#soft)">
+    <ellipse cx="482" cy="388" rx="150" ry="102"/>
+    <ellipse cx="832" cy="601" rx="195" ry="135"/>
+    <ellipse cx="1192" cy="409" rx="126" ry="178"/>
+  </g>
+  <g fill="none" stroke="#6d315d" stroke-width="8" opacity="0.38">
+    <path d="M236 570c164-123 271 139 425-7s287-91 398 12 218 45 330-60"/>
+    <path d="M340 307c111 77 235 30 328-61M921 780c86-133 224-177 344-121"/>
+  </g>
+</svg>

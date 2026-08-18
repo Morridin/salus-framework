@@ -1,0 +1,55 @@
+(() => {
+    const PLUGIN_ID = "5e61";
+    const VIEWER_PLUGIN_ID = "a11e";
+    const channel = new BroadcastChannel("salus:plugin-messages");
+    const buttons = [...document.querySelectorAll("[data-tool]")];
+    const toolbar = document.querySelector(".toolbar");
+    const radiusInput = document.getElementById("brush-radius");
+    const radiusOutput = document.getElementById("brush-radius-output");
+    let selectedButton = buttons[0];
+
+    function sendSelection() {
+        channel.postMessage({
+            sourcePluginId: PLUGIN_ID,
+            targetPluginId: VIEWER_PLUGIN_ID,
+            payload: {
+                type: "segmentation-tool-changed",
+                tool: selectedButton.dataset.tool,
+                brushRadius: Number(radiusInput.value),
+            },
+        });
+    }
+
+    function selectTool(buttonToSelect) {
+        selectedButton = buttonToSelect;
+        toolbar.dataset.tool = buttonToSelect.dataset.tool;
+
+        for (const button of buttons) {
+            button.setAttribute("aria-pressed", String(button === buttonToSelect));
+        }
+
+        sendSelection();
+    }
+
+    for (const button of buttons) {
+        button.addEventListener("click", () => selectTool(button));
+    }
+
+    radiusInput.addEventListener("input", () => {
+        radiusOutput.value = `${radiusInput.value} px`;
+        sendSelection();
+    });
+
+    channel.addEventListener("message", event => {
+        const message = event.data;
+        if (
+            message?.targetPluginId === PLUGIN_ID &&
+            message.sourcePluginId === VIEWER_PLUGIN_ID &&
+            message.payload?.type === "segmentation-state-request"
+        ) {
+            sendSelection();
+        }
+    });
+
+    selectTool(selectedButton);
+})();

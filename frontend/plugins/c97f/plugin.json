@@ -1,5 +1,5 @@
 {
-  "name": "Dynamic Test Plug-in",
+  "name": "Messaging Test Plug-in",
   "type": "dynamic",
   "source": "index.html",
   "dependencies": [],

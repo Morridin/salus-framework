@@ -1,0 +1,95 @@
+:root {
+    color-scheme: dark;
+    background: #090909;
+}
+
+html,
+body,
+#image-viewer {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background: #090909;
+}
+
+#image-viewer[data-tool="rectangle"] canvas {
+    cursor: crosshair;
+}
+
+#image-viewer[data-tool="circle"] canvas {
+    cursor: cell;
+}
+
+#image-viewer[data-tool="polygon"] canvas {
+    cursor: crosshair;
+}
+
+#image-viewer[data-tool="brush"] canvas {
+    cursor: crosshair;
+}
+
+.segmentation-overlay {
+    box-sizing: border-box;
+    border: 2px solid #2ecc71;
+    background: rgb(46 204 113 / 12%);
+    pointer-events: none;
+}
+
+.segmentation-overlay.circle {
+    border-radius: 50%;
+}
+
+.segmentation-overlay.preview {
+    border-style: dashed;
+    background: rgb(46 204 113 / 7%);
+}
+
+.polygon-layer {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.polygon-segmentation {
+    fill: rgb(46 204 113 / 12%);
+    stroke: #2ecc71;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+.polygon-segmentation.preview {
+    fill: rgb(46 204 113 / 7%);
+    stroke-dasharray: 6 4;
+}
+
+.brush-layer {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.brush-segmentation {
+    fill: none;
+    stroke: rgb(46 204 113 / 45%);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.brush-segmentation.preview {
+    stroke: rgb(46 204 113 / 30%);
+}
+
+#viewer-error {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    margin: 0;
+    color: #ff8a8a;
+    font: 0.9rem system-ui, sans-serif;
+    transform: translate(-50%, -50%);
+}
