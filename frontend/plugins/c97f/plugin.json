@@ -1,0 +1,29 @@
+{
+  "name": "Dynamic Test Plug-in",
+  "type": "dynamic",
+  "source": "index.html",
+  "dependencies": [],
+  "panels": [
+    "right",
+    "center",
+    "all"
+  ],
+  "endpoints": [
+    {
+      "url": "/hello-world",
+      "method": "POST",
+      "handler": {
+        "command": "/bin/bash",
+        "default_args": ["cmd.sh"],
+        "args": [
+          {
+            "name": "",
+            "type": "body",
+            "display_name": "body",
+            "optional": false
+          }
+        ]
+      }
+    }
+  ]
+}

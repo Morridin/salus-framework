@@ -1,0 +1,32 @@
+:root {
+    --font-size: 16px;
+    --font-family: "Frutiger 65", Helvetica, Arial;
+    --primary-background-color: #000;
+    --secondary-background-color: #333;
+    --violet-color: #A259FF;
+    --violet-color-darken-20: color-mix(in oklch shorter hue, var(--violet-color) 80%, transparent);
+    --green-color: #2ECC71;
+    --green-color-darken-20: color-mix(in oklch shorter hue, var(--green-color) 80%, transparent);
+    --yellow-color: #FF8C00;
+    --yellow-color-darken-20: color-mix(in oklch shorter hue, var(--yellow-color) 80%, transparent);
+    --primary-color: #ccc;
+    --secondary-color: #fff;
+
+    --max-panel-size: 448px;
+    --min-panel-size: 224px;
+
+    color-scheme: dark;
+    background-color: transparent;
+}
+
+h1 {
+    color: var(--violet-color);
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family), sans-serif;
+    color: var(--primary-color);
+    background-color: var(--primary-background-color);
+    font-size: var(--font-size);
+}
