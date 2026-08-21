@@ -11,8 +11,6 @@ frontend/plugins/*
 !frontend/plugins/5e61/**
 !frontend/plugins/a11e/
 !frontend/plugins/a11e/**
-!frontend/plugins/b0b0/
-!frontend/plugins/b0b0/**
 
 # Test files
 frontend/www-root/assets/test.css
