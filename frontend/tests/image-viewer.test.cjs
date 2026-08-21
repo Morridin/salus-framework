@@ -335,3 +335,26 @@ test("an unfinished brush stroke is discarded when the tool changes", async () =
     assert.equal(environment.app.annotations.length, 0);
     assert.equal(environment.viewerElement.dataset.tool, "circle");
 });
+
+test("an unfinished drag shape is discarded when the tool changes", async () => {
+    const environment = await loadViewer();
+    let removedOverlay = null;
+    environment.app.viewer.removeOverlay = element => {
+        removedOverlay = element;
+    };
+
+    environment.handlers.get("canvas-press")({
+        position: {x: 10, y: 20},
+    });
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "polygon"},
+    });
+    environment.handlers.get("canvas-release")({
+        position: {x: 80, y: 90},
+    });
+
+    assert.ok(removedOverlay);
+    assert.equal(environment.app.annotations.length, 0);
+    assert.equal(environment.viewerElement.dataset.tool, "polygon");
+});

@@ -1,19 +1,9 @@
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-
-function imagePoint(viewer, position) {
-    const viewportPoint = viewer.viewport.pointFromPixel(position);
-    return viewer.viewport.viewportToImageCoordinates(viewportPoint);
-}
-
 function pointString(points) {
     return points.map(point => `${point.x},${point.y}`).join(" ");
 }
 
 export function createPolygonTool({
-    viewer,
-    document,
-    OpenSeadragon,
-    isActive,
+    surface,
     createAnnotation,
 }) {
     let draft = null;
@@ -32,7 +22,7 @@ export function createPolygonTool({
     }
 
     function start(point) {
-        const element = document.createElementNS(SVG_NAMESPACE, "polygon");
+        const element = surface.createSvgElement("polygon");
         element.classList.add("polygon-segmentation", "preview");
         layer.append(element);
 
@@ -41,10 +31,10 @@ export function createPolygonTool({
     }
 
     function addPoint(event) {
-        if (!isActive() || !layer || event.quick === false) return;
+        if (!layer || event.quick === false) return;
 
         event.preventDefaultAction = true;
-        const point = imagePoint(viewer, event.position);
+        const point = surface.toImagePoint(event.position);
 
         if (draft) {
             draft.points.push(point);
@@ -55,8 +45,8 @@ export function createPolygonTool({
     }
 
     function previewEdge(event) {
-        if (!isActive() || !draft) return;
-        renderDraft(imagePoint(viewer, event.position));
+        if (!draft) return;
+        renderDraft(surface.toImagePoint(event.position));
     }
 
     function cancel() {
@@ -94,34 +84,11 @@ export function createPolygonTool({
         }
     }
 
-    viewer.addHandler("open", () => {
-        const size = viewer.world.getItemAt(0).getContentSize();
-        layer = document.createElementNS(SVG_NAMESPACE, "svg");
-        layer.classList.add("polygon-layer");
-        layer.setAttribute("viewBox", `0 0 ${size.x} ${size.y}`);
-        layer.setAttribute("aria-hidden", "true");
+    function open() {
+        layer = surface.createSvgLayer("polygon-layer");
+    }
 
-        viewer.addOverlay({
-            element: layer,
-            location: viewer.viewport.imageToViewportRectangle(
-                0,
-                0,
-                size.x,
-                size.y,
-            ),
-        });
-    });
-    viewer.addHandler("canvas-click", addPoint);
-
-    const pointerTracker = new OpenSeadragon.MouseTracker({
-        element: viewer.canvas,
-        moveHandler: previewEdge,
-    });
-    pointerTracker.setTracking(true);
-
-    document.addEventListener("keydown", event => {
-        if (!isActive()) return;
-
+    function keyDown(event) {
         if (event.key === "Enter") {
             event.preventDefault();
             finish();
@@ -132,7 +99,13 @@ export function createPolygonTool({
             event.preventDefault();
             removeLastPoint();
         }
-    });
+    }
 
-    return {cancel};
+    return {
+        open,
+        click: addPoint,
+        pointerMove: previewEdge,
+        keyDown,
+        deactivate: cancel,
+    };
 }

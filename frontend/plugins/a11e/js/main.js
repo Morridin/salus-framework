@@ -2,6 +2,7 @@ import {createAnnotationStore} from "./annotation-store.js";
 import {createBrushTool} from "./brush-tool.js";
 import {createDragShapeTool} from "./drag-shape-tool.js";
 import {createPolygonTool} from "./polygon-tool.js";
+import {createSegmentationSurface} from "./segmentation-surface.js";
 import {createToolbarBridge} from "./toolbar-bridge.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
@@ -58,31 +59,53 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         return annotation;
     }
 
-    createDragShapeTool({
-        viewer,
-        document,
-        createAnnotation,
-        getActiveTool: () => activeTool,
+    const surface = createSegmentationSurface({viewer, document});
+    const tools = {
+        rectangle: createDragShapeTool({
+            surface,
+            tool: "rectangle",
+            createAnnotation,
+        }),
+        circle: createDragShapeTool({
+            surface,
+            tool: "circle",
+            createAnnotation,
+        }),
+        polygon: createPolygonTool({surface, createAnnotation}),
+        brush: createBrushTool({
+            surface,
+            createAnnotation,
+            getRadius: () => brushRadius,
+        }),
+    };
+
+    function activeToolHandler(name, event) {
+        tools[activeTool][name]?.(event);
+    }
+
+    viewer.addHandler("open", event => {
+        Object.values(tools).forEach(tool => tool.open?.(event));
     });
-    const polygonTool = createPolygonTool({
-        viewer,
-        document,
-        OpenSeadragon,
-        createAnnotation,
-        isActive: () => activeTool === "polygon",
+    viewer.addHandler("canvas-press", event => activeToolHandler("press", event));
+    viewer.addHandler("canvas-drag", event => activeToolHandler("drag", event));
+    viewer.addHandler("canvas-release", event =>
+        activeToolHandler("release", event)
+    );
+    viewer.addHandler("canvas-click", event => activeToolHandler("click", event));
+
+    const pointerTracker = new OpenSeadragon.MouseTracker({
+        element: viewer.canvas,
+        moveHandler: event => activeToolHandler("pointerMove", event),
     });
-    const brushTool = createBrushTool({
-        viewer,
-        document,
-        createAnnotation,
-        isActive: () => activeTool === "brush",
-        getRadius: () => brushRadius,
-    });
+    pointerTracker.setTracking(true);
+
+    document.addEventListener("keydown", event =>
+        activeToolHandler("keyDown", event)
+    );
 
     toolbar.subscribe((tool, nextBrushRadius) => {
         if (activeTool !== tool) {
-            polygonTool.cancel();
-            brushTool.cancel();
+            tools[activeTool].deactivate?.();
         }
         activeTool = tool;
         if (nextBrushRadius !== null) {

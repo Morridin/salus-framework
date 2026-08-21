@@ -1,10 +1,4 @@
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const MINIMUM_POINT_DISTANCE = 1;
-
-function imagePoint(viewer, position) {
-    const viewportPoint = viewer.viewport.pointFromPixel(position);
-    return viewer.viewport.viewportToImageCoordinates(viewportPoint);
-}
 
 function pathData(points) {
     if (points.length === 1) {
@@ -23,9 +17,7 @@ function isPrimaryButton(event) {
 }
 
 export function createBrushTool({
-    viewer,
-    document,
-    isActive,
+    surface,
     getRadius,
     createAnnotation,
 }) {
@@ -37,7 +29,7 @@ export function createBrushTool({
     }
 
     function addPoint(position) {
-        const point = imagePoint(viewer, position);
+        const point = surface.toImagePoint(position);
         const previous = stroke.points.at(-1);
 
         if (
@@ -53,12 +45,12 @@ export function createBrushTool({
     }
 
     function start(event) {
-        if (!isActive() || !layer || !isPrimaryButton(event)) return;
+        if (!layer || !isPrimaryButton(event)) return;
 
         event.preventDefaultAction = true;
 
         const radius = getRadius();
-        const element = document.createElementNS(SVG_NAMESPACE, "path");
+        const element = surface.createSvgElement("path");
         element.classList.add("brush-segmentation", "preview");
         element.setAttribute("stroke-width", radius * 2);
         layer.append(element);
@@ -96,27 +88,15 @@ export function createBrushTool({
         stroke = null;
     }
 
-    viewer.addHandler("open", () => {
-        const size = viewer.world.getItemAt(0).getContentSize();
-        layer = document.createElementNS(SVG_NAMESPACE, "svg");
-        layer.classList.add("brush-layer");
-        layer.setAttribute("viewBox", `0 0 ${size.x} ${size.y}`);
-        layer.setAttribute("aria-hidden", "true");
+    function open() {
+        layer = surface.createSvgLayer("brush-layer");
+    }
 
-        viewer.addOverlay({
-            element: layer,
-            location: viewer.viewport.imageToViewportRectangle(
-                0,
-                0,
-                size.x,
-                size.y,
-            ),
-        });
-    });
-
-    viewer.addHandler("canvas-press", start);
-    viewer.addHandler("canvas-drag", drag);
-    viewer.addHandler("canvas-release", finish);
-
-    return {cancel};
+    return {
+        open,
+        press: start,
+        drag,
+        release: finish,
+        deactivate: cancel,
+    };
 }

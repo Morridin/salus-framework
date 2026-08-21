@@ -1,10 +1,5 @@
 const MINIMUM_SHAPE_SIZE = 3;
 
-function imagePoint(viewer, position) {
-    const viewportPoint = viewer.viewport.pointFromPixel(position);
-    return viewer.viewport.viewportToImageCoordinates(viewportPoint);
-}
-
 function shapeBounds(tool, start, end) {
     if (tool === "circle") {
         const radius = Math.max(
@@ -31,54 +26,35 @@ function shapeBounds(tool, start, end) {
     };
 }
 
-function viewportBounds(viewer, bounds) {
-    return viewer.viewport.imageToViewportRectangle(
-        bounds.x,
-        bounds.y,
-        bounds.width,
-        bounds.height,
-    );
-}
-
 export function createDragShapeTool({
-    viewer,
-    document,
-    getActiveTool,
+    surface,
+    tool,
     createAnnotation,
 }) {
     let drawing = null;
 
     function updateDrawing(position) {
-        drawing.end = imagePoint(viewer, position);
+        drawing.end = surface.toImagePoint(position);
         drawing.bounds = shapeBounds(drawing.tool, drawing.start, drawing.end);
-        viewer.updateOverlay(
-            drawing.element,
-            viewportBounds(viewer, drawing.bounds),
-        );
+        surface.updateOverlay(drawing.element, drawing.bounds);
     }
 
     function startDrawing(event) {
-        const activeTool = getActiveTool();
-        if (!["rectangle", "circle"].includes(activeTool)) return;
-
         event.preventDefaultAction = true;
 
-        const start = imagePoint(viewer, event.position);
-        const element = document.createElement("div");
-        element.className = `segmentation-overlay preview ${activeTool}`;
+        const start = surface.toImagePoint(event.position);
+        const element = surface.createElement("div");
+        element.className = `segmentation-overlay preview ${tool}`;
 
         drawing = {
-            tool: activeTool,
+            tool,
             start,
             end: start,
             element,
-            bounds: shapeBounds(activeTool, start, start),
+            bounds: shapeBounds(tool, start, start),
         };
 
-        viewer.addOverlay({
-            element,
-            location: viewportBounds(viewer, drawing.bounds),
-        });
+        surface.addOverlay(element, drawing.bounds);
     }
 
     function dragDrawing(event) {
@@ -98,7 +74,7 @@ export function createDragShapeTool({
             drawing.bounds.width < MINIMUM_SHAPE_SIZE ||
             drawing.bounds.height < MINIMUM_SHAPE_SIZE
         ) {
-            viewer.removeOverlay(drawing.element);
+            surface.removeOverlay(drawing.element);
             drawing = null;
             return;
         }
@@ -124,7 +100,17 @@ export function createDragShapeTool({
         drawing = null;
     }
 
-    viewer.addHandler("canvas-press", startDrawing);
-    viewer.addHandler("canvas-drag", dragDrawing);
-    viewer.addHandler("canvas-release", finishDrawing);
+    function deactivate() {
+        if (!drawing) return;
+
+        surface.removeOverlay(drawing.element);
+        drawing = null;
+    }
+
+    return {
+        press: startDrawing,
+        drag: dragDrawing,
+        release: finishDrawing,
+        deactivate,
+    };
 }
