@@ -33,7 +33,8 @@ impl Message {
 
     /// Assembles an asynchronous HTTP [`RequestBuilder`] directed at the target plugin endpoint.
     ///
-    /// Trims redundant leading slashes from the internal endpoint routing path automatically.
+    /// The endpoint path is resolved via [`routes::plugin_api_endpoint`][crate::routes], which
+    /// also tolerates a redundant leading slash on the internal endpoint routing path.
     ///
     /// # Arguments
     /// * `target` - the first portion of the URL, e.g. `"https://42-4-4z.com"`, as obtained
@@ -48,7 +49,7 @@ impl Message {
         let request = reqwest::Client::new()
             .request(
                 method,
-                format!("{}/{}/{}", target, uuid, self.endpoint.trim_start_matches("/")),
+                format!("{}{}", target, crate::routes::plugin_api_endpoint(uuid, &self.endpoint)),
             )
             .header(ACCEPT, "text/plain");
         match self.body {

@@ -29,6 +29,15 @@ use crate::version::Version;
 /// [`Version`]'s [`Display`][std::fmt::Display] implementation.
 pub const API_VERSION: Version = Version::new(0, 2);
 
+/// Compile-time equivalent of `plugin_api_root()`, for use inside route macro attributes.
+///
+/// Dioxus's `#[get(...)]` family parses their route argument as a string literal at compile time
+/// (to extract path parameters), so a value built from [`API_VERSION`] at runtime cannot be used
+/// there. This constant must be kept in sync with [`API_VERSION`] by hand; a test in this module's
+/// `tests` submodule asserts they agree, so a forgotten update fails `cargo test` rather than
+/// silently drifting.
+pub const PLUGIN_API_ROOT_LIT: &str = concat!("/api/v", 0, ".", 2, "/plugins");
+
 /// The root under which plug-in files are served from disk, i.e. `/files/plugins`.
 ///
 /// Unversioned by design, see the module documentation. The `files` segment marks the namespace as
@@ -274,5 +283,12 @@ mod tests {
             plugin_api_endpoint("1a2b", "status")
         );
         assert_eq!(plugin_file("1a2b", "/a.css"), plugin_file("1a2b", "a.css"));
+    }
+
+    #[test]
+    fn compile_time_route_prefix_matches_the_runtime_one() {
+        // PLUGIN_API_ROOT_LIT is hand-written because route macros need a literal; this is the
+        // tripwire that catches it falling out of sync with API_VERSION after a version bump.
+        assert_eq!(PLUGIN_API_ROOT_LIT, plugin_api_root());
     }
 }

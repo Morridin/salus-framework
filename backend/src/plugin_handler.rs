@@ -15,6 +15,14 @@ use std::time::Duration;
 use tempfile::NamedTempFile;
 use wait_timeout::ChildExt;
 
+// The route pattern below - "/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", repeated
+// across all five HTTP method handlers that follow - has to be a hand-written literal. Dioxus's
+// `#[get(...)]` family parses its argument syntactically before any macro expansion happens, so
+// neither a `const &str` nor a `concat!` expression can stand in for it: both fail to compile
+// with "expected one of (GET, POST, ...)". models::routes::PLUGIN_API_ROOT_LIT exists to catch
+// this drifting out of sync with the API version - a test there asserts the two agree - but
+// bumping the version still means updating the literal here by hand, five times.
+
 /// Global thread-safe cache storing parsed plugin routing tables.
 ///
 /// Kept inside a [`OnceLock`] for safe global initialisation on first access.
@@ -61,7 +69,7 @@ static PLUGIN_CACHE: OnceLock<
 ///   return code 0, the `stdout` buffer's contents are returned as is in an HTTP response.
 /// * `Err(HttpError)` - Except for those cases where parameter parsing fails or the return value
 ///   is Ok anyway, this function returns an HttpError, usually derived from the `PluginError` enum.
-#[get("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
+#[get("/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
@@ -76,7 +84,7 @@ pub async fn get_handler(
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`get_handler`].
-#[post("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
+#[post("/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
@@ -91,7 +99,7 @@ pub async fn post_handler(
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`get_handler`].
-#[put("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
+#[put("/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn put_handler(
     uuid: String,
     endpoint_name: String,
@@ -106,7 +114,7 @@ pub async fn put_handler(
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`get_handler`].
-#[patch("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
+#[patch("/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn patch_handler(
     uuid: String,
     endpoint_name: String,
@@ -121,7 +129,7 @@ pub async fn patch_handler(
 /// function whose result is awaited and returned.
 ///
 /// For parameters and further details, please see [`get_handler`].
-#[delete("/{uuid}/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
+#[delete("/api/v0.2/plugins/{uuid}/api/*endpoint_name?:params", headers:HeaderMap, body:Bytes)]
 pub async fn delete_handler(
     uuid: String,
     endpoint_name: String,
