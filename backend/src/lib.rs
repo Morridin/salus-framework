@@ -1,7 +1,15 @@
-use dioxus::fullstack::http::header::{AUTHORIZATION, CONTENT_TYPE};
-use dioxus::fullstack::routing::Router;
+#[cfg(feature = "server")]
+use dioxus::fullstack::{
+    http::header::{AUTHORIZATION, CONTENT_TYPE},
+    routing::Router
+};
+#[cfg(feature = "server")]
 use std::time::Duration;
-use tower_http::cors::{Any, CorsLayer};
+#[cfg(feature = "server")]
+use tower_http::{
+    cors::{Any, CorsLayer},
+    services::ServeDir
+};
 
 mod auth;
 mod plugin_handler;
@@ -19,9 +27,9 @@ pub mod utils {
 
 /// Registers global middleware layers and handles central router configurations.
 ///
-/// This function takes the base Dioxus fullstack `Router` and applies a global
-/// `CorsLayer` to manage cross-origin requests, setting allowed headers,
-/// caching duration, methods, and origins.
+/// This function takes the base Dioxus fullstack `Router`, nests the plug-in file server under
+/// [`models::routes::PLUGIN_FILES_ROOT`], and applies a global `CorsLayer` to manage cross-origin
+/// requests, setting allowed headers, caching duration, methods, and origins.
 ///
 /// # Arguments
 ///
@@ -29,7 +37,8 @@ pub mod utils {
 ///
 /// # Returns
 ///
-/// Returns the updated `Router` instance with the applied Tower HTTP middleware layers.
+/// Returns the updated `Router` instance with the plug-in file server and CORS middleware layer
+/// applied.
 ///
 /// # Middleware Configured
 ///
@@ -38,12 +47,18 @@ pub mod utils {
 ///   * Max Age: 1 hour (browser cache duration for preflight options requests)
 ///   * Allowed Methods: `Any` (GET, POST, etc.)
 ///   * Allowed Origins: `Any` (permits access from any origin)
+#[cfg(feature = "server")]
 pub fn add_handlers(router: Router) -> Router {
-    router.layer(
-        CorsLayer::new()
-            .allow_headers([CONTENT_TYPE, AUTHORIZATION])
-            .max_age(Duration::from_hours(1))
-            .allow_methods(Any)
-            .allow_origin(Any),
-    )
+    router
+        .nest_service(
+            models::routes::PLUGIN_FILES_ROOT,
+            ServeDir::new(plugin_dir::root()),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+                .max_age(Duration::from_hours(1))
+                .allow_methods(Any)
+                .allow_origin(Any),
+        )
 }

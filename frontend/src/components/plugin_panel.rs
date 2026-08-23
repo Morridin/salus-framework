@@ -1,6 +1,6 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
-use models::{plugin, BackendRequestError, Message, Position};
+use models::{plugin, routes, BackendRequestError, Message, Position};
 use dioxus::prelude::*;
 
 /// A [`Panel`] dedicated to hosting and rendering a specific plug-in.
@@ -62,27 +62,10 @@ pub fn PluginPanel(
                     Err(_) => continue, // TODO: Implement Error Handling!
                 };
 
-                // Get origin, check actual UUID in it and leave if not matching
-				// The first split is an artifact of the asset loading construction:
-				// The plug-ins folder's name is accessible by its name with a hash
-				// appended after a dash. As the plug-ins folder is the first part
-				// of the of the resource path of the plug-in file URL, it is included
-				// that way. Tbf, this approach doesn't make much sense, isn't
-				// documented, blocks extensibility and generates a bunch of other
-				// problems.
-				// TODO: include this into the future work and the results section
-				// TODO: mention this in the user guide
-
-                match message.origin().split_once("plugins-") {
-                    Some((_, origin)) => match origin.split("/").skip(1).next() {
-                        Some(uuid) => {
-                            if uuid != plugin.uuid() {
-                                continue;
-                            }
-                        }
-                        None => continue,
-                    },
-                    None => continue,
+                // Only accept messages whose origin genuinely lies inside this plug-in's own
+                // file directory - see is_plugin_file_origin for why that is a safe check.
+                if !routes::is_plugin_file_origin(message.origin(), plugin.uuid()) {
+                    continue;
                 }
 
                 message_data.set(Some(message));
@@ -125,10 +108,8 @@ pub fn PluginPanel(
     });
     // END: Plug-in MPI Handlers
 
-    static PLUGIN_FOLDER: Asset = asset!("/plugins/");
-
     if let Some(plugin) = &plugin() {
-        let local_url = format!("{}/{}/{}", PLUGIN_FOLDER, plugin.uuid(), plugin.source());
+        let local_url = routes::plugin_file(plugin.uuid(), plugin.source());
         rsx! {
             Panel {
                 headless,
