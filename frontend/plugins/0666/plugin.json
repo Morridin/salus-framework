@@ -1,7 +1,0 @@
-{
-  "name": "Home Page",
-  "type": "extern",
-  "source": "https://42-4-4z.com",
-  "dependencies": [],
-  "panels": ["center", "all"]
-}
