@@ -6,7 +6,7 @@ target
 token
 
 # Dynamic content
-frontend/plugins/
+plugins/
 
 # Test files
 frontend/www-root/assets/test.css

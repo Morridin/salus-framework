@@ -106,8 +106,10 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
 /// Scans the `plugins` directory and returns a sorted list of directory names, resembling the
 /// currently available plug-ins.
 ///
-/// Filters the contents of the plug-ins folder to ensure only valid directories
-/// (representing plugin UUIDs) are collected.
+/// Filters the contents of the plug-ins folder to ensure only directories that actually contain
+/// a `plugin.json` manifest are collected. Anything else in that directory - stray files, a
+/// Python virtual environment, a work-in-progress plug-in without a manifest yet - is skipped
+/// rather than treated as a plug-in ID.
 ///
 /// # Errors
 ///
@@ -115,11 +117,10 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
 #[cfg(feature = "server")]
 fn generate_plugin_list() -> Result<Vec<String>> {
     let mut plugin_list = fs::read_dir(crate::plugin_dir::root())?
-        .map(|result| result.ok())
-        .filter(|path_option| path_option.is_some())
-        .map(|path_option| path_option.unwrap())
-        .filter(|path| path.path().is_dir())
-        .map(|path| path.file_name().into_string().unwrap())
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().is_dir())
+        .filter(|entry| entry.path().join("plugin.json").is_file())
+        .map(|entry| entry.file_name().into_string().unwrap())
         .collect::<Vec<_>>();
 
     plugin_list.sort();
