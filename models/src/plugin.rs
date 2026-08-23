@@ -67,9 +67,9 @@ impl Manifest {
     /// # Examples
     ///
     /// ```
-    /// # use models::Manifest;
+    /// # use models::plugin::Manifest;
     /// let raw_json = b"{\"name\": \"Deep Thought\", \"type\": \"dynamic\", \"source\": \"index.html\", \"dependencies\": [], \"panels\": [\"all\"]}";
-    /// let manifest = Manifest::create("0042".to_string(), raw_json);
+    /// let manifest = Manifest::new("0042".to_string(), raw_json);
     ///
     /// assert!(manifest.is_valid());
     /// assert_eq!(manifest.uuid(), "0042");

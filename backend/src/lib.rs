@@ -9,6 +9,9 @@ mod plugin_handler;
 /// General API handlers.
 pub mod api;
 
+/// Resolves the directory plug-ins are read from and executed in.
+pub mod plugin_dir;
+
 /// Public utility functions re-exported for convenience across the backend.
 pub mod utils {
     pub use crate::auth::authorize;

@@ -14,10 +14,12 @@
 
 pub mod panel;
 pub mod plugin;
+pub mod routes;
 
 mod error;
 mod message;
 mod position;
+mod version;
 
 mod arg_type;
 

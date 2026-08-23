@@ -22,7 +22,7 @@ use std::{fs, io};
 pub async fn list_plugins() -> Result<()> {
     let plugin_list = generate_plugin_list()?;
 
-    let plugin_list_file = fs::File::create("plugins/plugin-list.json")?;
+    let plugin_list_file = fs::File::create(crate::plugin_dir::join("plugin-list.json"))?;
     let mut writer = io::BufWriter::new(plugin_list_file);
 
     serde_json::to_writer_pretty(&mut writer, &plugin_list)?;
@@ -94,7 +94,7 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
         ));
     }
 
-    let plugin_manifest = fs::read(format!("plugins/{id}/plugin.json"))?;
+    let plugin_manifest = fs::read(crate::plugin_dir::join(&id).join("plugin.json"))?;
     let plugin_manifest = plugin::Manifest::new(id, &plugin_manifest);
     if plugin_manifest.is_valid() {
         Ok(plugin_manifest)
@@ -114,7 +114,7 @@ pub async fn get_plugin_by_id(id: String) -> Result<plugin::Manifest> {
 /// Returns an I/O error if the `plugins` directory cannot be read.
 #[cfg(feature = "server")]
 fn generate_plugin_list() -> Result<Vec<String>> {
-    let mut plugin_list = fs::read_dir("plugins")?
+    let mut plugin_list = fs::read_dir(crate::plugin_dir::root())?
         .map(|result| result.ok())
         .filter(|path_option| path_option.is_some())
         .map(|path_option| path_option.unwrap())

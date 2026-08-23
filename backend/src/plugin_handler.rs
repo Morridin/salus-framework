@@ -7,7 +7,7 @@ use models::PluginError::*;
 use models::{ArgType, PluginError};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::{fs, path::Path};
+use std::fs;
 use std::io::{ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::sync::{OnceLock, RwLock};
@@ -189,7 +189,7 @@ async fn universal_handler(
         .ok_or_else(|| BadMethod(uuid.clone(), endpoint_name.clone(), method))?;
 
     let mut cmd = Command::new(&endpoint.command);
-    cmd.current_dir(format!("plugins/{uuid}/"))
+    cmd.current_dir(crate::plugin_dir::join(&uuid))
         .args(&endpoint.default_args);
 
     let _temp_file = build_command_args(
@@ -243,9 +243,7 @@ fn get_plugin_routing_by_id(
     }
 
     // Else we have a cache miss and want to fill in new data if available.
-    let path = Path::new("plugins")
-        .join(id)
-        .join("plugin.json");
+    let path = crate::plugin_dir::join(id).join("plugin.json");
     let plugin_bytes = fs::read(path).map_err(|error| match error.kind() {
         ErrorKind::NotFound => NotFoundId(id.to_string()),
         _ => InternalReadManifest(id.to_string()),
