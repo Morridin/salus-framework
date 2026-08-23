@@ -161,7 +161,7 @@ impl Display for PluginError {
             InternalWriteCache => f.write_str("Could not write plug-in cache"),
             InternalReadManifest(uuid) => f.write_fmt(format_args!("Error reading manifest file for plug-in {uuid}")),
             InternalFail(uuid, endpoint) => f.write_fmt(format_args!("Error executing plug-in {uuid}, endpoint {endpoint}")),
-            InternalSubProcess(error) => f.write_fmt(format_args!("Error executing plug-in back-end: \n {error}")),
+            InternalSubProcess(error) => f.write_fmt(format_args!("Error executing plug-in back-end: \n\n{error}")),
             InternalTimeout(uuid, endpoint) => f.write_fmt(format_args!("The back-end program for plug-in {uuid}, endpoint {endpoint} was terminated after hitting its wall time.")),
         }
     }

@@ -270,7 +270,7 @@ Example:
 {
   "origin": "http://localhost:8080/plugins-dxh1234567890abcdef0/0042/index.html",
   "method": "GET",
-  "endpoint": "/ask",
+  "endpoint": "/ask?q=of%20Life%2C%20the%20Universe%2C%20and%20Everything",
   "body": null
 }
 ```
