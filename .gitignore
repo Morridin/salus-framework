@@ -11,6 +11,9 @@ frontend/plugins/
 # Test files
 frontend/www-root/assets/test.css
 
+# Not part of the framework. Lives on the `user-study` branch.
+user-study.md
+
 # Temp files
 backend/src/build.rs
 
