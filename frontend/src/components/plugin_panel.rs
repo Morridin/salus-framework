@@ -1,7 +1,7 @@
 use crate::components::Panel;
 use crate::components::buttons::AddButton;
-use models::{plugin, routes, BackendRequestError, Message, Position};
 use dioxus::prelude::*;
+use models::{BackendRequestError, Message, Position, plugin, routes};
 
 /// A [`Panel`] dedicated to hosting and rendering a specific plug-in.
 ///
@@ -26,8 +26,6 @@ pub fn PluginPanel(
     // Signals
     let active_plugin = use_signal(|| None);
     let mut external_message = use_signal(|| String::new());
-    let mut message_data = use_signal(|| None);
-    let mut message_received = use_signal(|| false);
     let plugin = use_memo(move || {
         if external_plugin.is_some() {
             external_plugin.clone()
@@ -39,53 +37,35 @@ pub fn PluginPanel(
     // Handlers for Plug-in-MPI
 
     // Registers the panel-local event listener for the postMessage protocol of the iframes.
-    use_effect(move || {
-        let mut eval = document::eval(
-            r#"
-            const handler = event => {
-                dioxus.send(event.data);
-            };
-            window.addEventListener("message", handler);
+    use_future(move || {
+        let plugin = plugin.clone();
+        async move {
+            let mut eval = document::eval(
+                r#"
+                const handler = event => {
+                    dioxus.send(event.data);
+                };
+                window.addEventListener("message", handler);
 
-            return () => window.removeEventListener("message", handler);
-        "#,
-        );
-        spawn(async move {
+                return () => window.removeEventListener("message", handler);
+               "#,
+            );
+
             while let Ok(data) = eval.recv::<String>().await {
-                let plugin: plugin::Manifest = match plugin() {
-                    Some(plugin) => plugin,
-                    None => continue,
-                };
+                let Some(plugin) = plugin.cloned() else { continue };
 
-                let message = match Message::new(data.as_str()) {
-                    Ok(message) => message,
-                    Err(_) => continue, // TODO: Implement Error Handling!
-                };
+                let Ok(message) = Message::new(data.as_str()) else { continue };
 
                 // Only accept messages whose origin genuinely lies inside this plug-in's own
                 // file directory - see is_plugin_file_origin for why that is a safe check.
                 if !routes::is_plugin_file_origin(message.origin(), plugin.uuid()) {
+                    error!("DEBUG: Origin mismatch! Given: {}, Expected UUID: {}", message.origin(), plugin.uuid());
                     continue;
                 }
 
-                message_data.set(Some(message));
-            }
-        });
-    });
-
-    // Processes incoming messages and dispatches back-end API requests.
-    use_resource(move || async move {
-        let plugin = plugin.read();
-        let message = message_data.read();
-
-        if !*message_received.peek() && plugin.is_some() && message.is_some() {
-            message_received.set(true);
-
-            let plugin = plugin.as_ref().unwrap();
-            let message = message.as_ref().unwrap();
-
-            if let Ok(r) = make_backend_request(plugin, message).await {
-                external_message.set(String::from(r));
+                if let Ok(r) = make_backend_request(&plugin, &message).await {
+                    external_message.set(String::from(r));
+                }
             }
         }
     });
@@ -103,7 +83,6 @@ pub fn PluginPanel(
                 &*message
             );
             document::eval(&message);
-            message_received.set(false);
         }
     });
     // END: Plug-in MPI Handlers

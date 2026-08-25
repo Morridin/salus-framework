@@ -12,6 +12,7 @@ use std::io::{ErrorKind, Read, Write};
 use std::process::{Command, Stdio};
 use std::sync::{OnceLock, RwLock};
 use std::time::Duration;
+use dioxus::fullstack::response::{IntoResponse, Response};
 use tempfile::NamedTempFile;
 use wait_timeout::ChildExt;
 
@@ -80,7 +81,7 @@ pub async fn get_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     universal_handler(uuid, endpoint_name, Method::GET, params, headers, body).await
 }
 
@@ -95,7 +96,7 @@ pub async fn post_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     universal_handler(uuid, endpoint_name, Method::POST, params, headers, body).await
 }
 
@@ -110,7 +111,7 @@ pub async fn put_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     universal_handler(uuid, endpoint_name, Method::PUT, params, headers, body).await
 }
 
@@ -125,7 +126,7 @@ pub async fn patch_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     universal_handler(uuid, endpoint_name, Method::PATCH, params, headers, body).await
 }
 
@@ -140,7 +141,7 @@ pub async fn delete_handler(
     uuid: String,
     endpoint_name: String,
     params: HashMap<String, String>,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     universal_handler(uuid, endpoint_name, Method::DELETE, params, headers, body).await
 }
 
@@ -184,7 +185,7 @@ async fn universal_handler(
     params: HashMap<String, String>,
     headers: HeaderMap,
     body: Bytes,
-) -> Result<String, HttpError> {
+) -> Result<Response, HttpError> {
     // Fail fast if request is not authenticated by token.
     let (status, message) = auth::authorize(headers);
     if status != StatusCode::OK {
@@ -213,9 +214,10 @@ async fn universal_handler(
         &body,
         &uuid,
         &endpoint_name,
-    );
+    )?;
 
-    execute_subprocess(cmd, &uuid, &endpoint_name).map_err(|e| e.into())
+    let result = execute_subprocess(cmd, &uuid, &endpoint_name)?;
+    Ok((StatusCode::OK, result).into_response())
 }
 
 /// Extracts the routing information for a specific plugin by its UUID.

@@ -64,7 +64,7 @@ pub fn MinimiseButton(panel_minimised: Signal<bool>) -> Element {
 ///   variant whether a plug-in was selected or not, but also, in the `Some` case, which plug-in.
 #[component]
 pub fn AddButton(position: Position, opened_plugin: Signal<Option<Manifest>>) -> Element {
-    let available_plugins = use_resource(move || {
+    let mut available_plugins = use_resource(move || {
         let position = position.clone();
         async move { api::plugins(Some(position)).await }
     });
@@ -76,6 +76,7 @@ pub fn AddButton(position: Position, opened_plugin: Signal<Option<Manifest>>) ->
             class: "icon-btn",
             disabled: !plugins_ready(),
             onclick: move |event: MouseEvent| {
+                available_plugins.restart();
                 life_line.set(Some(event.page_coordinates()));
             },
             Icon {
