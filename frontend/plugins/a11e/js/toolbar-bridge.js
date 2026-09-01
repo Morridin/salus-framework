@@ -62,6 +62,9 @@ export function createToolbarBridge({
             return;
         }
 
+        if (payload?.type === "segmentation-export-request") {
+            messageHandlers.onExportRequested?.();
+        }
     }
 
     function subscribe(messageHandlers) {

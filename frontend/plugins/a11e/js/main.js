@@ -6,6 +6,7 @@ import {createPolygonTool} from "./tools/polygon.js";
 import {createSegmentationSurface} from "./segmentation-surface.js";
 import {createToolbarBridge} from "./toolbar-bridge.js";
 import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
+import {annotationsToGeoJson} from "./geojson-export.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
 const VIEWER_PLUGIN_ID = "a11e";
@@ -66,6 +67,23 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         const annotation = annotationStore.create(annotationData);
         toolbar.publishAnnotation(annotation);
         return annotation;
+    }
+
+    function exportAnnotationsAsGeoJson() {
+        const geoJson = annotationsToGeoJson(annotationStore.annotations);
+        const fileContents = JSON.stringify(geoJson, null, 2);
+        const file = new window.Blob(
+            [fileContents],
+            {type: "application/geo+json"},
+        );
+        const fileUrl = window.URL.createObjectURL(file);
+        const downloadLink = document.createElement("a");
+
+        downloadLink.href = fileUrl;
+        downloadLink.download = "segmentations.geojson";
+        downloadLink.click();
+
+        window.URL.revokeObjectURL(fileUrl);
     }
 
     function reportStatus(message) {
@@ -139,6 +157,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
             }
             viewerElement.dataset.tool = tool;
         },
+        onExportRequested: exportAnnotationsAsGeoJson,
     });
     toolbar.requestState();
 

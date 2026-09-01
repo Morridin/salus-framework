@@ -8,6 +8,7 @@
     const radiusOutput = document.getElementById("brush-radius-output");
     const toleranceInput = document.getElementById("brush-tolerance");
     const toleranceOutput = document.getElementById("brush-tolerance-output");
+    const exportButton = document.getElementById("export-geojson");
     let selectedButton = buttons[0];
 
     function sendSelection() {
@@ -46,6 +47,16 @@
     toleranceInput.addEventListener("input", () => {
         toleranceOutput.value = toleranceInput.value;
         sendSelection();
+    });
+
+    exportButton.addEventListener("click", () => {
+        channel.postMessage({
+            sourcePluginId: PLUGIN_ID,
+            targetPluginId: VIEWER_PLUGIN_ID,
+            payload: {
+                type: "segmentation-export-request",
+            },
+        });
     });
 
     channel.addEventListener("message", event => {
