@@ -46,7 +46,7 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
-          node --test frontend/tests/*.test.cjs
+          node --test frontend/tests/*.test.js
           cargo test -p frontend --features server
 
       - name: Install Dioxus CLI

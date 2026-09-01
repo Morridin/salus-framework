@@ -40,6 +40,9 @@ async function loadViewer() {
     const handlers = new Map();
     const keyHandlers = [];
     const sentMessages = [];
+    const downloads = [];
+    const revokedUrls = [];
+    let exportedFile = null;
     let messageHandler = null;
     const viewerElement = new FakeElement();
     const errorElement = new FakeElement();
@@ -83,8 +86,15 @@ async function loadViewer() {
         getElementById(id) {
             return id === "image-viewer" ? viewerElement : errorElement;
         },
-        createElement() {
-            return new FakeElement();
+        createElement(tagName) {
+            const element = new FakeElement();
+            if (tagName === "a") {
+                element.click = () => downloads.push({
+                    filename: element.download,
+                    url: element.href,
+                });
+            }
+            return element;
         },
         createElementNS() {
             return new FakeElement();
@@ -95,6 +105,16 @@ async function loadViewer() {
     };
     const window = {
         location: {search: ""},
+        Blob,
+        URL: {
+            createObjectURL(file) {
+                exportedFile = file;
+                return "blob:segmentation-export";
+            },
+            revokeObjectURL(url) {
+                revokedUrls.push(url);
+            },
+        },
     };
     const channel = {
         addEventListener(type, handler) {
@@ -139,6 +159,9 @@ async function loadViewer() {
             },
         }),
         app,
+        downloads,
+        getExportedFile: () => exportedFile,
+        revokedUrls,
         sentMessages,
         viewerElement,
         window,
@@ -241,6 +264,53 @@ test("rectangle tool creates one annotation through the shared store", async () 
         ).length,
         1,
     );
+});
+
+test("export request downloads rectangle annotations as GeoJSON", async () => {
+    const environment = await loadViewer();
+
+    environment.handlers.get("canvas-press")({
+        position: {x: 80, y: 90},
+    });
+    environment.handlers.get("canvas-release")({
+        position: {x: 10, y: 20},
+    });
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-export-request"},
+    });
+
+    assert.deepEqual(environment.downloads, [{
+        filename: "segmentations.geojson",
+        url: "blob:segmentation-export",
+    }]);
+    assert.deepEqual(environment.revokedUrls, [
+        "blob:segmentation-export",
+    ]);
+
+    const exportedFile = environment.getExportedFile();
+    assert.equal(exportedFile.type, "application/geo+json");
+    assert.deepEqual(JSON.parse(await exportedFile.text()), {
+        type: "FeatureCollection",
+        features: [{
+            type: "Feature",
+            geometry: {
+                type: "Polygon",
+                coordinates: [[
+                    [10, 20],
+                    [80, 20],
+                    [80, 90],
+                    [10, 90],
+                    [10, 20],
+                ]],
+            },
+            properties: {
+                objectType: "annotation",
+                name: "segmentation-1",
+                sourceTool: "rectangle",
+            },
+        }],
+    });
 });
 
 test("brush tool creates one image-coordinate annotation with its radius", async () => {
