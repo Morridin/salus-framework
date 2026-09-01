@@ -1,3 +1,4 @@
+// Conventional freehand vector brush.
 const MINIMUM_POINT_DISTANCE = 1;
 
 function pathData(points) {

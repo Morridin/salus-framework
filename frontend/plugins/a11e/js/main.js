@@ -1,7 +1,7 @@
 import {createAnnotationStore} from "./annotation-store.js";
-import {createBrushTool} from "./brush-tool.js";
-import {createDragShapeTool} from "./drag-shape-tool.js";
-import {createPolygonTool} from "./polygon-tool.js";
+import {createBrushTool} from "./tools/brush.js";
+import {createDragShapeTool} from "./tools/drag-shape.js";
+import {createPolygonTool} from "./tools/polygon.js";
 import {createSegmentationSurface} from "./segmentation-surface.js";
 import {createToolbarBridge} from "./toolbar-bridge.js";
 

@@ -1,3 +1,4 @@
+// Click-to-place polygon tool.
 function pointString(points) {
     return points.map(point => `${point.x},${point.y}`).join(" ");
 }

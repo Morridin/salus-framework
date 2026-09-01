@@ -1,3 +1,4 @@
+// Shared drag behavior for rectangles and circles.
 const MINIMUM_SHAPE_SIZE = 3;
 
 function shapeBounds(tool, start, end) {
