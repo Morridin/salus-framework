@@ -1,9 +1,11 @@
 import {createAnnotationStore} from "./annotation-store.js";
+import {createAssistedBrushTool} from "./tools/assisted-brush/tool.js";
 import {createBrushTool} from "./tools/brush.js";
 import {createDragShapeTool} from "./tools/drag-shape.js";
 import {createPolygonTool} from "./tools/polygon.js";
 import {createSegmentationSurface} from "./segmentation-surface.js";
 import {createToolbarBridge} from "./toolbar-bridge.js";
+import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
 const VIEWER_PLUGIN_ID = "a11e";
@@ -15,10 +17,12 @@ const OPENSEADRAGON_IMAGES_URL =
 export function startImageViewer({window, document, OpenSeadragon, channel}) {
     const viewerElement = document.getElementById("image-viewer");
     const errorElement = document.getElementById("viewer-error");
+    const statusElement = document.getElementById("viewer-status");
     const imageUrl = new URLSearchParams(window.location.search).get("image") ||
         DEFAULT_IMAGE_URL;
     let activeTool = "rectangle";
     let brushRadius = 12;
+    let brushTolerance = 24;
 
     viewerElement.dataset.tool = activeTool;
 
@@ -52,11 +56,21 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         toolbarPluginId: TOOLBAR_PLUGIN_ID,
     });
     const annotationStore = createAnnotationStore();
+    const intensitySampler = createIntensitySampler({
+        window,
+        document,
+        imageUrl,
+    });
 
     function createAnnotation(annotationData) {
         const annotation = annotationStore.create(annotationData);
         toolbar.publishAnnotation(annotation);
         return annotation;
+    }
+
+    function reportStatus(message) {
+        statusElement.textContent = message;
+        statusElement.hidden = !message;
     }
 
     const surface = createSegmentationSurface({viewer, document});
@@ -76,6 +90,14 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
             surface,
             createAnnotation,
             getRadius: () => brushRadius,
+        }),
+        "assisted-brush": createAssistedBrushTool({
+            surface,
+            sampler: intensitySampler,
+            createAnnotation,
+            getRadius: () => brushRadius,
+            getTolerance: () => brushTolerance,
+            reportStatus,
         }),
     };
 
@@ -103,15 +125,20 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         activeToolHandler("keyDown", event)
     );
 
-    toolbar.subscribe((tool, nextBrushRadius) => {
-        if (activeTool !== tool) {
-            tools[activeTool].deactivate?.();
-        }
-        activeTool = tool;
-        if (nextBrushRadius !== null) {
-            brushRadius = nextBrushRadius;
-        }
-        viewerElement.dataset.tool = tool;
+    toolbar.subscribe({
+        onToolChanged: (tool, nextBrushRadius, nextBrushTolerance) => {
+            if (activeTool !== tool) {
+                tools[activeTool].deactivate?.();
+            }
+            activeTool = tool;
+            if (nextBrushRadius !== null) {
+                brushRadius = nextBrushRadius;
+            }
+            if (nextBrushTolerance !== null) {
+                brushTolerance = nextBrushTolerance;
+            }
+            viewerElement.dataset.tool = tool;
+        },
     });
     toolbar.requestState();
 

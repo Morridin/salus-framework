@@ -1,6 +1,16 @@
-const VALID_TOOLS = new Set(["rectangle", "circle", "polygon", "brush"]);
+const VALID_TOOLS = new Set([
+    "rectangle",
+    "circle",
+    "polygon",
+    "brush",
+    "assisted-brush",
+]);
 
-export function createToolbarBridge({channel, viewerPluginId, toolbarPluginId}) {
+export function createToolbarBridge({
+    channel,
+    viewerPluginId,
+    toolbarPluginId,
+}) {
     function publishAnnotation(annotation) {
         channel.postMessage({
             sourcePluginId: viewerPluginId,
@@ -20,24 +30,43 @@ export function createToolbarBridge({channel, viewerPluginId, toolbarPluginId}) 
         });
     }
 
-    function subscribe(onToolChanged) {
+    function isToolbarMessage(message) {
+        return (
+            message?.sourcePluginId === toolbarPluginId &&
+            message?.targetPluginId === viewerPluginId
+        );
+    }
+
+    function handleToolChange(payload, onToolChanged) {
+        if (!VALID_TOOLS.has(payload.tool)) return;
+
+        const brushRadius = Number(payload.brushRadius);
+        const brushTolerance = Number(payload.brushTolerance);
+        const validRadius = Number.isFinite(brushRadius) && brushRadius > 0
+            ? brushRadius
+            : null;
+        const validTolerance = (
+            Number.isFinite(brushTolerance) && brushTolerance >= 0
+        ) ? Math.min(255, brushTolerance) : null;
+
+        onToolChanged?.(payload.tool, validRadius, validTolerance);
+    }
+
+    function handleToolbarMessage(message, messageHandlers) {
+        if (!isToolbarMessage(message)) return;
+
+        const payload = message.payload;
+
+        if (payload?.type === "segmentation-tool-changed") {
+            handleToolChange(payload, messageHandlers.onToolChanged);
+            return;
+        }
+
+    }
+
+    function subscribe(messageHandlers) {
         const listener = event => {
-            const message = event.data;
-            const {payload, sourcePluginId} = message ?? {};
-            if (
-                message?.targetPluginId === viewerPluginId &&
-                sourcePluginId === toolbarPluginId &&
-                payload?.type === "segmentation-tool-changed" &&
-                VALID_TOOLS.has(payload.tool)
-            ) {
-                const brushRadius = Number(payload.brushRadius);
-                onToolChanged(
-                    payload.tool,
-                    Number.isFinite(brushRadius) && brushRadius > 0
-                        ? brushRadius
-                        : null,
-                );
-            }
+            handleToolbarMessage(event.data, messageHandlers);
         };
 
         channel.addEventListener("message", listener);

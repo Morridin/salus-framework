@@ -54,7 +54,8 @@ svg {
     stroke-width: 2;
 }
 
-.brush-size {
+.brush-size,
+.brush-tolerance {
     display: none;
     gap: 0.45rem;
     align-items: center;
@@ -62,16 +63,20 @@ svg {
     font-size: 0.9rem;
 }
 
-.toolbar[data-tool="brush"] .brush-size {
+.toolbar[data-tool="brush"] .brush-size,
+.toolbar[data-tool="assisted-brush"] .brush-size,
+.toolbar[data-tool="assisted-brush"] .brush-tolerance {
     display: flex;
 }
 
-.brush-size input {
+.brush-size input,
+.brush-tolerance input {
     width: min(9rem, 30vw);
     accent-color: #2ecc71;
 }
 
-.brush-size output {
+.brush-size output,
+.brush-tolerance output {
     min-width: 3.2rem;
     color: #fff;
 }

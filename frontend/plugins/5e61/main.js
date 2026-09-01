@@ -6,6 +6,8 @@
     const toolbar = document.querySelector(".toolbar");
     const radiusInput = document.getElementById("brush-radius");
     const radiusOutput = document.getElementById("brush-radius-output");
+    const toleranceInput = document.getElementById("brush-tolerance");
+    const toleranceOutput = document.getElementById("brush-tolerance-output");
     let selectedButton = buttons[0];
 
     function sendSelection() {
@@ -16,6 +18,7 @@
                 type: "segmentation-tool-changed",
                 tool: selectedButton.dataset.tool,
                 brushRadius: Number(radiusInput.value),
+                brushTolerance: Number(toleranceInput.value),
             },
         });
     }
@@ -37,6 +40,11 @@
 
     radiusInput.addEventListener("input", () => {
         radiusOutput.value = `${radiusInput.value} px`;
+        sendSelection();
+    });
+
+    toleranceInput.addEventListener("input", () => {
+        toleranceOutput.value = toleranceInput.value;
         sendSelection();
     });
 

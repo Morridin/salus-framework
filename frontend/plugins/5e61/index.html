@@ -33,11 +33,24 @@
             </svg>
             <span>Brush</span>
         </button>
+        <button type="button" data-tool="assisted-brush" aria-pressed="false" title="Intensity-aware brush">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m14 4 6 6-9 9H5v-6z" />
+                <path d="M5 4v4M3 6h4M18 16v4M16 18h4" />
+            </svg>
+            <span>Smart brush</span>
+        </button>
         <label class="brush-size" for="brush-radius">
             <span>Radius</span>
             <input id="brush-radius" type="range" min="1" max="100" value="12" step="1" />
             <output id="brush-radius-output" for="brush-radius">12 px</output>
         </label>
+        <label class="brush-tolerance" for="brush-tolerance">
+            <span>Tolerance</span>
+            <input id="brush-tolerance" type="range" min="0" max="255" value="24" step="1" />
+            <output id="brush-tolerance-output" for="brush-tolerance">24</output>
+        </label>
     </div>
 </body>
+
 </html>
