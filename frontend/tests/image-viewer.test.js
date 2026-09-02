@@ -308,6 +308,17 @@ test("export request downloads rectangle annotations as GeoJSON", async () => {
                 objectType: "annotation",
                 name: "segmentation-1",
                 sourceTool: "rectangle",
+                salus: {
+                    version: 1,
+                    annotation: {
+                        id: "segmentation-1",
+                        shape: "rectangle",
+                        x: 10,
+                        y: 20,
+                        width: 70,
+                        height: 70,
+                    },
+                },
             },
         }],
     });

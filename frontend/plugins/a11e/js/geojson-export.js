@@ -1,4 +1,20 @@
+import {featureCollection, polygon} from "@turf/helpers";
+import {union} from "@turf/union";
+
 const CIRCLE_POINT_COUNT = 64;
+export const SALUS_ANNOTATION_VERSION = 1;
+
+function annotationProperties(annotation) {
+  return {
+    objectType: "annotation",
+    name: annotation.id,
+    sourceTool: annotation.shape,
+    salus: {
+      version: SALUS_ANNOTATION_VERSION,
+      annotation,
+    },
+  };
+}
 
 function circleToPolygonRing({centerX, centerY, radius}) {
   const points = [];
@@ -16,8 +32,6 @@ function circleToPolygonRing({centerX, centerY, radius}) {
 }
 
 export function circleToGeoJsonFeature(annotation) {
-  const {id} = annotation;
-
   return {
     type: "Feature",
     geometry: {
@@ -25,11 +39,7 @@ export function circleToGeoJsonFeature(annotation) {
       coordinates: [circleToPolygonRing(annotation)],
       isEllipse: true,
     },
-    properties: {
-      objectType: "annotation",
-      name: id,
-      sourceTool: "circle",
-    },
+    properties: annotationProperties(annotation),
   };
 }
 
@@ -94,24 +104,47 @@ function brushToPolygonRing({points, radius}) {
 }
 
 export function brushToGeoJsonFeature(annotation) {
-  const {id} = annotation;
-
   return {
     type: "Feature",
     geometry: {
       type: "Polygon",
       coordinates: [brushToPolygonRing(annotation)],
     },
-    properties: {
-      objectType: "annotation",
-      name: id,
-      sourceTool: "brush",
-    },
+    properties: annotationProperties(annotation),
   };
 }
 
+function assistedBrushRunToFeature({y, xStart, xEnd}) {
+  return polygon([[
+    [xStart, y],
+    [xEnd + 1, y],
+    [xEnd + 1, y + 1],
+    [xStart, y + 1],
+    [xStart, y],
+  ]]);
+}
+
+export function assistedBrushToGeoJsonFeature(annotation) {
+  const {runs} = annotation;
+
+  if (!Array.isArray(runs) || runs.length === 0) {
+    throw new Error("At least one assisted-brush run is required.");
+  }
+
+  const properties = annotationProperties(annotation);
+  const runFeatures = runs.map(assistedBrushRunToFeature);
+
+  if (runFeatures.length === 1) {
+    return {...runFeatures[0], properties};
+  }
+
+  const merged = union(featureCollection(runFeatures), {properties});
+  if (!merged) throw new Error("The assisted-brush union is empty.");
+  return merged;
+}
+
 export function polygonToGeoJsonFeature(annotation) {
-  const {id, points} = annotation;
+  const {points} = annotation;
 
   return {
     type: "Feature",
@@ -119,16 +152,12 @@ export function polygonToGeoJsonFeature(annotation) {
       type: "Polygon",
       coordinates: [polygonToCoordinateRing(points)],
     },
-    properties: {
-      objectType: "annotation",
-      name: id,
-      sourceTool: "polygon",
-    },
+    properties: annotationProperties(annotation),
   };
 }
 
 export function rectangleToGeoJsonFeature(annotation) {
-  const { id, x, y, width, height } = annotation;
+  const {x, y, width, height} = annotation;
 
   return {
     type: "Feature",
@@ -144,16 +173,14 @@ export function rectangleToGeoJsonFeature(annotation) {
         ],
       ],
     },
-    properties: {
-      objectType: "annotation",
-      name: id,
-      sourceTool: "rectangle",
-    },
+    properties: annotationProperties(annotation),
   };
 }
 
 function annotationToGeoJsonFeature(annotation) {
   switch (annotation.shape) {
+    case "assisted-brush":
+      return assistedBrushToGeoJsonFeature(annotation);
     case "brush":
       return brushToGeoJsonFeature(annotation);
     case "circle":
