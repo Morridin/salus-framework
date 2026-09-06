@@ -1,6 +1,6 @@
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-export function createSegmentationSurface({viewer, document}) {
+export function createViewerAdapter({viewer, document}) {
     function toImagePoint(position) {
         const viewportPoint = viewer.viewport.pointFromPixel(position);
         return viewer.viewport.viewportToImageCoordinates(viewportPoint);
