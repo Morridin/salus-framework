@@ -7,7 +7,7 @@ const viewerModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/main.js"),
 ));
 const exportModule = import(pathToFileURL(
-    path.join(__dirname, "../plugins/a11e/js/geojson-export.js"),
+    path.join(__dirname, "../plugins/a11e/js/annotations/geojson-export.js"),
 ));
 
 async function importFile(environment, file, sourcePluginId = "5e61") {

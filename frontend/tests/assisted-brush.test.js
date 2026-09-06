@@ -7,7 +7,7 @@ const brushModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/tools/assisted-brush/tool.js"),
 ));
 const rendererModule = import(pathToFileURL(
-    path.join(__dirname, "../plugins/a11e/js/annotation-renderer.js"),
+    path.join(__dirname, "../plugins/a11e/js/annotations/annotation-renderer.js"),
 ));
 
 class FakeElement {

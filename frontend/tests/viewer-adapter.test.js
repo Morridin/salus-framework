@@ -6,7 +6,7 @@ const {pathToFileURL} = require("node:url");
 const surfaceModule = import(pathToFileURL(
     path.join(
         __dirname,
-        "../plugins/a11e/js/viewer-adapter.js",
+        "../plugins/a11e/js/viewer/viewer-adapter.js",
     ),
 ));
 

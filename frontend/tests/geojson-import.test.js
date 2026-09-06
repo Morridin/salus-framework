@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {annotationsToGeoJson} from "../plugins/a11e/js/geojson-export.js";
-import {annotationsFromGeoJson} from "../plugins/a11e/js/geojson-import.js";
+import {annotationsToGeoJson} from "../plugins/a11e/js/annotations/geojson-export.js";
+import {annotationsFromGeoJson} from "../plugins/a11e/js/annotations/geojson-import.js";
 
 const annotations = [
   {

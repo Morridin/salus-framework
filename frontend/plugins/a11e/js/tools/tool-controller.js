@@ -1,8 +1,8 @@
-import {createAssistedBrushTool} from "./tools/assisted-brush/tool.js";
-import {createBrushTool} from "./tools/brush.js";
-import {createDragShapeTool} from "./tools/drag-shape.js";
-import {createPolygonTool} from "./tools/polygon.js";
-import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
+import {createAssistedBrushTool} from "./assisted-brush/tool.js";
+import {createBrushTool} from "./brush.js";
+import {createDragShapeTool} from "./drag-shape.js";
+import {createPolygonTool} from "./polygon.js";
+import {createIntensitySampler} from "./assisted-brush/sampler.js";
 
 // Owns drawing tools, their settings, and dispatch of viewer input.
 export function createToolController({

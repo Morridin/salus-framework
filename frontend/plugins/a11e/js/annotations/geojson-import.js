@@ -1,5 +1,3 @@
-import {SALUS_ANNOTATION_VERSION} from "./annotation-format.js";
-
 function isPositiveNumber(value) {
   return Number.isFinite(value) && value > 0;
 }
@@ -81,7 +79,7 @@ export function annotationsFromGeoJson(fileContents) {
 
     const {version, annotation} = feature.properties.salus;
 
-    if (version !== SALUS_ANNOTATION_VERSION) {
+    if (version !== 1) {
       throw new Error(`Unsupported Salus annotation version: ${version}`);
     }
 

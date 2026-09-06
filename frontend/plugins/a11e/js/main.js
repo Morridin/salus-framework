@@ -1,9 +1,9 @@
-import {createAnnotationController} from "./annotation-controller.js";
-import {createAnnotationRenderer} from "./annotation-renderer.js";
-import {createViewerAdapter} from "./viewer-adapter.js";
-import {createToolbarBridge} from "./toolbar-bridge.js";
-import {createToolController} from "./tool-controller.js";
-import {createViewerSession} from "./viewer-session.js";
+import {createAnnotationController} from "./annotations/annotation-controller.js";
+import {createAnnotationRenderer} from "./annotations/annotation-renderer.js";
+import {createViewerAdapter} from "./viewer/viewer-adapter.js";
+import {createToolbarBridge} from "./toolbar/toolbar-bridge.js";
+import {createToolController} from "./tools/tool-controller.js";
+import {createViewerSession} from "./viewer/viewer-session.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
 const VIEWER_PLUGIN_ID = "a11e";
