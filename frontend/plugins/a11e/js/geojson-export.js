@@ -1,8 +1,8 @@
 import {featureCollection, polygon} from "@turf/helpers";
 import {union} from "@turf/union";
+import {SALUS_ANNOTATION_VERSION} from "./annotation-format.js";
 
 const CIRCLE_POINT_COUNT = 64;
-export const SALUS_ANNOTATION_VERSION = 1;
 
 function annotationProperties(annotation) {
   return {

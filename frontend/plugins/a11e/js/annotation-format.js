@@ -1,0 +1,1 @@
+export const SALUS_ANNOTATION_VERSION = 1;
