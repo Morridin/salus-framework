@@ -8,21 +8,15 @@ function isPrimaryButton(event) {
     return button === undefined || button === 0;
 }
 
-function runsToPathData(runs) {
-    return runs.map(({y, xStart, xEnd}) => (
-        `M ${xStart} ${y} H ${xEnd + 1} V ${y + 1} H ${xStart} Z`
-    )).join(" ");
-}
-
 export function createAssistedBrushTool({
     surface,
+    renderer,
     sampler,
     getRadius,
     getTolerance,
     createAnnotation,
     reportStatus = () => {},
 }) {
-    let layer = null;
     let stroke = null;
 
     function sampleAt(point) {
@@ -59,11 +53,14 @@ export function createAssistedBrushTool({
         }
 
         stroke.runs = pixelKeysToRuns(stroke.pixelKeys);
-        stroke.element.setAttribute("d", runsToPathData(stroke.runs));
+        renderer.update(stroke.element, {
+            shape: "assisted-brush",
+            runs: stroke.runs,
+        });
     }
 
     function start(event) {
-        if (!layer || !isPrimaryButton(event)) return;
+        if (!isPrimaryButton(event)) return;
         if (!sampler.ready) {
             reportStatus(
                 sampler.error?.message ||
@@ -74,9 +71,10 @@ export function createAssistedBrushTool({
 
         reportStatus("");
         event.preventDefaultAction = true;
-        const element = surface.createSvgElement("path");
-        element.classList.add("assisted-brush-segmentation", "preview");
-        layer.append(element);
+        const element = renderer.render(
+            {shape: "assisted-brush", runs: []},
+            {preview: true},
+        );
 
         stroke = {
             radius: getRadius(),
@@ -101,7 +99,7 @@ export function createAssistedBrushTool({
         addPoint(event.position);
 
         if (stroke.runs.length === 0) {
-            stroke.element.remove();
+            renderer.remove(stroke.element);
             stroke = null;
             return;
         }
@@ -112,22 +110,16 @@ export function createAssistedBrushTool({
             tolerance: stroke.tolerance,
             runs: stroke.runs,
         });
-        stroke.element.classList.remove("preview");
-        stroke.element.dataset.annotationId = annotation.id;
+        renderer.finalizePreview(stroke.element, annotation);
         stroke = null;
     }
 
     function cancel() {
-        stroke?.element.remove();
+        if (stroke) renderer.remove(stroke.element);
         stroke = null;
     }
 
-    function open() {
-        layer = surface.createSvgLayer("assisted-brush-layer");
-    }
-
     return {
-        open,
         press: start,
         drag,
         release: finish,

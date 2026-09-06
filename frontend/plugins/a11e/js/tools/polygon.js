@@ -1,14 +1,9 @@
-// Click-to-place polygon tool.
-function pointString(points) {
-    return points.map(point => `${point.x},${point.y}`).join(" ");
-}
-
 export function createPolygonTool({
     surface,
+    renderer,
     createAnnotation,
 }) {
     let draft = null;
-    let layer = null;
 
     function renderDraft(cursorPoint = null) {
         if (!draft) return;
@@ -16,23 +11,24 @@ export function createPolygonTool({
         const displayedPoints = cursorPoint
             ? [...draft.points, cursorPoint]
             : draft.points;
-        draft.element.setAttribute(
-            "points",
-            pointString(displayedPoints),
-        );
+        renderer.update(draft.element, {
+            shape: "polygon",
+            points: displayedPoints,
+        });
     }
 
     function start(point) {
-        const element = surface.createSvgElement("polygon");
-        element.classList.add("polygon-segmentation", "preview");
-        layer.append(element);
+        const element = renderer.render(
+            {shape: "polygon", points: [point]},
+            {preview: true},
+        );
 
         draft = {points: [point], element};
         renderDraft();
     }
 
     function addPoint(event) {
-        if (!layer || event.quick === false) return;
+        if (event.quick === false) return;
 
         event.preventDefaultAction = true;
         const point = surface.toImagePoint(event.position);
@@ -51,7 +47,7 @@ export function createPolygonTool({
     }
 
     function cancel() {
-        draft?.element.remove();
+        if (draft) renderer.remove(draft.element);
         draft = null;
     }
 
@@ -68,9 +64,7 @@ export function createPolygonTool({
             points: draft.points.map(({x, y}) => ({x, y})),
         });
 
-        renderDraft();
-        draft.element.classList.remove("preview");
-        draft.element.dataset.annotationId = annotation.id;
+        renderer.finalizePreview(draft.element, annotation);
         draft = null;
     }
 
@@ -83,10 +77,6 @@ export function createPolygonTool({
         } else {
             renderDraft();
         }
-    }
-
-    function open() {
-        layer = surface.createSvgLayer("polygon-layer");
     }
 
     function keyDown(event) {
@@ -103,7 +93,6 @@ export function createPolygonTool({
     }
 
     return {
-        open,
         click: addPoint,
         pointerMove: previewEdge,
         keyDown,

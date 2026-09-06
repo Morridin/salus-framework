@@ -6,6 +6,9 @@ const {pathToFileURL} = require("node:url");
 const brushModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/tools/assisted-brush/tool.js"),
 ));
+const rendererModule = import(pathToFileURL(
+    path.join(__dirname, "../plugins/a11e/js/annotation-renderer.js"),
+));
 
 class FakeElement {
     constructor() {
@@ -33,6 +36,7 @@ class FakeElement {
 
 test("assisted brush creates a compact intensity-mask annotation", async () => {
     const {createAssistedBrushTool} = await brushModule;
+    const {createAnnotationRenderer} = await rendererModule;
     const annotations = [];
     const sampledPoints = [];
     const surface = {
@@ -40,6 +44,8 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
         createSvgLayer: () => new FakeElement(),
         createSvgElement: () => new FakeElement(),
     };
+    const renderer = createAnnotationRenderer({surface});
+    renderer.initializeLayers();
     const sampler = {
         ready: true,
         select(point) {
@@ -54,6 +60,7 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
     };
     const tool = createAssistedBrushTool({
         surface,
+        renderer,
         sampler,
         getRadius: () => 4,
         getTolerance: () => 18,
@@ -64,7 +71,6 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
         },
     });
 
-    tool.open();
     tool.press({position: {x: 1, y: 2}, originalEvent: {button: 0}});
     tool.release({position: {x: 9, y: 2}});
 

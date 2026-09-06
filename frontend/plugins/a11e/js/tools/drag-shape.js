@@ -29,6 +29,7 @@ function shapeBounds(tool, start, end) {
 
 export function createDragShapeTool({
     surface,
+    renderer,
     tool,
     createAnnotation,
 }) {
@@ -37,25 +38,29 @@ export function createDragShapeTool({
     function updateDrawing(position) {
         drawing.end = surface.toImagePoint(position);
         drawing.bounds = shapeBounds(drawing.tool, drawing.start, drawing.end);
-        surface.updateOverlay(drawing.element, drawing.bounds);
+        renderer.update(drawing.element, {
+            shape: drawing.tool,
+            ...drawing.bounds,
+        });
     }
 
     function startDrawing(event) {
         event.preventDefaultAction = true;
 
         const start = surface.toImagePoint(event.position);
-        const element = surface.createElement("div");
-        element.className = `segmentation-overlay preview ${tool}`;
+        const bounds = shapeBounds(tool, start, start);
+        const element = renderer.render(
+            {shape: tool, ...bounds},
+            {preview: true},
+        );
 
         drawing = {
             tool,
             start,
             end: start,
             element,
-            bounds: shapeBounds(tool, start, start),
+            bounds,
         };
-
-        surface.addOverlay(element, drawing.bounds);
     }
 
     function dragDrawing(event) {
@@ -75,7 +80,7 @@ export function createDragShapeTool({
             drawing.bounds.width < MINIMUM_SHAPE_SIZE ||
             drawing.bounds.height < MINIMUM_SHAPE_SIZE
         ) {
-            surface.removeOverlay(drawing.element);
+            renderer.remove(drawing.element);
             drawing = null;
             return;
         }
@@ -96,15 +101,14 @@ export function createDragShapeTool({
             };
         const annotation = createAnnotation(annotationData);
 
-        drawing.element.classList.remove("preview");
-        drawing.element.dataset.annotationId = annotation.id;
+        renderer.finalizePreview(drawing.element, annotation);
         drawing = null;
     }
 
     function deactivate() {
         if (!drawing) return;
 
-        surface.removeOverlay(drawing.element);
+        renderer.remove(drawing.element);
         drawing = null;
     }
 

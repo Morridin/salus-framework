@@ -1,16 +1,4 @@
-// Conventional freehand vector brush.
 const MINIMUM_POINT_DISTANCE = 1;
-
-function pathData(points) {
-    if (points.length === 1) {
-        const {x, y} = points[0];
-        return `M ${x} ${y} l 0.001 0`;
-    }
-
-    return points
-        .map(({x, y}, index) => `${index === 0 ? "M" : "L"} ${x} ${y}`)
-        .join(" ");
-}
 
 function isPrimaryButton(event) {
     const button = event.originalEvent?.button;
@@ -19,15 +7,11 @@ function isPrimaryButton(event) {
 
 export function createBrushTool({
     surface,
+    renderer,
     getRadius,
     createAnnotation,
 }) {
-    let layer = null;
     let stroke = null;
-
-    function render() {
-        stroke.element.setAttribute("d", pathData(stroke.points));
-    }
 
     function addPoint(position) {
         const point = surface.toImagePoint(position);
@@ -42,19 +26,23 @@ export function createBrushTool({
         }
 
         stroke.points.push({x: point.x, y: point.y});
-        render();
+        renderer.update(stroke.element, {
+            shape: "brush",
+            radius: stroke.radius,
+            points: stroke.points,
+        });
     }
 
     function start(event) {
-        if (!layer || !isPrimaryButton(event)) return;
+        if (!isPrimaryButton(event)) return;
 
         event.preventDefaultAction = true;
 
         const radius = getRadius();
-        const element = surface.createSvgElement("path");
-        element.classList.add("brush-segmentation", "preview");
-        element.setAttribute("stroke-width", radius * 2);
-        layer.append(element);
+        const element = renderer.render(
+            {shape: "brush", radius, points: []},
+            {preview: true},
+        );
 
         stroke = {radius, points: [], element};
         addPoint(event.position);
@@ -79,22 +67,16 @@ export function createBrushTool({
             points: stroke.points.map(({x, y}) => ({x, y})),
         });
 
-        stroke.element.classList.remove("preview");
-        stroke.element.dataset.annotationId = annotation.id;
+        renderer.finalizePreview(stroke.element, annotation);
         stroke = null;
     }
 
     function cancel() {
-        stroke?.element.remove();
+        if (stroke) renderer.remove(stroke.element);
         stroke = null;
     }
 
-    function open() {
-        layer = surface.createSvgLayer("brush-layer");
-    }
-
     return {
-        open,
         press: start,
         drag,
         release: finish,

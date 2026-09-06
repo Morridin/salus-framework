@@ -1,4 +1,5 @@
 import {createAnnotationStore} from "./annotation-store.js";
+import {createAnnotationRenderer} from "./annotation-renderer.js";
 import {createAssistedBrushTool} from "./tools/assisted-brush/tool.js";
 import {createBrushTool} from "./tools/brush.js";
 import {createDragShapeTool} from "./tools/drag-shape.js";
@@ -92,25 +93,30 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     }
 
     const surface = createSegmentationSurface({viewer, document});
+    const renderer = createAnnotationRenderer({surface});
     const tools = {
         rectangle: createDragShapeTool({
             surface,
+            renderer,
             tool: "rectangle",
             createAnnotation,
         }),
         circle: createDragShapeTool({
             surface,
+            renderer,
             tool: "circle",
             createAnnotation,
         }),
-        polygon: createPolygonTool({surface, createAnnotation}),
+        polygon: createPolygonTool({surface, renderer, createAnnotation}),
         brush: createBrushTool({
             surface,
+            renderer,
             createAnnotation,
             getRadius: () => brushRadius,
         }),
         "assisted-brush": createAssistedBrushTool({
             surface,
+            renderer,
             sampler: intensitySampler,
             createAnnotation,
             getRadius: () => brushRadius,
@@ -120,11 +126,12 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     };
 
     function activeToolHandler(name, event) {
+        if (!renderer.canRender(activeTool)) return;
         tools[activeTool][name]?.(event);
     }
 
-    viewer.addHandler("open", event => {
-        Object.values(tools).forEach(tool => tool.open?.(event));
+    viewer.addHandler("open", () => {
+        renderer.initializeLayers();
     });
     viewer.addHandler("canvas-press", event => activeToolHandler("press", event));
     viewer.addHandler("canvas-drag", event => activeToolHandler("drag", event));
