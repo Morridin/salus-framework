@@ -8,6 +8,7 @@ import {createSegmentationSurface} from "./segmentation-surface.js";
 import {createToolbarBridge} from "./toolbar-bridge.js";
 import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
 import {annotationsToGeoJson} from "./geojson-export.js";
+import {annotationsFromGeoJson} from "./geojson-import.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
 const VIEWER_PLUGIN_ID = "a11e";
@@ -25,6 +26,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     let activeTool = "rectangle";
     let brushRadius = 12;
     let brushTolerance = 24;
+    let imageReady = false;
 
     viewerElement.dataset.tool = activeTool;
 
@@ -48,6 +50,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     });
 
     viewer.addHandler("open-failed", event => {
+        imageReady = false;
         errorElement.hidden = false;
         errorElement.textContent = `Could not open image: ${event.message || imageUrl}`;
     });
@@ -92,6 +95,26 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         statusElement.hidden = !message;
     }
 
+    async function importAnnotationsFromGeoJson(file) {
+        if (!file) return;
+
+        try {
+            const annotations = annotationsFromGeoJson(await file.text());
+            if (!imageReady) {
+                throw new Error("Wait for the image to load before importing annotations.");
+            }
+
+            for (const {id, ...annotationData} of annotations) {
+                const annotation = createAnnotation(annotationData);
+                renderer.render(annotation);
+            }
+
+            reportStatus(`Imported ${annotations.length} annotation${annotations.length === 1 ? "" : "s"}.`);
+        } catch (error) {
+            reportStatus(`Could not import annotations: ${error.message}`);
+        }
+    }
+
     const surface = createSegmentationSurface({viewer, document});
     const renderer = createAnnotationRenderer({surface});
     const tools = {
@@ -132,6 +155,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
 
     viewer.addHandler("open", () => {
         renderer.initializeLayers();
+        imageReady = true;
     });
     viewer.addHandler("canvas-press", event => activeToolHandler("press", event));
     viewer.addHandler("canvas-drag", event => activeToolHandler("drag", event));
@@ -165,6 +189,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
             viewerElement.dataset.tool = tool;
         },
         onExportRequested: exportAnnotationsAsGeoJson,
+        onImportRequested: importAnnotationsFromGeoJson,
     });
     toolbar.requestState();
 

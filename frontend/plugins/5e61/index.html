@@ -50,6 +50,13 @@
             <input id="brush-tolerance" type="range" min="0" max="255" value="24" step="1" />
             <output id="brush-tolerance-output" for="brush-tolerance">24</output>
         </label>
+        <input id="import-geojson-file" type="file" accept=".geojson,.json,application/geo+json,application/json" hidden />
+        <button id="import-geojson" type="button" title="Import annotations from a Salus GeoJSON export">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 15V3M7 8l5-5 5 5M5 20h14" />
+            </svg>
+            <span>Import</span>
+        </button>
         <button id="export-geojson" type="button" title="Export annotations as GeoJSON">
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 3v12M7 10l5 5 5-5M5 20h14" />

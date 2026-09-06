@@ -6,6 +6,17 @@ const {pathToFileURL} = require("node:url");
 const viewerModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/main.js"),
 ));
+const exportModule = import(pathToFileURL(
+    path.join(__dirname, "../plugins/a11e/js/geojson-export.js"),
+));
+
+async function importFile(environment, file, sourcePluginId = "5e61") {
+    environment.messageHandler({
+        sourcePluginId,
+        payload: {type: "segmentation-import-request", file},
+    });
+    await new Promise(resolve => setImmediate(resolve));
+}
 
 class FakeElement {
     constructor() {
@@ -46,6 +57,8 @@ async function loadViewer() {
     let messageHandler = null;
     const viewerElement = new FakeElement();
     const errorElement = new FakeElement();
+    const statusElement = new FakeElement();
+    const overlays = [];
 
     const viewer = {
         addHandler(name, handler) {
@@ -57,6 +70,7 @@ async function loadViewer() {
         },
         addOverlay({element}) {
             element.parent = viewerElement;
+            overlays.push(element);
         },
         removeOverlay() {},
         updateOverlay() {},
@@ -84,6 +98,7 @@ async function loadViewer() {
 
     const document = {
         getElementById(id) {
+            if (id === "viewer-status") return statusElement;
             return id === "image-viewer" ? viewerElement : errorElement;
         },
         createElement(tagName) {
@@ -164,9 +179,85 @@ async function loadViewer() {
         revokedUrls,
         sentMessages,
         viewerElement,
+        statusElement,
+        overlays,
         window,
     };
 }
+
+test("Salus import appends, renders, publishes, and re-exports all five shapes with fresh IDs", async () => {
+    const environment = await loadViewer();
+    environment.handlers.get("open")();
+    environment.handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
+    const annotations = [
+        {id: "segmentation-1", shape: "rectangle", x: 10, y: 20, width: 30, height: 40},
+        {id: "segmentation-2", shape: "circle", centerX: 80, centerY: 60, radius: 15},
+        {id: "segmentation-3", shape: "polygon", points: [{x: 5, y: 5}, {x: 25, y: 8}, {x: 12, y: 30}]},
+        {id: "segmentation-4", shape: "brush", radius: 6, points: [{x: 10, y: 10}]},
+        {id: "segmentation-5", shape: "assisted-brush", radius: 8, tolerance: 24, runs: [{y: 10, xStart: 5, xEnd: 8}]},
+    ];
+    const {annotationsToGeoJson} = await exportModule;
+    const file = new Blob([JSON.stringify(annotationsToGeoJson(annotations))]);
+    await importFile(environment, file);
+
+    const expected = annotations.map((annotation, index) => ({
+        ...annotation, id: `segmentation-${index + 2}`,
+    }));
+    assert.deepEqual(environment.app.annotations.slice(1), expected);
+    const rendered = environment.overlays.flatMap(element => [element, ...element.children]);
+    for (const annotation of expected) {
+        assert.ok(rendered.some(element => element.dataset.annotationId === annotation.id));
+    }
+    assert.deepEqual(environment.sentMessages.slice(-5).map(message => message.payload.annotation), expected);
+    assert.equal(environment.statusElement.textContent, "Imported 5 annotations.");
+    assert.equal(environment.statusElement.hidden, false);
+
+    environment.messageHandler({sourcePluginId: "5e61", payload: {type: "segmentation-export-request"}});
+    const exported = JSON.parse(await environment.getExportedFile().text());
+    assert.deepEqual(exported.features.map(feature => feature.properties.salus.annotation), environment.app.annotations);
+
+    await importFile(environment, file);
+    environment.handlers.get("canvas-press")({position: {x: 5, y: 6}});
+    environment.handlers.get("canvas-release")({position: {x: 70, y: 80}});
+    assert.equal(environment.app.annotations.length, 12);
+    assert.equal(new Set(environment.app.annotations.map(annotation => annotation.id)).size, 12);
+});
+
+test("invalid imports leave existing annotations and drawings untouched", async () => {
+    const environment = await loadViewer();
+    environment.handlers.get("open")();
+    environment.handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
+    const before = structuredClone(environment.app.annotations);
+    const overlayCount = environment.overlays.length;
+    const {annotationsToGeoJson} = await exportModule;
+    const mixed = annotationsToGeoJson([before[0], before[0]]);
+    delete mixed.features[1].properties.salus;
+
+    for (const file of [
+        new Blob(["not json"]),
+        new Blob([JSON.stringify(mixed)]),
+        {text: async () => { throw new Error("File could not be read"); }},
+    ]) {
+        await importFile(environment, file);
+        assert.match(environment.statusElement.textContent, /Could not import annotations:/);
+        assert.deepEqual(environment.app.annotations, before);
+        assert.equal(environment.overlays.length, overlayCount);
+    }
+});
+
+test("import waits for image readiness and ignores messages from other plugins", async () => {
+    const environment = await loadViewer();
+    const file = new Blob(['{"type":"FeatureCollection","features":[]}']);
+    await importFile(environment, file);
+    assert.match(environment.statusElement.textContent, /Wait for the image to load/);
+    environment.handlers.get("open")();
+    await importFile(environment, file);
+    assert.equal(environment.statusElement.textContent, "Imported 0 annotations.");
+    await importFile(environment, new Blob(["invalid"]), "another-plugin");
+    assert.equal(environment.statusElement.textContent, "Imported 0 annotations.");
+});
 
 test("polygon tool creates an image-coordinate annotation", async () => {
     const environment = await loadViewer();

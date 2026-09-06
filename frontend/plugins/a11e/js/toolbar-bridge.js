@@ -65,6 +65,10 @@ export function createToolbarBridge({
         if (payload?.type === "segmentation-export-request") {
             messageHandlers.onExportRequested?.();
         }
+
+        if (payload?.type === "segmentation-import-request") {
+            messageHandlers.onImportRequested?.(payload.file);
+        }
     }
 
     function subscribe(messageHandlers) {

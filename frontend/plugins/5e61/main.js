@@ -9,6 +9,8 @@
     const toleranceInput = document.getElementById("brush-tolerance");
     const toleranceOutput = document.getElementById("brush-tolerance-output");
     const exportButton = document.getElementById("export-geojson");
+    const importButton = document.getElementById("import-geojson");
+    const importFileInput = document.getElementById("import-geojson-file");
     let selectedButton = buttons[0];
 
     function sendSelection() {
@@ -47,6 +49,20 @@
     toleranceInput.addEventListener("input", () => {
         toleranceOutput.value = toleranceInput.value;
         sendSelection();
+    });
+
+    importButton.addEventListener("click", () => importFileInput.click());
+
+    importFileInput.addEventListener("change", () => {
+        const file = importFileInput.files[0];
+        importFileInput.value = "";
+        if (!file) return;
+
+        channel.postMessage({
+            sourcePluginId: PLUGIN_ID,
+            targetPluginId: VIEWER_PLUGIN_ID,
+            payload: {type: "segmentation-import-request", file},
+        });
     });
 
     exportButton.addEventListener("click", () => {
