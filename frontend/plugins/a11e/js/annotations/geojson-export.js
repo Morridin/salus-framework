@@ -6,7 +6,7 @@ const CIRCLE_POINT_COUNT = 64;
 function annotationProperties(annotation) {
   return {
     objectType: "annotation",
-    name: annotation.id,
+    name: annotation.name ?? annotation.id,
     sourceTool: annotation.shape,
     salus: {
       version: 1,
