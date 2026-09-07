@@ -200,12 +200,18 @@ export function createAnnotationRenderer({surface}) {
     }
 
     function remove(element) {
+        if (element.dataset.annotationId === selectedId) setSelected(null);
         committedElements.delete(element.dataset.annotationId);
         if (overlayElements.has(element)) {
             surface.removeOverlay(element);
         } else {
             element.remove();
         }
+    }
+
+    function removeAnnotation(id) {
+        const element = committedElements.get(id);
+        if (element) remove(element);
     }
 
     return {
@@ -217,5 +223,6 @@ export function createAnnotationRenderer({surface}) {
         setSelected,
         finalizePreview,
         remove,
+        removeAnnotation,
     };
 }

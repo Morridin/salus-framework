@@ -41,6 +41,14 @@ export function createAnnotationController({
         return annotation;
     }
 
+    function deleteAnnotation(id) {
+        const annotation = annotationStore.remove(id);
+        if (!annotation) return;
+        renderer.removeAnnotation(id);
+        notify();
+        reportStatus("Annotation deleted.");
+    }
+
     function exportAnnotationsAsGeoJson() {
         const geoJson = annotationsToGeoJson(annotationStore.annotations);
         const fileContents = JSON.stringify(geoJson, null, 2);
@@ -82,6 +90,7 @@ export function createAnnotationController({
         annotations: annotationStore.annotations,
         createAnnotation,
         updateAnnotation,
+        deleteAnnotation,
         selectAnnotation: renderer.setSelected,
         subscribe,
         importAnnotationsFromGeoJson,

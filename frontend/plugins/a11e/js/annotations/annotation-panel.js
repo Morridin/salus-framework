@@ -39,6 +39,7 @@ export function createAnnotationPanel({document, controller}) {
     const nameInput = document.getElementById("annotation-name");
     const colorInput = document.getElementById("annotation-color");
     const colorValue = document.getElementById("annotation-color-value");
+    const deleteButton = document.getElementById("delete-annotation");
     const rows = new Map();
     let selectedId = null;
 
@@ -50,6 +51,13 @@ export function createAnnotationPanel({document, controller}) {
     function renderList(annotations) {
         count.textContent = String(annotations.length);
         empty.hidden = annotations.length > 0;
+        const ids = new Set(annotations.map(annotation => annotation.id));
+        for (const [id, row] of rows) {
+            if (!ids.has(id)) {
+                row.element.remove();
+                rows.delete(id);
+            }
+        }
         for (const annotation of annotations) {
             let row = rows.get(annotation.id);
             if (!row) {
@@ -64,6 +72,7 @@ export function createAnnotationPanel({document, controller}) {
     function renderEditor(selected) {
         nameInput.disabled = !selected;
         colorInput.disabled = !selected;
+        deleteButton.disabled = !selected;
         nameInput.value = selected ? annotationName(selected) : "";
         colorInput.value = selected ? annotationColor(selected) : "#000000";
         colorValue.value = selected ? annotationColor(selected).toUpperCase() : "";
@@ -94,6 +103,10 @@ export function createAnnotationPanel({document, controller}) {
         controller.updateAnnotation(selectedId, {color: colorInput.value});
     });
     toggle.addEventListener("click", () => setExpanded(true));
+    deleteButton.addEventListener("click", () => {
+        controller.deleteAnnotation(selectedId);
+        if (deleteButton.disabled) collapse.focus();
+    });
     collapse.addEventListener("click", () => setExpanded(false));
     panel.addEventListener("keydown", event => {
         if (event.key === "Escape") setExpanded(false);

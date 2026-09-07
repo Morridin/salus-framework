@@ -57,6 +57,9 @@ body {
 .annotation-color-field { display: flex; align-items: center; gap: 10px; color: #bcbcc8; }
 #annotation-color { width: 34px; height: 30px; padding: 2px; border: 1px solid #41414c; border-radius: 5px; background: #222228; cursor: pointer; }
 #annotation-color-value { font-size: 12px; }
+#delete-annotation { width: 100%; margin-top: 18px; padding: 8px 10px; border: 1px solid #75434b; border-radius: 5px; background: #342329; color: #ffb4bd; font: inherit; cursor: pointer; }
+#delete-annotation:hover:not(:disabled) { background: #492c35; }
+#delete-annotation:disabled { opacity: 0.45; cursor: default; }
 .annotation-panel-footer { margin: 28px 0 0; color: #9696a3; font-size: 11px; }
 #toggle-annotations { position: absolute; top: 12px; right: 12px; z-index: 10; padding: 8px 12px; border: 1px solid #41414c; border-radius: 6px; background: #222228; color: #ececf0; font: 12px system-ui, sans-serif; cursor: pointer; }
 #annotation-panel :focus-visible, #toggle-annotations:focus-visible { outline: 2px solid #a8b9ff; outline-offset: 2px; }

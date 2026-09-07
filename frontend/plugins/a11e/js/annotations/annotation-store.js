@@ -12,5 +12,11 @@ export function createAnnotationStore() {
         return annotation;
     }
 
-    return {annotations, create};
+    function remove(id) {
+        const index = annotations.findIndex(annotation => annotation.id === id);
+        if (index === -1) return;
+        return annotations.splice(index, 1)[0];
+    }
+
+    return {annotations, create, remove};
 }

@@ -81,7 +81,11 @@ async function loadViewer() {
             element.parent = viewerElement;
             overlays.push(element);
         },
-        removeOverlay() {},
+        removeOverlay(element) {
+            const index = overlays.indexOf(element);
+            if (index !== -1) overlays.splice(index, 1);
+            element.remove();
+        },
         updateOverlay() {},
         viewport: {
             pointFromPixel(position) {
@@ -109,6 +113,7 @@ async function loadViewer() {
         "annotation-panel", "toggle-annotations", "collapse-annotations",
         "annotation-list", "annotation-count", "annotation-empty",
         "annotation-name", "annotation-color", "annotation-color-value",
+        "delete-annotation",
     ].map(id => [id, new FakeElement()]));
     const document = {
         getElementById(id) {
@@ -329,6 +334,46 @@ test("polygon tool creates an image-coordinate annotation", async () => {
             },
         },
     );
+});
+
+test("delete button removes every shape from the viewer, list, and export", async () => {
+    const environment = await loadViewer();
+    const element = id => environment.panelElements.get(id);
+    const deleteButton = element("delete-annotation");
+    assert.equal(deleteButton.disabled, true);
+    environment.handlers.get("open")();
+    const annotations = [
+        {id: "r", shape: "rectangle", x: 10, y: 20, width: 30, height: 40},
+        {id: "c", shape: "circle", centerX: 80, centerY: 60, radius: 15},
+        {id: "p", shape: "polygon", points: [{x: 5, y: 5}, {x: 25, y: 8}, {x: 12, y: 30}]},
+        {id: "b", shape: "brush", radius: 6, points: [{x: 10, y: 10}]},
+        {id: "a", shape: "assisted-brush", radius: 8, tolerance: 24, runs: [{y: 10, xStart: 5, xEnd: 8}]},
+    ];
+    const {annotationsToGeoJson} = await exportModule;
+    await importFile(environment, new Blob([JSON.stringify(annotationsToGeoJson(annotations))]));
+    const rendered = () => environment.overlays.flatMap(item => [item, ...item.children]);
+
+    // Delete an explicitly selected last row first, then the automatic selections.
+    element("annotation-list").children.at(-1).listeners.get("click")();
+    for (let remaining = 4; remaining >= 0; remaining--) {
+        const selected = rendered().find(item => item.classNames.has("selected"));
+        assert.ok(selected);
+        assert.equal(deleteButton.disabled, false);
+        deleteButton.listeners.get("click")();
+        assert.equal(environment.app.annotations.length, remaining);
+        assert.equal(environment.app.annotations.some(item => item.id === selected.dataset.annotationId), false);
+        assert.equal(rendered().includes(selected), false);
+        assert.equal(element("annotation-list").children.length, remaining);
+        assert.equal(element("annotation-count").textContent, String(remaining));
+        assert.equal(deleteButton.disabled, remaining === 0);
+        assert.equal(rendered().filter(item => item.classNames.has("selected")).length, remaining ? 1 : 0);
+        environment.messageHandler({sourcePluginId: "5e61", payload: {type: "segmentation-export-request"}});
+        const exported = JSON.parse(await environment.getExportedFile().text());
+        assert.deepEqual(exported.features.map(feature => feature.properties.salus.annotation.id), environment.app.annotations.map(item => item.id));
+    }
+    assert.equal(element("annotation-empty").hidden, false);
+    assert.equal(element("annotation-name").disabled, true);
+    assert.equal(element("annotation-color").disabled, true);
 });
 
 test("an unfinished polygon is discarded when the tool changes", async () => {
