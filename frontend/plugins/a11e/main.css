@@ -16,6 +16,55 @@ body {
     background: #090909;
 }
 
+[hidden] { display: none !important; }
+
+.viewer-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.viewer-canvas { position: relative; flex: 1; min-width: 0; }
+
+#annotation-panel {
+    box-sizing: border-box;
+    width: 260px;
+    flex-shrink: 0;
+    padding: 18px 14px;
+    overflow-y: auto;
+    border-left: 1px solid #303036;
+    background: #19191d;
+    color: #ececf0;
+    font: 13px/1.5 system-ui, sans-serif;
+}
+
+.annotation-panel-header { display: flex; align-items: center; justify-content: space-between; }
+.annotation-panel-header h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.annotation-count { margin-left: 6px; color: #aaaab5; font-size: 12px; font-weight: 400; }
+#collapse-annotations { border: 0; background: transparent; color: #aaaab5; font-size: 25px; cursor: pointer; padding: 0 9px; }
+.annotation-empty { margin: 8px 0 20px; color: #9696a3; font-size: 11px; }
+.annotation-row { display: flex; align-items: center; gap: 11px; width: 100%; padding: 11px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.annotation-row:hover { background: #24242b; }
+.annotation-row[aria-pressed="true"] { background: #2b2b36; border-color: #505064; }
+.annotation-swatch { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.annotation-row-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.annotation-row small { color: #9999a8; font-size: 11px; margin-top: 2px; }
+.annotation-editor { margin-top: 24px; padding-top: 18px; border-top: 1px solid #303036; }
+.annotation-editor h3 { color: #aaaab5; margin: 0 0 14px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
+.annotation-editor label { display: block; margin: 12px 0 6px; color: #bcbcc8; font-size: 12px; }
+#annotation-name { box-sizing: border-box; width: 100%; padding: 8px 10px; border: 1px solid #41414c; border-radius: 5px; background: #222228; color: #ececf0; font: inherit; }
+.annotation-color-field { display: flex; align-items: center; gap: 10px; color: #bcbcc8; }
+#annotation-color { width: 34px; height: 30px; padding: 2px; border: 1px solid #41414c; border-radius: 5px; background: #222228; cursor: pointer; }
+#annotation-color-value { font-size: 12px; }
+.annotation-panel-footer { margin: 28px 0 0; color: #9696a3; font-size: 11px; }
+#toggle-annotations { position: absolute; top: 12px; right: 12px; z-index: 10; padding: 8px 12px; border: 1px solid #41414c; border-radius: 6px; background: #222228; color: #ececf0; font: 12px system-ui, sans-serif; cursor: pointer; }
+#annotation-panel :focus-visible, #toggle-annotations:focus-visible { outline: 2px solid #a8b9ff; outline-offset: 2px; }
+
+@media (max-width: 640px) {
+    #annotation-panel { position: absolute; inset: 0 0 0 auto; width: min(260px, 85%); z-index: 20; box-shadow: -12px 0 30px #0006; }
+}
+
 #image-viewer[data-tool="rectangle"] canvas {
     cursor: crosshair;
 }

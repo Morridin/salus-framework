@@ -1,3 +1,4 @@
+import {createAnnotationPanel} from "./annotations/annotation-panel.js";
 import {createAnnotationController} from "./annotations/annotation-controller.js";
 import {createAnnotationRenderer} from "./annotations/annotation-renderer.js";
 import {createViewerAdapter} from "./viewer/viewer-adapter.js";
@@ -30,6 +31,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         isImageReady,
         reportStatus,
     });
+    createAnnotationPanel({document, controller: annotations});
     const tools = createToolController({
         window,
         document,

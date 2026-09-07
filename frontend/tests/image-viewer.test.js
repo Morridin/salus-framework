@@ -23,6 +23,7 @@ class FakeElement {
         this.attributes = new Map();
         this.style = new Map();
         this.style.setProperty = this.style.set.bind(this.style);
+        this.listeners = new Map();
         this.children = [];
         this.dataset = {};
         this.hidden = false;
@@ -33,10 +34,16 @@ class FakeElement {
         };
     }
 
-    append(child) {
-        this.children.push(child);
-        child.parent = this;
+    append(...children) {
+        this.children.push(...children);
+        children.forEach(child => { child.parent = this; });
     }
+
+    addEventListener(type, listener) {
+        this.listeners.set(type, listener);
+    }
+
+    focus() {}
 
     remove() {
         if (!this.parent) return;
@@ -98,8 +105,14 @@ async function loadViewer() {
         },
     };
 
+    const panelElements = new Map([
+        "annotation-panel", "toggle-annotations", "collapse-annotations",
+        "annotation-list", "annotation-count", "annotation-empty",
+        "annotation-name", "annotation-color", "annotation-color-value",
+    ].map(id => [id, new FakeElement()]));
     const document = {
         getElementById(id) {
+            if (panelElements.has(id)) return panelElements.get(id);
             if (id === "viewer-status") return statusElement;
             return id === "image-viewer" ? viewerElement : errorElement;
         },
@@ -168,6 +181,7 @@ async function loadViewer() {
 
     return {
         handlers,
+        panelElements,
         keyHandlers,
         messageHandler: message => messageHandler({
             data: {
@@ -531,4 +545,54 @@ test("an unfinished drag shape is discarded when the tool changes", async () => 
     assert.ok(removedOverlay);
     assert.equal(environment.app.annotations.length, 0);
     assert.equal(environment.viewerElement.dataset.tool, "polygon");
+});
+
+test("annotation panel tracks drawings and imports, and edits survive export and import", async () => {
+    const environment = await loadViewer();
+    const element = id => environment.panelElements.get(id);
+    assert.equal(element("annotation-count").textContent, "0");
+    assert.equal(element("annotation-empty").hidden, false);
+    assert.equal(element("annotation-name").disabled, true);
+    environment.handlers.get("open")();
+    environment.handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    assert.equal(element("annotation-count").textContent, "0");
+    environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
+    assert.equal(element("annotation-count").textContent, "1");
+    assert.equal(element("annotation-empty").hidden, true);
+    assert.equal(element("annotation-name").value, "segmentation-1");
+    assert.equal(element("annotation-color").value, "#2ecc71");
+
+    element("annotation-name").value = "Healthy tissue";
+    element("annotation-name").listeners.get("input")();
+    element("annotation-color").value = "#ed8175";
+    element("annotation-color").listeners.get("input")();
+    assert.equal(environment.app.annotations[0].name, "Healthy tissue");
+    assert.equal(environment.app.annotations[0].color, "#ed8175");
+    const drawing = environment.overlays.find(item => item.dataset.annotationId === "segmentation-1");
+    assert.equal(drawing.classNames.has("selected"), true);
+    assert.equal(drawing.style.get("--annotation-color"), "#ed8175");
+    assert.equal(element("annotation-list").children[0].children[1].children[0].textContent, "Healthy tissue");
+
+    environment.messageHandler({sourcePluginId: "5e61", payload: {type: "segmentation-export-request"}});
+    const exported = environment.getExportedFile();
+    assert.equal(JSON.parse(await exported.text()).features[0].properties.name, "Healthy tissue");
+    await importFile(environment, exported);
+    assert.equal(element("annotation-count").textContent, "2");
+    const importedDrawing = environment.overlays.find(item => item.dataset.annotationId === "segmentation-2");
+    assert.equal(importedDrawing.classNames.has("selected"), false);
+    const importedRow = element("annotation-list").children[1];
+    importedRow.listeners.get("click")();
+    assert.equal(drawing.classNames.has("selected"), false);
+    assert.equal(importedDrawing.classNames.has("selected"), true);
+    assert.equal(importedRow.attributes.get("aria-pressed"), "true");
+    assert.equal(element("annotation-name").value, "Healthy tissue");
+    assert.equal(element("annotation-color").value, "#ed8175");
+    element("annotation-name").value = "Imported region";
+    element("annotation-name").listeners.get("input")();
+    assert.equal(environment.app.annotations[0].name, "Healthy tissue");
+    assert.equal(environment.app.annotations[1].name, "Imported region");
+    assert.equal(importedDrawing.classNames.has("selected"), true);
+    element("annotation-list").children[0].listeners.get("click")();
+    assert.equal(drawing.classNames.has("selected"), true);
+    assert.equal(importedDrawing.classNames.has("selected"), false);
 });

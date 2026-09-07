@@ -13,9 +13,31 @@ export function createAnnotationController({
 }) {
     const annotationStore = createAnnotationStore();
 
+    const listeners = new Set();
+
+    function subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+    }
+
+    function notify() {
+        listeners.forEach(listener => listener());
+    }
+
+    function updateAnnotation(id, changes) {
+        const annotation = annotationStore.annotations.find(item => item.id === id);
+        if (!annotation) return;
+        if (typeof changes.name === "string") annotation.name = changes.name;
+        if (/^#[0-9a-f]{6}$/i.test(changes.color)) annotation.color = changes.color;
+        renderer.updateAppearance(annotation);
+        notify();
+        return annotation;
+    }
+
     function createAnnotation(annotationData) {
         const annotation = annotationStore.create(annotationData);
         publishAnnotation(annotation);
+        notify();
         return annotation;
     }
 
@@ -59,6 +81,9 @@ export function createAnnotationController({
     return {
         annotations: annotationStore.annotations,
         createAnnotation,
+        updateAnnotation,
+        selectAnnotation: renderer.setSelected,
+        subscribe,
         importAnnotationsFromGeoJson,
         exportAnnotationsAsGeoJson,
     };

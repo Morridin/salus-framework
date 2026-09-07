@@ -17,8 +17,31 @@
     <script type="module" src="js/main.js"></script>
 </head>
 <body>
-    <main id="image-viewer" aria-label="Zoomable image viewer"></main>
-    <p id="viewer-error" role="alert" hidden></p>
-    <p id="viewer-status" role="status" hidden></p>
+    <div class="viewer-layout">
+        <div class="viewer-canvas">
+            <main id="image-viewer" aria-label="Zoomable image viewer"></main>
+            <button id="toggle-annotations" aria-controls="annotation-panel" aria-expanded="true" hidden>Annotations</button>
+            <p id="viewer-error" role="alert" hidden></p>
+            <p id="viewer-status" role="status" hidden></p>
+        </div>
+        <aside id="annotation-panel" aria-labelledby="annotation-panel-title">
+            <header class="annotation-panel-header">
+                <h2 id="annotation-panel-title">Annotations <span id="annotation-count" class="annotation-count">0</span></h2>
+                <button id="collapse-annotations" aria-label="Collapse annotations" title="Collapse annotations">›</button>
+            </header>
+            <p id="annotation-empty" class="annotation-empty">No annotations yet. Draw a region or import annotations to get started.</p>
+            <div id="annotation-list" aria-label="Annotations"></div>
+            <div class="annotation-editor">
+                <h3>Selected annotation</h3>
+                <label for="annotation-name">Name</label>
+                <input id="annotation-name" type="text" maxlength="80" disabled />
+                <label for="annotation-color">Color</label>
+                <div class="annotation-color-field">
+                    <input id="annotation-color" type="color" disabled />
+                    <output id="annotation-color-value" for="annotation-color"></output>
+                </div>
+            </div>
+        </aside>
+    </div>
 </body>
 </html>
