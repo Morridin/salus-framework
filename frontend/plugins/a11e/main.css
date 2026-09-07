@@ -93,18 +93,11 @@ body {
     border-radius: 50%;
 }
 
-.segmentation-overlay.selected {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #111;
-}
-
+.segmentation-overlay.selected,
 .polygon-segmentation.selected,
 .brush-segmentation.selected,
 .assisted-brush-segmentation.selected {
     filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px #111);
-}
-
-.polygon-segmentation.selected {
-    stroke-width: 4;
 }
 
 .segmentation-overlay.preview {
