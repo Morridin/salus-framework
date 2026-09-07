@@ -1,3 +1,5 @@
+import {annotationColor} from "./annotation-appearance.js";
+
 function rectangleBounds({x, y, width, height}) {
     return {x, y, width, height};
 }
@@ -42,6 +44,33 @@ function setAnnotationId(element, id) {
 
 export function createAnnotationRenderer({surface}) {
     let layers = null;
+    const committedElements = new Map();
+    let selectedId = null;
+
+    function setSelected(id) {
+        committedElements.get(selectedId)?.classList.remove("selected");
+        selectedId = id;
+        committedElements.get(selectedId)?.classList.add("selected");
+    }
+
+    function updateAppearance(annotation) {
+        const element = committedElements.get(annotation.id);
+        if (!element) return;
+        const color = annotationColor(annotation);
+        const opacity = annotation.shape === "brush" ? "73"
+            : annotation.shape === "assisted-brush" ? "7a" : "1f";
+        element.style.setProperty("--annotation-color", color);
+        element.style.setProperty("--annotation-fill", `${color}${opacity}`);
+    }
+
+    function register(element, annotation) {
+        setAnnotationId(element, annotation.id);
+        if (annotation.id) {
+            committedElements.set(annotation.id, element);
+            updateAppearance(annotation);
+            if (annotation.id === selectedId) element.classList.add("selected");
+        }
+    }
     const overlayElements = new WeakSet();
 
     function initializeLayers() {
@@ -160,17 +189,18 @@ export function createAnnotationRenderer({surface}) {
             annotation,
             preview,
         );
-        setAnnotationId(element, annotation.id);
+        if (!preview) register(element, annotation);
         return element;
     }
 
     function finalizePreview(element, annotation) {
         update(element, annotation);
         element.classList.remove("preview");
-        setAnnotationId(element, annotation.id);
+        register(element, annotation);
     }
 
     function remove(element) {
+        committedElements.delete(element.dataset.annotationId);
         if (overlayElements.has(element)) {
             surface.removeOverlay(element);
         } else {
@@ -183,6 +213,8 @@ export function createAnnotationRenderer({surface}) {
         canRender,
         render,
         update,
+        updateAppearance,
+        setSelected,
         finalizePreview,
         remove,
     };

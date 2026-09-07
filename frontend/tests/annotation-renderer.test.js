@@ -7,6 +7,8 @@ class FakeElement {
     constructor(tagName) {
         this.tagName = tagName;
         this.attributes = new Map();
+        this.style = new Map();
+        this.style.setProperty = this.style.set.bind(this.style);
         this.children = [];
         this.classes = new Set();
         this.dataset = {};

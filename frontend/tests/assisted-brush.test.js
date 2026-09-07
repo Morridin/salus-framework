@@ -13,6 +13,8 @@ const rendererModule = import(pathToFileURL(
 class FakeElement {
     constructor() {
         this.attributes = new Map();
+        this.style = new Map();
+        this.style.setProperty = this.style.set.bind(this.style);
         this.dataset = {};
         this.classes = new Set();
         this.classList = {

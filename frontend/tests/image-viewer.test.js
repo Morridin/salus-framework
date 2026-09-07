@@ -21,6 +21,8 @@ async function importFile(environment, file, sourcePluginId = "5e61") {
 class FakeElement {
     constructor() {
         this.attributes = new Map();
+        this.style = new Map();
+        this.style.setProperty = this.style.set.bind(this.style);
         this.children = [];
         this.dataset = {};
         this.hidden = false;
