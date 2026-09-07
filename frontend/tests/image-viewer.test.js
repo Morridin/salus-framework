@@ -203,6 +203,10 @@ async function loadViewer() {
 
 test("Salus import appends, renders, publishes, and re-exports all five shapes with fresh IDs", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
     environment.handlers.get("open")();
     environment.handlers.get("canvas-press")({position: {x: 1, y: 2}});
     environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
@@ -242,6 +246,10 @@ test("Salus import appends, renders, publishes, and re-exports all five shapes w
 
 test("invalid imports leave existing annotations and drawings untouched", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
     environment.handlers.get("open")();
     environment.handlers.get("canvas-press")({position: {x: 1, y: 2}});
     environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
@@ -346,6 +354,10 @@ test("an unfinished polygon is discarded when the tool changes", async () => {
 
 test("rectangle tool creates one annotation through the shared store", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
 
     environment.handlers.get("canvas-press")({
         position: {x: 80, y: 90},
@@ -375,6 +387,10 @@ test("rectangle tool creates one annotation through the shared store", async () 
 
 test("export request downloads rectangle annotations as GeoJSON", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
 
     environment.handlers.get("canvas-press")({
         position: {x: 80, y: 90},
@@ -526,6 +542,10 @@ test("an unfinished brush stroke is discarded when the tool changes", async () =
 
 test("an unfinished drag shape is discarded when the tool changes", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
     let removedOverlay = null;
     environment.app.viewer.removeOverlay = element => {
         removedOverlay = element;
@@ -549,6 +569,10 @@ test("an unfinished drag shape is discarded when the tool changes", async () => 
 
 test("annotation panel tracks drawings and imports, and edits survive export and import", async () => {
     const environment = await loadViewer();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
     const element = id => environment.panelElements.get(id);
     assert.equal(element("annotation-count").textContent, "0");
     assert.equal(element("annotation-empty").hidden, false);
@@ -595,4 +619,35 @@ test("annotation panel tracks drawings and imports, and edits survive export and
     element("annotation-list").children[0].listeners.get("click")();
     assert.equal(drawing.classNames.has("selected"), true);
     assert.equal(importedDrawing.classNames.has("selected"), false);
+});
+
+test("viewer stays idle until a tool is selected and cancels drawing on deselection", async () => {
+    const environment = await loadViewer();
+    function gesture() {
+        for (const name of ["canvas-press", "canvas-drag", "canvas-release", "canvas-click"]) {
+            const event = {position: {x: 80, y: 90}, quick: true};
+            environment.handlers.get(name)(event);
+            assert.equal(event.preventDefaultAction, undefined);
+        }
+        assert.equal(environment.app.annotations.length, 0);
+    }
+    assert.equal(environment.viewerElement.dataset.tool, "none");
+    gesture();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
+    environment.handlers.get("canvas-press")({position: {x: 10, y: 20}});
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "none"},
+    });
+    assert.equal(environment.viewerElement.dataset.tool, "none");
+    gesture();
+    environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", tool: "rectangle"},
+    });
+    environment.handlers.get("canvas-release")({position: {x: 80, y: 90}});
+    assert.equal(environment.app.annotations.length, 0);
 });

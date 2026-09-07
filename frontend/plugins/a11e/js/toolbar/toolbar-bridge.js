@@ -1,4 +1,5 @@
 const VALID_TOOLS = new Set([
+    "none",
     "rectangle",
     "circle",
     "polygon",

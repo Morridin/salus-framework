@@ -14,7 +14,8 @@ test("toolbar opens the picker and sends selected files, allowing the same file 
                 value: "12",
                 listeners: {},
                 clicks: 0,
-                setAttribute() {},
+                attributes: {},
+                setAttribute(name, value) { this.attributes[name] = value; },
                 addEventListener(name, callback) { this.listeners[name] = callback; },
                 click() { this.clicks += 1; },
             });
@@ -35,6 +36,16 @@ test("toolbar opens the picker and sends selected files, allowing the same file 
             addEventListener() {}
         },
     });
+
+    assert.equal(messages.at(-1).payload.tool, "none");
+    assert.equal(tool.attributes["aria-pressed"], "false");
+    tool.listeners.click();
+    assert.equal(messages.at(-1).payload.tool, "rectangle");
+    assert.equal(tool.attributes["aria-pressed"], "true");
+    tool.listeners.click();
+    assert.equal(messages.at(-1).payload.tool, "none");
+    assert.equal(tool.attributes["aria-pressed"], "false");
+    assert.equal(element("toolbar").dataset.tool, "none");
 
     const input = element("import-geojson-file");
     element("import-geojson").listeners.click();

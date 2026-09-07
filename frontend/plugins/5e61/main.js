@@ -11,7 +11,7 @@
     const exportButton = document.getElementById("export-geojson");
     const importButton = document.getElementById("import-geojson");
     const importFileInput = document.getElementById("import-geojson-file");
-    let selectedButton = buttons[0];
+    let selectedButton = null;
 
     function sendSelection() {
         channel.postMessage({
@@ -19,7 +19,7 @@
             targetPluginId: VIEWER_PLUGIN_ID,
             payload: {
                 type: "segmentation-tool-changed",
-                tool: selectedButton.dataset.tool,
+                tool: selectedButton?.dataset.tool ?? "none",
                 brushRadius: Number(radiusInput.value),
                 brushTolerance: Number(toleranceInput.value),
             },
@@ -28,7 +28,7 @@
 
     function selectTool(buttonToSelect) {
         selectedButton = buttonToSelect;
-        toolbar.dataset.tool = buttonToSelect.dataset.tool;
+        toolbar.dataset.tool = buttonToSelect?.dataset.tool ?? "none";
 
         for (const button of buttons) {
             button.setAttribute("aria-pressed", String(button === buttonToSelect));
@@ -38,7 +38,7 @@
     }
 
     for (const button of buttons) {
-        button.addEventListener("click", () => selectTool(button));
+        button.addEventListener("click", () => selectTool(selectedButton === button ? null : button));
     }
 
     radiusInput.addEventListener("input", () => {

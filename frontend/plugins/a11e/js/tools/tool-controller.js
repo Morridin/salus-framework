@@ -17,7 +17,7 @@ export function createToolController({
     createAnnotation,
     reportStatus,
 }) {
-    let activeTool = "rectangle";
+    let activeTool = "none";
     let brushRadius = 12;
     let brushTolerance = 24;
     viewerElement.dataset.tool = activeTool;
@@ -55,7 +55,7 @@ export function createToolController({
     };
 
     function activeToolHandler(name, event) {
-        if (!renderer.canRender(activeTool)) return;
+        if (!tools[activeTool] || !renderer.canRender(activeTool)) return;
         tools[activeTool][name]?.(event);
     }
 
@@ -78,7 +78,7 @@ export function createToolController({
 
     function selectTool(tool, nextBrushRadius, nextBrushTolerance) {
         if (activeTool !== tool) {
-            tools[activeTool].deactivate?.();
+            tools[activeTool]?.deactivate?.();
         }
         activeTool = tool;
         if (nextBrushRadius !== null) {

@@ -65,21 +65,21 @@ body {
     #annotation-panel { position: absolute; inset: 0 0 0 auto; width: min(260px, 85%); z-index: 20; box-shadow: -12px 0 30px #0006; }
 }
 
-#image-viewer[data-tool="rectangle"] canvas {
+#image-viewer {
+    cursor: default;
+}
+
+#image-viewer[data-tool="rectangle"],
+#image-viewer[data-tool="circle"],
+#image-viewer[data-tool="polygon"],
+#image-viewer[data-tool="brush"],
+#image-viewer[data-tool="assisted-brush"] {
     cursor: crosshair;
 }
 
-#image-viewer[data-tool="circle"] canvas {
-    cursor: cell;
-}
-
-#image-viewer[data-tool="polygon"] canvas {
-    cursor: crosshair;
-}
-
-#image-viewer[data-tool="brush"] canvas,
-#image-viewer[data-tool="assisted-brush"] canvas {
-    cursor: crosshair;
+#image-viewer .openseadragon-canvas,
+#image-viewer canvas {
+    cursor: inherit;
 }
 
 .segmentation-overlay {
