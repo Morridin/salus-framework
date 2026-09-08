@@ -1,3 +1,5 @@
+import {ANNOTATION_ID_PREFIX, isValidColor} from "../constants.js";
+
 export function createAnnotationStore() {
     const annotations = [];
     let sequence = 0;
@@ -6,7 +8,7 @@ export function createAnnotationStore() {
     function add(annotationData) {
         const annotation = {
             ...structuredClone(annotationData),
-            id: `segmentation-${++sequence}`,
+            id: `${ANNOTATION_ID_PREFIX}${++sequence}`,
         };
 
         annotations.push(annotation);
@@ -26,7 +28,7 @@ export function createAnnotationStore() {
         const annotation = annotations.find(item => item.id === id);
         if (!annotation) return;
         if (typeof changes.name === "string") annotation.name = changes.name;
-        if (typeof changes.color === "string" && /^#[0-9a-f]{6}$/i.test(changes.color)) {
+        if (isValidColor(changes.color)) {
             annotation.color = changes.color;
         }
         return structuredClone(annotation);

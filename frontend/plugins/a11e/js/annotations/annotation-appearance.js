@@ -1,7 +1,14 @@
+import {
+    ASSISTED_BRUSH_COLOR,
+    COLOR_HEX_PATTERN,
+    DEFAULT_ANNOTATION_COLOR,
+    SHAPES,
+} from "../constants.js";
+
 export function annotationColor(annotation) {
-    return /^#[0-9a-f]{6}$/i.test(annotation.color)
+    return COLOR_HEX_PATTERN.test(annotation.color)
         ? annotation.color
-        : annotation.shape === "assisted-brush" ? "#40c4ff" : "#2ecc71";
+        : annotation.shape === SHAPES.ASSISTED_BRUSH ? ASSISTED_BRUSH_COLOR : DEFAULT_ANNOTATION_COLOR;
 }
 
 export function annotationName(annotation) {

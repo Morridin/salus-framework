@@ -1,4 +1,5 @@
 import {annotationColor} from "./annotation-appearance.js";
+import {ANNOTATION_FILL_OPACITY} from "../constants.js";
 
 function rectangleBounds({x, y, width, height}) {
     return {x, y, width, height};
@@ -57,8 +58,8 @@ export function createAnnotationRenderer({surface}) {
         const element = committedElements.get(annotation.id);
         if (!element) return;
         const color = annotationColor(annotation);
-        const opacity = annotation.shape === "brush" ? "73"
-            : annotation.shape === "assisted-brush" ? "7a" : "1f";
+        const opacity = ANNOTATION_FILL_OPACITY[annotation.shape] ??
+            ANNOTATION_FILL_OPACITY.default;
         element.style.setProperty("--annotation-color", color);
         element.style.setProperty("--annotation-fill", `${color}${opacity}`);
     }

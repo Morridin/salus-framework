@@ -1,8 +1,8 @@
 // Shared drag behavior for rectangles and circles.
-const MINIMUM_SHAPE_SIZE = 3;
+import {MINIMUM_SHAPE_SIZE, SHAPES} from "../constants.js";
 
 function shapeBounds(tool, start, end) {
-    if (tool === "circle") {
+    if (tool === SHAPES.CIRCLE) {
         const radius = Math.max(
             Math.hypot(end.x - start.x, end.y - start.y),
             0.5,
@@ -85,7 +85,7 @@ export function createDragShapeTool({
             return;
         }
 
-        const annotationData = drawing.tool === "circle"
+        const annotationData = drawing.tool === SHAPES.CIRCLE
             ? {
                 shape: drawing.tool,
                 centerX: drawing.bounds.centerX,
