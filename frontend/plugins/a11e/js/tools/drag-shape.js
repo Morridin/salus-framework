@@ -31,7 +31,7 @@ export function createDragShapeTool({
     surface,
     renderer,
     tool,
-    createAnnotation,
+    commitAnnotation,
 }) {
     let drawing = null;
 
@@ -99,9 +99,7 @@ export function createDragShapeTool({
                 width: drawing.bounds.width,
                 height: drawing.bounds.height,
             };
-        const annotation = createAnnotation(annotationData);
-
-        renderer.finalizePreview(drawing.element, annotation);
+        commitAnnotation(annotationData, drawing.element);
         drawing = null;
     }
 

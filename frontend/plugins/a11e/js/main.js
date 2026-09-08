@@ -43,7 +43,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         sampler,
         surface,
         renderer,
-        createAnnotation: annotations.createAnnotation,
+        commitAnnotation: annotations.commitAnnotation,
         reportStatus,
         isImageReady,
     });

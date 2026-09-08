@@ -34,8 +34,15 @@ export function createAnnotationController({
         return annotation;
     }
 
-    function createAnnotation(annotationData) {
+    // Complete the visual before publishing or notifying subscribers.
+    // Drawing tools supply their preview; imports render a new element.
+    function commitAnnotation(annotationData, preview = null) {
         const annotation = annotationStore.create(annotationData);
+        if (preview) {
+            renderer.finalizePreview(preview, annotation);
+        } else {
+            renderer.render(annotation);
+        }
         publishAnnotation(annotation);
         notify();
         return annotation;
@@ -76,8 +83,7 @@ export function createAnnotationController({
             }
 
             for (const {id, ...annotationData} of annotations) {
-                const annotation = createAnnotation(annotationData);
-                renderer.render(annotation);
+                commitAnnotation(annotationData);
             }
 
             reportStatus(`Imported ${annotations.length} annotation${annotations.length === 1 ? "" : "s"}.`);
@@ -88,7 +94,7 @@ export function createAnnotationController({
 
     return {
         annotations: annotationStore.annotations,
-        createAnnotation,
+        commitAnnotation,
         updateAnnotation,
         deleteAnnotation,
         selectAnnotation: renderer.setSelected,

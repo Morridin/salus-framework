@@ -14,7 +14,7 @@ export function createAssistedBrushTool({
     sampler,
     getRadius,
     getTolerance,
-    createAnnotation,
+    commitAnnotation,
     reportStatus = () => {},
 }) {
     let stroke = null;
@@ -104,13 +104,12 @@ export function createAssistedBrushTool({
             return;
         }
 
-        const annotation = createAnnotation({
+        commitAnnotation({
             shape: "assisted-brush",
             radius: stroke.radius,
             tolerance: stroke.tolerance,
             runs: stroke.runs,
-        });
-        renderer.finalizePreview(stroke.element, annotation);
+        }, stroke.element);
         stroke = null;
     }
 

@@ -21,6 +21,12 @@ Keep new drawing tools in `js/tools/` and connect them through
 `js/annotations/`, alongside GeoJSON import and export.
 Viewer-specific operations belong in `js/viewer/`.
 
+Commit finished annotations through the annotation controller's
+`commitAnnotation(data, preview)`. Drawing tools pass their preview element;
+imports omit it. The controller stores the annotation, finalizes the preview or
+renders a new element, then publishes and notifies subscribers. Tools only render,
+update, and remove temporary previews directly.
+
 ## Tests
 
 From the repository root:

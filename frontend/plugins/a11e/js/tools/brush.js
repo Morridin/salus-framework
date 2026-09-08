@@ -9,7 +9,7 @@ export function createBrushTool({
     surface,
     renderer,
     getRadius,
-    createAnnotation,
+    commitAnnotation,
 }) {
     let stroke = null;
 
@@ -61,13 +61,11 @@ export function createBrushTool({
         event.preventDefaultAction = true;
         addPoint(event.position);
 
-        const annotation = createAnnotation({
+        commitAnnotation({
             shape: "brush",
             radius: stroke.radius,
             points: stroke.points.map(({x, y}) => ({x, y})),
-        });
-
-        renderer.finalizePreview(stroke.element, annotation);
+        }, stroke.element);
         stroke = null;
     }
 

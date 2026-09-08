@@ -1,7 +1,7 @@
 export function createPolygonTool({
     surface,
     renderer,
-    createAnnotation,
+    commitAnnotation,
 }) {
     let draft = null;
 
@@ -59,12 +59,10 @@ export function createPolygonTool({
             return;
         }
 
-        const annotation = createAnnotation({
+        commitAnnotation({
             shape: "polygon",
             points: draft.points.map(({x, y}) => ({x, y})),
-        });
-
-        renderer.finalizePreview(draft.element, annotation);
+        }, draft.element);
         draft = null;
     }
 

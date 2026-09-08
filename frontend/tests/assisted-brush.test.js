@@ -9,6 +9,9 @@ const brushModule = import(pathToFileURL(
 const rendererModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/annotations/annotation-renderer.js"),
 ));
+const controllerModule = import(pathToFileURL(
+    path.join(__dirname, "../plugins/a11e/js/annotations/annotation-controller.js"),
+));
 
 class FakeElement {
     constructor() {
@@ -39,7 +42,7 @@ class FakeElement {
 test("assisted brush creates a compact intensity-mask annotation", async () => {
     const {createAssistedBrushTool} = await brushModule;
     const {createAnnotationRenderer} = await rendererModule;
-    const annotations = [];
+    const {createAnnotationController} = await controllerModule;
     const sampledPoints = [];
     const surface = {
         toImagePoint: point => point,
@@ -48,6 +51,10 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
     };
     const renderer = createAnnotationRenderer({surface});
     renderer.initializeLayers();
+    const controller = createAnnotationController({
+        renderer,
+        publishAnnotation() {},
+    });
     const sampler = {
         ready: true,
         select(point) {
@@ -66,18 +73,14 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
         sampler,
         getRadius: () => 4,
         getTolerance: () => 18,
-        createAnnotation(data) {
-            const annotation = {id: "segmentation-1", ...data};
-            annotations.push(annotation);
-            return annotation;
-        },
+        commitAnnotation: controller.commitAnnotation,
     });
 
     tool.press({position: {x: 1, y: 2}, originalEvent: {button: 0}});
     tool.release({position: {x: 9, y: 2}});
 
     assert.ok(sampledPoints.length > 2, "long movements should be interpolated");
-    assert.deepEqual(annotations, [{
+    assert.deepEqual(controller.annotations, [{
         id: "segmentation-1",
         shape: "assisted-brush",
         radius: 4,
