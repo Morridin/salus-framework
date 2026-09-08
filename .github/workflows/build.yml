@@ -43,6 +43,17 @@ jobs:
           cd ${{ env.MAIN_PACKAGE }}
           printf "Test-Token" > token
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install JavaScript quality tools
+        run: npm ci --prefix frontend
+
+      - name: Lint JavaScript
+        run: npm run lint --prefix frontend
+
       - name: Install plugin dependencies
         run: npm ci --prefix frontend/plugins/a11e
 

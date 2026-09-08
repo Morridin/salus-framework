@@ -1,0 +1,14 @@
+{
+  "name": "salus-frontend-quality",
+  "private": true,
+  "scripts": {
+    "lint": "eslint plugins/a11e/js plugins/5e61/main.js tests eslint.config.mjs --max-warnings 0",
+    "test": "node --test tests/*.test.js",
+    "check": "npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.10.0",
+    "globals": "17.12.0"
+  }
+}

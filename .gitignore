@@ -12,6 +12,7 @@ frontend/plugins/*
 !frontend/plugins/a11e/
 !frontend/plugins/a11e/**
 frontend/plugins/a11e/node_modules/
+frontend/node_modules/
 
 # Test files
 frontend/www-root/assets/test.css
