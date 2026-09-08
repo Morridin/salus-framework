@@ -40,6 +40,9 @@ export function createAnnotationPanel({document, controller}) {
     const colorInput = document.getElementById("annotation-color");
     const colorValue = document.getElementById("annotation-color-value");
     const deleteButton = document.getElementById("delete-annotation");
+    const opacityInput = document.getElementById("annotation-opacity");
+    const opacityValue = document.getElementById("annotation-opacity-value");
+    const viewer = document.getElementById("image-viewer");
     const rows = new Map();
     let selectedId = null;
 
@@ -96,6 +99,14 @@ export function createAnnotationPanel({document, controller}) {
         (expanded ? collapse : toggle).focus();
     }
 
+    opacityInput.addEventListener("input", () => {
+        const value = Number(opacityInput.value);
+        if (!Number.isFinite(value)) return;
+        const percent = Math.max(0, Math.min(100, value));
+        viewer.style.setProperty("--annotation-opacity", String(percent / 100));
+        opacityValue.value = `${percent}%`;
+        opacityInput.setAttribute("aria-valuetext", `${percent}%`);
+    });
     nameInput.addEventListener("input", () => {
         controller.updateAnnotation(selectedId, {name: nameInput.value});
     });

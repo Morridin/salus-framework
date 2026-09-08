@@ -45,6 +45,9 @@ body {
 .annotation-panel-header { display: flex; align-items: center; justify-content: space-between; }
 .annotation-panel-header h2 { margin: 0; font-size: 14px; font-weight: 600; }
 .annotation-count { margin-left: 6px; color: #aaaab5; font-size: 12px; font-weight: 400; }
+.annotation-opacity-control { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; margin: 14px 0 18px; color: #bcbcc8; font-size: 12px; }
+#annotation-opacity { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: #a8b9ff; cursor: pointer; }
+#annotation-opacity-value { font-variant-numeric: tabular-nums; }
 #collapse-annotations { border: 0; background: transparent; color: #aaaab5; font-size: 25px; cursor: pointer; padding: 0 9px; }
 .annotation-empty { margin: 8px 0 20px; color: #9696a3; font-size: 11px; }
 .annotation-row { display: flex; align-items: center; gap: 11px; width: 100%; padding: 11px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; }
@@ -86,6 +89,13 @@ body {
 #image-viewer .openseadragon-canvas,
 #image-viewer canvas {
     cursor: inherit;
+}
+
+.segmentation-overlay,
+.polygon-segmentation,
+.brush-segmentation,
+.assisted-brush-segmentation {
+    opacity: var(--annotation-opacity, 1);
 }
 
 .segmentation-overlay {

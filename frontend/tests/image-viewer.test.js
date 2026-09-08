@@ -114,6 +114,7 @@ async function loadViewer() {
         "annotation-list", "annotation-count", "annotation-empty",
         "annotation-name", "annotation-color", "annotation-color-value",
         "delete-annotation",
+        "annotation-opacity", "annotation-opacity-value",
         "open-image", "open-image-file",
     ].map(id => [id, new FakeElement()]));
     const document = {

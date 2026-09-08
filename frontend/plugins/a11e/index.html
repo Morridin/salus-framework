@@ -31,6 +31,11 @@
                 <h2 id="annotation-panel-title">Annotations <span id="annotation-count" class="annotation-count">0</span></h2>
                 <button id="collapse-annotations" aria-label="Collapse annotations" title="Collapse annotations">›</button>
             </header>
+            <div class="annotation-opacity-control">
+                <label for="annotation-opacity">Overlay opacity</label>
+                <output id="annotation-opacity-value" for="annotation-opacity">100%</output>
+                <input id="annotation-opacity" type="range" min="0" max="100" step="1" value="100" aria-valuetext="100%" />
+            </div>
             <p id="annotation-empty" class="annotation-empty">No annotations yet. Draw a region or import annotations to get started.</p>
             <div id="annotation-list" aria-label="Annotations"></div>
             <div class="annotation-editor">
