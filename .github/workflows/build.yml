@@ -43,6 +43,9 @@ jobs:
           cd ${{ env.MAIN_PACKAGE }}
           printf "Test-Token" > token
 
+      - name: Install plugin dependencies
+        run: npm ci --prefix frontend/plugins/a11e
+
       - name: Run Tests
         shell: bash
         run: |
