@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {createAnnotationController} from "../plugins/a11e/js/annotations/annotation-controller.js";
+import {createAnnotationController} from "../plugins/a11e/js/annotations/controller.js";
 
 test("controller updates and clears visuals before notifying, while reads stay detached", () => {
     const visuals = new Map();

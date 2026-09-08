@@ -1,10 +1,10 @@
 import {createStrokeTool} from "./stroke-tool.js";
-import {SHAPES} from "../constants.js";
+import {SHAPES, TOOL_OPTIONS} from "./core/registry.js";
 
 export function createBrushTool({
     surface,
     renderer,
-    getRadius,
+    getOption,
     commitAnnotation,
 }) {
     return createStrokeTool({
@@ -12,7 +12,7 @@ export function createBrushTool({
         renderer,
         commitAnnotation,
         beginStroke() {
-            const radius = getRadius();
+            const radius = getOption(TOOL_OPTIONS.BRUSH_RADIUS);
             const element = renderer.render(
                 {shape: SHAPES.BRUSH, radius, points: []},
                 {preview: true},

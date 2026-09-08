@@ -1,6 +1,6 @@
-import {createAnnotationStore} from "./annotation-store.js";
-import {annotationsToGeoJson} from "./geojson-export.js";
-import {annotationsFromGeoJson} from "./geojson-import.js";
+import {createAnnotationStore} from "./store.js";
+import {annotationsToGeoJson} from "./io/geojson-export.js";
+import {annotationsFromGeoJson} from "./io/geojson-import.js";
 
 // Owns committed annotations and their import/export workflows.
 export function createAnnotationController({

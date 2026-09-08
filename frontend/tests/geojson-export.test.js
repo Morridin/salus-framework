@@ -6,7 +6,7 @@ import {
   circleToGeoJsonFeature,
   polygonToGeoJsonFeature,
   rectangleToGeoJsonFeature,
-} from "../plugins/a11e/js/annotations/geojson-export.js";
+} from "../plugins/a11e/js/annotations/io/geojson-export.js";
 
 function expectedProperties(annotation) {
   return {

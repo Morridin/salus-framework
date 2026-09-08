@@ -1,3 +1,6 @@
+import {SHAPES} from "./core/registry.js";
+import {defineTool} from "./core/base.js";
+
 export function createPolygonTool({
     surface,
     renderer,
@@ -12,14 +15,14 @@ export function createPolygonTool({
             ? [...draft.points, cursorPoint]
             : draft.points;
         renderer.update(draft.element, {
-            shape: "polygon",
+            shape: SHAPES.POLYGON,
             points: displayedPoints,
         });
     }
 
     function start(point) {
         const element = renderer.render(
-            {shape: "polygon", points: [point]},
+            {shape: SHAPES.POLYGON, points: [point]},
             {preview: true},
         );
 
@@ -60,7 +63,7 @@ export function createPolygonTool({
         }
 
         commitAnnotation({
-            shape: "polygon",
+            shape: SHAPES.POLYGON,
             points: draft.points.map(({x, y}) => ({x, y})),
         }, draft.element);
         draft = null;
@@ -90,10 +93,10 @@ export function createPolygonTool({
         }
     }
 
-    return {
+    return defineTool({
         click: addPoint,
         pointerMove: previewEdge,
         keyDown,
         deactivate: cancel,
-    };
+    });
 }

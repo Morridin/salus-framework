@@ -7,10 +7,10 @@ const brushModule = import(pathToFileURL(
     path.join(__dirname, "../plugins/a11e/js/tools/assisted-brush/tool.js"),
 ));
 const rendererModule = import(pathToFileURL(
-    path.join(__dirname, "../plugins/a11e/js/annotations/annotation-renderer.js"),
+    path.join(__dirname, "../plugins/a11e/js/annotations/renderer.js"),
 ));
 const controllerModule = import(pathToFileURL(
-    path.join(__dirname, "../plugins/a11e/js/annotations/annotation-controller.js"),
+    path.join(__dirname, "../plugins/a11e/js/annotations/controller.js"),
 ));
 
 class FakeElement {
@@ -71,8 +71,7 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
         surface,
         renderer,
         sampler,
-        getRadius: () => 4,
-        getTolerance: () => 18,
+        getOption: name => ({brushRadius: 4, brushTolerance: 18}[name]),
         commitAnnotation: controller.commitAnnotation,
     });
 

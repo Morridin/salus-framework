@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {createAnnotationRenderer} from "../plugins/a11e/js/annotations/annotation-renderer.js";
+import {createAnnotationRenderer} from "../plugins/a11e/js/annotations/renderer.js";
 
 class FakeElement {
     constructor(tagName) {

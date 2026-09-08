@@ -3,7 +3,8 @@
 // distance throttling, and preview/commit/cancel wiring; each tool
 // supplies how a stroke starts, how an accepted point extends it,
 // and what annotation to commit.
-import {MINIMUM_POINT_DISTANCE} from "../constants.js";
+import {MINIMUM_POINT_DISTANCE} from "../shared/annotation-constants.js";
+import {defineTool} from "./core/base.js";
 
 export function isPrimaryButton(event) {
     const button = event.originalEvent?.button;
@@ -70,10 +71,10 @@ export function createStrokeTool({
         stroke = null;
     }
 
-    return {
+    return defineTool({
         press: start,
         drag,
         release: finish,
         deactivate: cancel,
-    };
+    });
 }

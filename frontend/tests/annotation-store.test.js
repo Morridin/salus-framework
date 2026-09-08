@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {createAnnotationStore} from "../plugins/a11e/js/annotations/annotation-store.js";
+import {createAnnotationStore} from "../plugins/a11e/js/annotations/store.js";
 
 test("add owns its input and returns detached nested geometry with a generated ID", () => {
     const store = createAnnotationStore();

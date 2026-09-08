@@ -1,24 +1,9 @@
 // Shared drag behavior for rectangles and circles.
-import {MINIMUM_SHAPE_SIZE, SHAPES} from "../constants.js";
+import {MINIMUM_SHAPE_SIZE} from "../shared/annotation-constants.js";
+import {SHAPES} from "./core/registry.js";
+import {defineTool} from "./core/base.js";
 
-function shapeBounds(tool, start, end) {
-    if (tool === SHAPES.CIRCLE) {
-        const radius = Math.max(
-            Math.hypot(end.x - start.x, end.y - start.y),
-            0.5,
-        );
-
-        return {
-            x: start.x - radius,
-            y: start.y - radius,
-            width: radius * 2,
-            height: radius * 2,
-            centerX: start.x,
-            centerY: start.y,
-            radius,
-        };
-    }
-
+function rectangleBounds(start, end) {
     return {
         x: Math.min(start.x, end.x),
         y: Math.min(start.y, end.y),
@@ -27,6 +12,49 @@ function shapeBounds(tool, start, end) {
     };
 }
 
+function circleBounds(start, end) {
+    const radius = Math.max(
+        Math.hypot(end.x - start.x, end.y - start.y),
+        0.5,
+    );
+
+    return {
+        x: start.x - radius,
+        y: start.y - radius,
+        width: radius * 2,
+        height: radius * 2,
+        centerX: start.x,
+        centerY: start.y,
+        radius,
+    };
+}
+
+function rectangleAnnotation(tool, bounds) {
+    return {
+        shape: tool,
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+    };
+}
+
+function circleAnnotation(tool, bounds) {
+    return {
+        shape: tool,
+        centerX: bounds.centerX,
+        centerY: bounds.centerY,
+        radius: bounds.radius,
+    };
+}
+
+// Per-shape geometry: the lifecycle below is shape-agnostic, so adding a
+// drag-based shape only needs one entry here.
+const DRAG_SHAPE_CONFIGS = {
+    [SHAPES.RECTANGLE]: {toBounds: rectangleBounds, toAnnotation: rectangleAnnotation},
+    [SHAPES.CIRCLE]: {toBounds: circleBounds, toAnnotation: circleAnnotation},
+};
+
 export function createDragShapeTool({
     surface,
     renderer,
@@ -34,10 +62,11 @@ export function createDragShapeTool({
     commitAnnotation,
 }) {
     let drawing = null;
+    const config = DRAG_SHAPE_CONFIGS[tool] ?? DRAG_SHAPE_CONFIGS[SHAPES.RECTANGLE];
 
     function updateDrawing(position) {
         drawing.end = surface.toImagePoint(position);
-        drawing.bounds = shapeBounds(drawing.tool, drawing.start, drawing.end);
+        drawing.bounds = config.toBounds(drawing.start, drawing.end);
         renderer.update(drawing.element, {
             shape: drawing.tool,
             ...drawing.bounds,
@@ -48,7 +77,7 @@ export function createDragShapeTool({
         event.preventDefaultAction = true;
 
         const start = surface.toImagePoint(event.position);
-        const bounds = shapeBounds(tool, start, start);
+        const bounds = config.toBounds(start, start);
         const element = renderer.render(
             {shape: tool, ...bounds},
             {preview: true},
@@ -85,20 +114,7 @@ export function createDragShapeTool({
             return;
         }
 
-        const annotationData = drawing.tool === SHAPES.CIRCLE
-            ? {
-                shape: drawing.tool,
-                centerX: drawing.bounds.centerX,
-                centerY: drawing.bounds.centerY,
-                radius: drawing.bounds.radius,
-            }
-            : {
-                shape: drawing.tool,
-                x: drawing.bounds.x,
-                y: drawing.bounds.y,
-                width: drawing.bounds.width,
-                height: drawing.bounds.height,
-            };
+        const annotationData = config.toAnnotation(drawing.tool, drawing.bounds);
         commitAnnotation(annotationData, drawing.element);
         drawing = null;
     }
@@ -110,10 +126,10 @@ export function createDragShapeTool({
         drawing = null;
     }
 
-    return {
+    return defineTool({
         press: startDrawing,
         drag: dragDrawing,
         release: finishDrawing,
         deactivate,
-    };
+    });
 }

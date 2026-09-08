@@ -1,5 +1,4 @@
-import {VALID_TOOLS} from "../constants.js";
-import {asFiniteNumber} from "../numbers.js";
+import {isKnownToolId} from "../tools/core/registry.js";
 
 export function createToolbarBridge({
     channel,
@@ -32,17 +31,18 @@ export function createToolbarBridge({
         );
     }
 
+    // Pure router: validity is checked against the registry here as a cheap
+    // pre-filter, while sanitizing lives in the settings store (the single
+    // rule). The selection object is forwarded untouched so new options need
+    // no bridge changes.
     function handleToolChange(payload, onToolChanged) {
-        if (!VALID_TOOLS.has(payload.tool)) return;
+        if (!isKnownToolId(payload?.tool)) return;
 
-        const brushRadius = asFiniteNumber(payload.brushRadius);
-        const brushTolerance = asFiniteNumber(payload.brushTolerance);
-        const validRadius = brushRadius > 0 ? brushRadius : null;
-        const validTolerance = brushTolerance >= 0
-            ? Math.min(255, brushTolerance)
-            : null;
-
-        onToolChanged?.(payload.tool, validRadius, validTolerance);
+        onToolChanged?.({
+            tool: payload.tool,
+            brushRadius: payload.brushRadius,
+            brushTolerance: payload.brushTolerance,
+        });
     }
 
     function handleToolbarMessage(message, messageHandlers) {

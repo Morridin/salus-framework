@@ -1,5 +1,5 @@
-import {annotationColor, annotationName} from "./annotation-appearance.js";
-import {isFiniteNumber, readRangeNumber} from "../numbers.js";
+import {annotationColor, annotationName} from "./appearance.js";
+import {isFiniteNumber, readRangeNumber} from "../shared/numbers.js";
 
 function createAnnotationRow(document, id, onSelect) {
     const button = document.createElement("button");
@@ -46,6 +46,7 @@ export function createAnnotationPanel({document, controller}) {
     const viewer = document.getElementById("image-viewer");
     const rows = new Map();
     let selectedId = null;
+    let notifiedSelection;
 
     function selectAnnotation(id) {
         selectedId = id;
@@ -87,7 +88,12 @@ export function createAnnotationPanel({document, controller}) {
         const selected = annotations.find(annotation => annotation.id === selectedId)
             ?? annotations[0];
         selectedId = selected?.id ?? null;
-        controller.selectAnnotation(selectedId);
+        // The renderer only needs to hear about actual selection changes;
+        // refresh() also runs on renames, recolors, and imports.
+        if (selectedId !== notifiedSelection) {
+            notifiedSelection = selectedId;
+            controller.selectAnnotation(selectedId);
+        }
 
         renderList(annotations);
         renderEditor(selected);

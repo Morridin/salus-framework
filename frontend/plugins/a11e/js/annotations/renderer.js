@@ -1,5 +1,6 @@
-import {annotationColor} from "./annotation-appearance.js";
-import {ANNOTATION_FILL_OPACITY} from "../constants.js";
+import {annotationColor} from "./appearance.js";
+import {ANNOTATION_FILL_OPACITY} from "../shared/annotation-constants.js";
+import {SHAPES} from "../tools/core/registry.js";
 
 function rectangleBounds({x, y, width, height}) {
     return {x, y, width, height};
@@ -76,9 +77,9 @@ export function createAnnotationRenderer({surface}) {
 
     function initializeLayers() {
         layers = {
-            polygon: surface.createSvgLayer("polygon-layer"),
-            brush: surface.createSvgLayer("brush-layer"),
-            "assisted-brush": surface.createSvgLayer("assisted-brush-layer"),
+            [SHAPES.POLYGON]: surface.createSvgLayer("polygon-layer"),
+            [SHAPES.BRUSH]: surface.createSvgLayer("brush-layer"),
+            [SHAPES.ASSISTED_BRUSH]: surface.createSvgLayer("assisted-brush-layer"),
         };
     }
 
@@ -136,31 +137,31 @@ export function createAnnotationRenderer({surface}) {
     }
 
     const shapeDefinitions = {
-        rectangle: {
+        [SHAPES.RECTANGLE]: {
             bounds: rectangleBounds,
             isReady: alwaysReady,
             render: renderOverlay,
             update: updateOverlay,
         },
-        circle: {
+        [SHAPES.CIRCLE]: {
             bounds: circleBounds,
             isReady: alwaysReady,
             render: renderOverlay,
             update: updateOverlay,
         },
-        polygon: {
+        [SHAPES.POLYGON]: {
             tagName: "polygon",
             isReady,
             render: renderSvg,
             update: updatePolygon,
         },
-        brush: {
+        [SHAPES.BRUSH]: {
             tagName: "path",
             isReady,
             render: renderSvg,
             update: updateBrush,
         },
-        "assisted-brush": {
+        [SHAPES.ASSISTED_BRUSH]: {
             tagName: "path",
             isReady,
             render: renderSvg,

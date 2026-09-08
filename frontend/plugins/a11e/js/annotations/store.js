@@ -1,4 +1,4 @@
-import {ANNOTATION_ID_PREFIX, isValidColor} from "../constants.js";
+import {ANNOTATION_ID_PREFIX, isValidColor} from "../shared/annotation-constants.js";
 
 export function createAnnotationStore() {
     const annotations = [];

@@ -1,9 +1,9 @@
+import {SHAPES} from "../tools/core/registry.js";
 import {
     ASSISTED_BRUSH_COLOR,
     COLOR_HEX_PATTERN,
     DEFAULT_ANNOTATION_COLOR,
-    SHAPES,
-} from "../constants.js";
+} from "../shared/annotation-constants.js";
 
 export function annotationColor(annotation) {
     return COLOR_HEX_PATTERN.test(annotation.color)

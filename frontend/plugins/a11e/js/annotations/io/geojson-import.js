@@ -1,8 +1,5 @@
-import {isFiniteNumber, isPositiveFinite} from "../numbers.js";
-
-function isPositiveNumber(value) {
-  return isPositiveFinite(value);
-}
+import {SHAPES} from "../../tools/core/registry.js";
+import {isFiniteNumber, isPositiveFinite} from "../../shared/numbers.js";
 
 function isValidPoint(point) {
   return isFiniteNumber(point?.x) && isFiniteNumber(point?.y);
@@ -19,8 +16,8 @@ function isValidRectangle({x, y, width, height}) {
   return (
     isFiniteNumber(x) &&
     isFiniteNumber(y) &&
-    isPositiveNumber(width) &&
-    isPositiveNumber(height)
+    isPositiveFinite(width) &&
+    isPositiveFinite(height)
   );
 }
 
@@ -28,7 +25,7 @@ function isValidCircle({centerX, centerY, radius}) {
   return (
     isFiniteNumber(centerX) &&
     isFiniteNumber(centerY) &&
-    isPositiveNumber(radius)
+    isPositiveFinite(radius)
   );
 }
 
@@ -49,18 +46,18 @@ function hasValidRuns(runs) {
 
 function hasValidGeometry(annotation) {
   switch (annotation?.shape) {
-    case "rectangle":
+    case SHAPES.RECTANGLE:
       return isValidRectangle(annotation);
-    case "circle":
+    case SHAPES.CIRCLE:
       return isValidCircle(annotation);
-    case "polygon":
+    case SHAPES.POLYGON:
       return hasValidPoints(annotation.points, 3);
-    case "brush":
+    case SHAPES.BRUSH:
       return (
         hasValidPoints(annotation.points, 1) &&
-        isPositiveNumber(annotation.radius)
+        isPositiveFinite(annotation.radius)
       );
-    case "assisted-brush":
+    case SHAPES.ASSISTED_BRUSH:
       return hasValidRuns(annotation.runs);
     default:
       return false;

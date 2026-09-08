@@ -1,6 +1,7 @@
 import {featureCollection, polygon} from "@turf/helpers";
 import {union} from "@turf/union";
-import {isPositiveFinite} from "../numbers.js";
+import {SHAPES} from "../../tools/core/registry.js";
+import {isPositiveFinite} from "../../shared/numbers.js";
 
 const CIRCLE_POINT_COUNT = 64;
 
@@ -54,6 +55,14 @@ function polygonToCoordinateRing(points) {
   return coordinates;
 }
 
+function singlePointRing(points, radius) {
+  return circleToPolygonRing({
+    centerX: points[0].x,
+    centerY: points[0].y,
+    radius,
+  });
+}
+
 function brushToPolygonRing({points, radius}) {
   if (!Array.isArray(points) || points.length === 0) {
     throw new Error("A brush annotation requires at least one point.");
@@ -64,11 +73,7 @@ function brushToPolygonRing({points, radius}) {
   }
 
   if (points.length === 1) {
-    return circleToPolygonRing({
-      centerX: points[0].x,
-      centerY: points[0].y,
-      radius,
-    });
+    return singlePointRing(points, radius);
   }
 
   const leftEdge = [];
@@ -91,11 +96,7 @@ function brushToPolygonRing({points, radius}) {
   }
 
   if (leftEdge.length === 0) {
-    return circleToPolygonRing({
-      centerX: points[0].x,
-      centerY: points[0].y,
-      radius,
-    });
+    return singlePointRing(points, radius);
   }
 
   const ring = [...leftEdge, ...rightEdge.reverse()];
@@ -179,15 +180,15 @@ export function rectangleToGeoJsonFeature(annotation) {
 
 function annotationToGeoJsonFeature(annotation) {
   switch (annotation.shape) {
-    case "assisted-brush":
+    case SHAPES.ASSISTED_BRUSH:
       return assistedBrushToGeoJsonFeature(annotation);
-    case "brush":
+    case SHAPES.BRUSH:
       return brushToGeoJsonFeature(annotation);
-    case "circle":
+    case SHAPES.CIRCLE:
       return circleToGeoJsonFeature(annotation);
-    case "polygon":
+    case SHAPES.POLYGON:
       return polygonToGeoJsonFeature(annotation);
-    case "rectangle":
+    case SHAPES.RECTANGLE:
       return rectangleToGeoJsonFeature(annotation);
     default:
       throw new Error(`Unsupported annotation shape: ${annotation.shape}`);
