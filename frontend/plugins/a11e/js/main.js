@@ -57,9 +57,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         openImage(url) {
             tools.cancelDrawing();
             sampler.setImage(url);
-            for (const annotation of [...annotations.annotations]) {
-                annotations.deleteAnnotation(annotation.id);
-            }
+            annotations.clearAnnotations();
             viewer.clearOverlays();
             session.openImage(url);
         },
@@ -72,8 +70,14 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     toolbar.requestState();
 
     window.imageViewer = viewer;
-    window.imageViewerAnnotations = annotations.annotations;
-    return {viewer, annotations: annotations.annotations};
+    Object.defineProperty(window, "imageViewerAnnotations", {
+        configurable: true,
+        get: () => annotations.annotations,
+    });
+    return {
+        viewer,
+        get annotations() { return annotations.annotations; },
+    };
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {

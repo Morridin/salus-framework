@@ -749,6 +749,32 @@ test("opening local images clears old annotations and drafts, and drawing resume
     assert.equal(input.value, "");
 });
 
+test("app and global annotation snapshots protect state and reflect later edits", async () => {
+    const environment = await loadViewer();
+    const {app, handlers, window, panelElements} = environment;
+    const initial = window.imageViewerAnnotations;
+    handlers.get("open")();
+    environment.messageHandler({sourcePluginId: "5e61", payload: {
+        type: "segmentation-tool-changed", tool: "brush", brushRadius: 4,
+    }});
+    handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    handlers.get("canvas-release")({position: {x: 3, y: 4}});
+    const expected = app.annotations;
+    window.imageViewerAnnotations[0].points[0].x = 99;
+    app.annotations[0].points.pop();
+    window.imageViewerAnnotations.splice(0);
+    assert.deepEqual(app.annotations, expected);
+    assert.deepEqual(window.imageViewerAnnotations, expected);
+    assert.deepEqual(initial, []);
+
+    const nameInput = panelElements.get("annotation-name");
+    nameInput.value = "Renamed";
+    nameInput.listeners.get("input")();
+    assert.equal(app.annotations[0].name, "Renamed");
+    assert.equal(window.imageViewerAnnotations[0].name, "Renamed");
+    assert.equal(expected[0].name, undefined);
+});
+
 test("invalid files and cancelled image replacement keep existing annotations", async () => {
     const environment = await loadViewer();
     const {app, handlers, panelElements, window} = environment;

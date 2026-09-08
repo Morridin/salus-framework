@@ -25,10 +25,8 @@ export function createAnnotationController({
     }
 
     function updateAnnotation(id, changes) {
-        const annotation = annotationStore.annotations.find(item => item.id === id);
+        const annotation = annotationStore.update(id, changes);
         if (!annotation) return;
-        if (typeof changes.name === "string") annotation.name = changes.name;
-        if (/^#[0-9a-f]{6}$/i.test(changes.color)) annotation.color = changes.color;
         renderer.updateAppearance(annotation);
         notify();
         return annotation;
@@ -37,7 +35,7 @@ export function createAnnotationController({
     // Complete the visual before publishing or notifying subscribers.
     // Drawing tools supply their preview; imports render a new element.
     function commitAnnotation(annotationData, preview = null) {
-        const annotation = annotationStore.create(annotationData);
+        const annotation = annotationStore.add(annotationData);
         if (preview) {
             renderer.finalizePreview(preview, annotation);
         } else {
@@ -57,7 +55,7 @@ export function createAnnotationController({
     }
 
     function exportAnnotationsAsGeoJson() {
-        const geoJson = annotationsToGeoJson(annotationStore.annotations);
+        const geoJson = annotationsToGeoJson(annotationStore.list());
         const fileContents = JSON.stringify(geoJson, null, 2);
         const file = new window.Blob(
             [fileContents],
@@ -92,11 +90,19 @@ export function createAnnotationController({
         }
     }
 
+    function clearAnnotations() {
+        const removed = annotationStore.clear();
+        if (removed.length === 0) return;
+        for (const annotation of removed) renderer.removeAnnotation(annotation.id);
+        notify();
+    }
+
     return {
-        annotations: annotationStore.annotations,
+        get annotations() { return annotationStore.list(); },
         commitAnnotation,
         updateAnnotation,
         deleteAnnotation,
+        clearAnnotations,
         selectAnnotation: renderer.setSelected,
         subscribe,
         importAnnotationsFromGeoJson,

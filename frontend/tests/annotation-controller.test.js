@@ -3,6 +3,39 @@ import test from "node:test";
 
 import {createAnnotationController} from "../plugins/a11e/js/annotations/annotation-controller.js";
 
+test("controller updates and clears visuals before notifying, while reads stay detached", () => {
+    const visuals = new Map();
+    const observed = [];
+    const controller = createAnnotationController({
+        renderer: {
+            render(annotation) { visuals.set(annotation.id, annotation); },
+            updateAppearance(annotation) { visuals.set(annotation.id, annotation); },
+            removeAnnotation(id) { visuals.delete(id); },
+        },
+        publishAnnotation() {},
+    });
+    controller.subscribe(() => {
+        const snapshot = controller.annotations;
+        assert.deepEqual([...visuals.values()], snapshot);
+        observed.push(snapshot);
+    });
+    const first = controller.commitAnnotation({shape: "rectangle", x: 1, y: 2, width: 3, height: 4});
+    controller.commitAnnotation({shape: "circle", centerX: 1, centerY: 2, radius: 3});
+    controller.annotations.splice(0);
+    controller.annotations[0].x = 99;
+    const updated = controller.updateAnnotation(first.id, {name: "Tissue", color: "#112233"});
+    assert.equal(controller.annotations[0].x, 1);
+    assert.equal(updated.name, "Tissue");
+    assert.equal(first.name, undefined);
+    controller.clearAnnotations();
+    assert.deepEqual(controller.annotations, []);
+    assert.equal(visuals.size, 0);
+    assert.equal(observed.length, 4, "bulk clear notifies once after removing all visuals");
+    assert.equal(observed[0].length, 1, "previous snapshots retain their original membership");
+    controller.clearAnnotations();
+    assert.equal(observed.length, 4, "an empty clear produces no change notification");
+});
+
 for (const usePreview of [false, true]) {
     test(`commit ${usePreview ? "finalizes a preview" : "renders a new annotation"} before publishing and notifying`, () => {
         const preview = {isPreview: true};
