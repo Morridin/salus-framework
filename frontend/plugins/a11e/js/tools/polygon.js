@@ -1,5 +1,4 @@
 import {SHAPES} from "./core/registry.js";
-import {defineTool} from "./core/base.js";
 
 export function createPolygonTool({
     surface,
@@ -93,10 +92,10 @@ export function createPolygonTool({
         }
     }
 
-    return defineTool({
+    return {
         click: addPoint,
         pointerMove: previewEdge,
         keyDown,
         deactivate: cancel,
-    });
+    };
 }

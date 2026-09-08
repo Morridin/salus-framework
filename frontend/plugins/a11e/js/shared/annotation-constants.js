@@ -18,6 +18,10 @@ export const ANNOTATION_ID_PREFIX = "segmentation-";
 export const MINIMUM_POINT_DISTANCE = 1;
 export const MINIMUM_SHAPE_SIZE = 3;
 
+/**
+ * @param {unknown} value raw color value
+ * @returns {value is string} true only for #rrggbb hex strings
+ */
 export function isValidColor(value) {
     return typeof value === "string" && COLOR_HEX_PATTERN.test(value);
 }

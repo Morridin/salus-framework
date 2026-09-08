@@ -1,7 +1,6 @@
 // Shared drag behavior for rectangles and circles.
 import {MINIMUM_SHAPE_SIZE} from "../shared/annotation-constants.js";
 import {SHAPES} from "./core/registry.js";
-import {defineTool} from "./core/base.js";
 
 function rectangleBounds(start, end) {
     return {
@@ -126,10 +125,10 @@ export function createDragShapeTool({
         drawing = null;
     }
 
-    return defineTool({
+    return {
         press: startDrawing,
         drag: dragDrawing,
         release: finishDrawing,
         deactivate,
-    });
+    };
 }

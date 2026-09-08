@@ -11,13 +11,16 @@ js/
 ├── main.js                  # Application entry point and composition
 ├── annotations/             # Annotation workflows, state, and rendering
 ├── viewer/                  # OpenSeadragon setup and coordinate/overlay adapter
-├── toolbar/                 # Communication with the toolbar plugin (5e61)
+├── messaging/               # Communication with the toolbar plugin (5e61)
 └── tools/                   # Tool controller and drawing implementations
     └── assisted-brush/      # Assisted brush tool and intensity sampling
 ```
 
 Keep new drawing tools in `js/tools/` and connect them through
-`js/tools/tool-controller.js`. Annotation persistence and rendering belong in
+`js/tools/core/tool-controller.js`. The controller owns selection and brush
+settings; tools return plain event handlers
+and read brush settings when a stroke begins. Shared tool identifiers live in
+`js/tools/core/registry.js`. Annotation persistence and rendering belong in
 `js/annotations/`, alongside GeoJSON import and export.
 Viewer-specific operations belong in `js/viewer/`.
 
@@ -40,7 +43,7 @@ snapshots on each read; editing a snapshot does not change the viewer's state.
 From the repository root:
 
 ```sh
-npm ci --prefix frontend/plugins/a11e
+npm ci --prefix frontend
 node --test frontend/tests/*.test.js
 ```
 

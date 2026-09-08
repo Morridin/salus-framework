@@ -2,63 +2,10 @@ import {createAssistedBrushTool} from "../assisted-brush/tool.js";
 import {createBrushTool} from "../brush.js";
 import {createDragShapeTool} from "../drag-shape.js";
 import {createPolygonTool} from "../polygon.js";
-import {VIEWER_EVENT_MAP} from "./base.js";
-import {SHAPES, TOOL_DEFS, isKnownToolId} from "./registry.js";
-import {createToolSettings} from "./settings.js";
+import {NO_TOOL, SHAPES, isKnownToolId} from "./registry.js";
+import {isFiniteNumber, isPositiveFinite} from "../../shared/numbers.js";
 
-// Maps registry ids to factories. Adding a tool = one TOOL_DEFS entry in
-// registry.js plus one line here; dispatch, validation, and settings derive
-// from the registry instead of hardcoded maps. Every factory receives the
-// same ToolContext ({surface, renderer, sampler, commitAnnotation,
-// reportStatus, getOption}) so tools declare their option needs in the
-// registry rather than via bespoke constructor closures.
-function buildTools(context) {
-    const {surface, renderer, sampler, commitAnnotation, reportStatus, getOption} = context;
-    const factories = {
-        [SHAPES.RECTANGLE]: () => createDragShapeTool({
-            surface,
-            renderer,
-            tool: SHAPES.RECTANGLE,
-            commitAnnotation,
-        }),
-        [SHAPES.CIRCLE]: () => createDragShapeTool({
-            surface,
-            renderer,
-            tool: SHAPES.CIRCLE,
-            commitAnnotation,
-        }),
-        [SHAPES.POLYGON]: () => createPolygonTool({surface, renderer, commitAnnotation}),
-        [SHAPES.BRUSH]: () => createBrushTool({
-            surface,
-            renderer,
-            commitAnnotation,
-            getOption,
-        }),
-        [SHAPES.ASSISTED_BRUSH]: () => createAssistedBrushTool({
-            surface,
-            renderer,
-            sampler,
-            commitAnnotation,
-            getOption,
-            reportStatus,
-        }),
-    };
-    const missing = TOOL_DEFS.filter(def => typeof factories[def.id] !== "function");
-    if (missing.length > 0) {
-        throw new Error(
-            `Missing tool factories for: ${missing.map(def => def.id).join(", ")}`,
-        );
-    }
-    const extra = Object.keys(factories).filter(id => !isKnownToolId(id));
-    if (extra.length > 0) {
-        throw new Error(`Unknown tool factories for: ${extra.join(", ")}`);
-    }
-    return Object.fromEntries(
-        TOOL_DEFS.map(def => [def.id, factories[def.id]()]),
-    );
-}
-
-// Owns drawing tools, their settings, and dispatch of viewer input.
+// Owns tool selection, brush settings, and dispatch of viewer input.
 export function createToolController({
     document,
     OpenSeadragon,
@@ -69,33 +16,56 @@ export function createToolController({
     commitAnnotation,
 }) {
     const {viewer, viewerElement} = session;
-    const settings = createToolSettings();
-    const tools = buildTools({
-        surface,
-        renderer,
-        sampler,
-        commitAnnotation,
-        reportStatus: session.reportStatus,
-        getOption: name => settings.getOption(name),
-    });
+    let currentTool = NO_TOOL;
+    // Only this controller updates settings; brushes read them at stroke start.
+    const brushSettings = {brushRadius: 12, brushTolerance: 24};
+    const tools = {
+        [SHAPES.RECTANGLE]: createDragShapeTool({
+            surface, renderer, commitAnnotation, tool: SHAPES.RECTANGLE,
+        }),
+        [SHAPES.CIRCLE]: createDragShapeTool({
+            surface, renderer, commitAnnotation, tool: SHAPES.CIRCLE,
+        }),
+        [SHAPES.POLYGON]: createPolygonTool({surface, renderer, commitAnnotation}),
+        [SHAPES.BRUSH]: createBrushTool({
+            surface, renderer, commitAnnotation, brushSettings,
+        }),
+        [SHAPES.ASSISTED_BRUSH]: createAssistedBrushTool({
+            surface, renderer, commitAnnotation, brushSettings, sampler,
+            reportStatus: session.reportStatus,
+        }),
+    };
+    viewerElement.dataset.tool = currentTool;
 
-    // Single sync point for the active-tool attribute; settings is the
-    // source of truth and the DOM merely reflects it.
-    settings.subscribe(state => {
-        viewerElement.dataset.tool = state.tool;
-    });
-    viewerElement.dataset.tool = settings.getState().tool;
+    function cancelDrawing() {
+        tools[currentTool]?.deactivate?.();
+    }
+
+    /** @param {{tool?: string, brushRadius?: unknown, brushTolerance?: unknown}} [selection] */
+    function selectTool(selection = {}) {
+        const {tool = currentTool, brushRadius, brushTolerance} = selection ?? {};
+        if (!isKnownToolId(tool)) return {tool: currentTool, ...brushSettings};
+
+        if (tool !== currentTool) cancelDrawing();
+        currentTool = tool;
+        if (isPositiveFinite(brushRadius)) brushSettings.brushRadius = brushRadius;
+        if (isFiniteNumber(brushTolerance) && brushTolerance >= 0) {
+            brushSettings.brushTolerance = Math.min(255, brushTolerance);
+        }
+        viewerElement.dataset.tool = currentTool;
+        return {tool: currentTool, ...brushSettings};
+    }
 
     function activeToolHandler(name, event) {
         if (!session.isImageReady()) return;
-        const activeTool = settings.getState().tool;
-        if (!tools[activeTool] || !renderer.canRender(activeTool)) return;
-        tools[activeTool][name]?.(event);
+        if (!tools[currentTool] || !renderer.canRender(currentTool)) return;
+        tools[currentTool][name]?.(event);
     }
 
-    for (const [viewerEvent, toolEvent] of VIEWER_EVENT_MAP) {
-        viewer.addHandler(viewerEvent, event => activeToolHandler(toolEvent, event));
-    }
+    viewer.addHandler("canvas-press", event => activeToolHandler("press", event));
+    viewer.addHandler("canvas-drag", event => activeToolHandler("drag", event));
+    viewer.addHandler("canvas-release", event => activeToolHandler("release", event));
+    viewer.addHandler("canvas-click", event => activeToolHandler("click", event));
 
     const pointerTracker = new OpenSeadragon.MouseTracker({
         element: viewer.canvas,
@@ -107,20 +77,5 @@ export function createToolController({
         activeToolHandler("keyDown", event)
     );
 
-    function cancelDrawing() {
-        tools[settings.getState().tool]?.deactivate?.();
-    }
-
-    // Accepts one selection object matching the toolbar payload shape, so
-    // the bridge forwards messages without positional mapping and new
-    // options need no signature changes.
-    function selectTool(selection = {}) {
-        const nextTool = selection?.tool ?? settings.getState().tool;
-        if (nextTool !== settings.getState().tool && isKnownToolId(nextTool)) {
-            cancelDrawing();
-        }
-        return settings.select(selection);
-    }
-
-    return {selectTool, cancelDrawing, settings};
+    return {selectTool, cancelDrawing};
 }

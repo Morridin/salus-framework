@@ -54,9 +54,6 @@ jobs:
       - name: Lint JavaScript
         run: npm run lint --prefix frontend
 
-      - name: Install plugin dependencies
-        run: npm ci --prefix frontend/plugins/a11e
-
       - name: Run Tests
         shell: bash
         run: |

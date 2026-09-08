@@ -799,3 +799,34 @@ test("invalid files and cancelled image replacement keep existing annotations", 
     assert.equal(environment.revokedUrls.length, 2);
     assert.equal(panelElements.get("open-image").disabled, false);
 });
+
+
+test("brush settings apply to the next stroke and invalid selections preserve drawing", async () => {
+    const environment = await loadViewer();
+    environment.handlers.get("open")();
+    const select = selection => environment.messageHandler({
+        sourcePluginId: "5e61",
+        payload: {type: "segmentation-tool-changed", ...selection},
+    });
+    const press = () => environment.handlers.get("canvas-press")({position: {x: 10, y: 20}});
+    const release = () => environment.handlers.get("canvas-release")({position: {x: 30, y: 40}});
+
+    select({tool: "brush"});
+    press();
+    select({tool: "brush", brushRadius: 20});
+    release();
+    assert.equal(environment.app.annotations[0].radius, 12);
+
+    press();
+    select({tool: "unknown", brushRadius: 50});
+    release();
+    assert.equal(environment.viewerElement.dataset.tool, "brush");
+    assert.equal(environment.app.annotations[1].radius, 20);
+
+    for (const brushRadius of [undefined, null, "30", 0, -1, NaN, Infinity]) {
+        select({tool: "brush", brushRadius});
+        press();
+        release();
+        assert.equal(environment.app.annotations.at(-1).radius, 20);
+    }
+});

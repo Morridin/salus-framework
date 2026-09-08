@@ -31,10 +31,7 @@ export function createToolbarBridge({
         );
     }
 
-    // Pure router: validity is checked against the registry here as a cheap
-    // pre-filter, while sanitizing lives in the settings store (the single
-    // rule). The selection object is forwarded untouched so new options need
-    // no bridge changes.
+    // Filter tool ids here; the tool controller validates brush settings.
     function handleToolChange(payload, onToolChanged) {
         if (!isKnownToolId(payload?.tool)) return;
 

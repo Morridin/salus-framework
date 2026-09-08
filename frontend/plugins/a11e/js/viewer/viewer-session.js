@@ -49,6 +49,14 @@ export function createViewerSession({window, document, OpenSeadragon}) {
         });
     }
 
+    /** @param {string} url */
+    function openImage(url) {
+        imageReady = false;
+        errorElement.hidden = true;
+        reportStatus("");
+        viewer.open({type: "image", url, buildPyramid: false});
+    }
+
     return {
         viewer,
         viewerElement,
@@ -56,11 +64,6 @@ export function createViewerSession({window, document, OpenSeadragon}) {
         isImageReady: () => imageReady,
         reportStatus,
         onImageOpened,
-        openImage(url) {
-            imageReady = false;
-            errorElement.hidden = true;
-            reportStatus("");
-            viewer.open({type: "image", url, buildPyramid: false});
-        },
+        openImage,
     };
 }

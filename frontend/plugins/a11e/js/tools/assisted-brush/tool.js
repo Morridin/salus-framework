@@ -1,13 +1,13 @@
 // Intensity-aware brush interaction and mask rendering.
 import {pixelKeysToRuns} from "./sampler.js";
 import {createStrokeTool} from "../stroke-tool.js";
-import {SHAPES, TOOL_OPTIONS} from "../core/registry.js";
+import {SHAPES} from "../core/registry.js";
 
 export function createAssistedBrushTool({
     surface,
     renderer,
     sampler,
-    getOption,
+    brushSettings,
     commitAnnotation,
     reportStatus = () => {},
 }) {
@@ -66,8 +66,8 @@ export function createAssistedBrushTool({
                 {preview: true},
             );
             return {
-                radius: getOption(TOOL_OPTIONS.BRUSH_RADIUS),
-                tolerance: getOption(TOOL_OPTIONS.BRUSH_TOLERANCE),
+                radius: brushSettings.brushRadius,
+                tolerance: brushSettings.brushTolerance,
                 points: [],
                 pixelKeys: new Set(),
                 runs: [],

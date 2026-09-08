@@ -13,7 +13,7 @@ const registryModule = import(pathToFileURL(
 // (A runtime import across plugin folders would couple the deployment layout,
 // hence this sync check instead.)
 test("5e61 toolbar buttons stay in sync with the tool registry", async () => {
-    const {TOOL_DEFS} = await registryModule;
+    const {TOOL_IDS} = await registryModule;
     const html = fs.readFileSync(
         path.join(__dirname, "../plugins/5e61/index.html"),
         "utf8",
@@ -21,6 +21,6 @@ test("5e61 toolbar buttons stay in sync with the tool registry", async () => {
     const buttonTools = [...html.matchAll(/data-tool="([^"]+)"/g)]
         .map(match => match[1])
         .sort();
-    const registeredTools = TOOL_DEFS.map(def => def.id).sort();
+    const registeredTools = [...TOOL_IDS].sort();
     assert.deepEqual(buttonTools, registeredTools);
 });

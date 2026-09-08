@@ -71,7 +71,7 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
         surface,
         renderer,
         sampler,
-        getOption: name => ({brushRadius: 4, brushTolerance: 18}[name]),
+        brushSettings: {brushRadius: 4, brushTolerance: 18},
         commitAnnotation: controller.commitAnnotation,
     });
 
