@@ -45,6 +45,7 @@ export function createViewerSession({window, document, OpenSeadragon}) {
         viewer.addHandler("open", () => {
             initializeLayers();
             imageReady = true;
+            errorElement.hidden = true;
         });
     }
 
@@ -55,5 +56,11 @@ export function createViewerSession({window, document, OpenSeadragon}) {
         isImageReady: () => imageReady,
         reportStatus,
         onImageOpened,
+        openImage(url) {
+            imageReady = false;
+            errorElement.hidden = true;
+            reportStatus("");
+            viewer.open({type: "image", url, buildPyramid: false});
+        },
     };
 }

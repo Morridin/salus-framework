@@ -114,6 +114,7 @@ async function loadViewer() {
         "annotation-list", "annotation-count", "annotation-empty",
         "annotation-name", "annotation-color", "annotation-color-value",
         "delete-annotation",
+        "open-image", "open-image-file",
     ].map(id => [id, new FakeElement()]));
     const document = {
         getElementById(id) {
@@ -399,6 +400,7 @@ test("an unfinished polygon is discarded when the tool changes", async () => {
 
 test("rectangle tool creates one annotation through the shared store", async () => {
     const environment = await loadViewer();
+    environment.handlers.get("open")();
     environment.messageHandler({
         sourcePluginId: "5e61",
         payload: {type: "segmentation-tool-changed", tool: "rectangle"},
@@ -432,6 +434,7 @@ test("rectangle tool creates one annotation through the shared store", async () 
 
 test("export request downloads rectangle annotations as GeoJSON", async () => {
     const environment = await loadViewer();
+    environment.handlers.get("open")();
     environment.messageHandler({
         sourcePluginId: "5e61",
         payload: {type: "segmentation-tool-changed", tool: "rectangle"},
@@ -587,6 +590,7 @@ test("an unfinished brush stroke is discarded when the tool changes", async () =
 
 test("an unfinished drag shape is discarded when the tool changes", async () => {
     const environment = await loadViewer();
+    environment.handlers.get("open")();
     environment.messageHandler({
         sourcePluginId: "5e61",
         payload: {type: "segmentation-tool-changed", tool: "rectangle"},
@@ -695,4 +699,76 @@ test("viewer stays idle until a tool is selected and cancels drawing on deselect
     });
     environment.handlers.get("canvas-release")({position: {x: 80, y: 90}});
     assert.equal(environment.app.annotations.length, 0);
+});
+
+test("opening local images clears old annotations and drafts, and drawing resumes after load", async () => {
+    const environment = await loadViewer();
+    const {app, handlers, panelElements, window, overlays} = environment;
+    const images = [];
+    window.Image = class {
+        constructor() { images.push(this); }
+        addEventListener() {}
+        async decode() {}
+    };
+    window.confirm = () => true;
+    let sequence = 0;
+    window.URL.createObjectURL = () => `blob:image-${++sequence}`;
+    const opened = [];
+    app.viewer.open = source => opened.push(source);
+    app.viewer.clearOverlays = () => overlays.splice(0);
+    handlers.get("open")();
+    environment.messageHandler({sourcePluginId: "5e61", payload: {
+        type: "segmentation-tool-changed", tool: "rectangle",
+    }});
+    const press = () => handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    const release = () => handlers.get("canvas-release")({position: {x: 30, y: 40}});
+    press();
+    release();
+    press(); // An unfinished shape must not carry across images.
+    const input = panelElements.get("open-image-file");
+    input.files = [new Blob(["image"])];
+    await input.listeners.get("change")();
+    assert.deepEqual(opened, [{type: "image", url: "blob:image-1", buildPyramid: false}]);
+    assert.equal(images.at(-1).src, "blob:image-1"); // Smart-brush sampler source.
+    assert.equal(app.annotations.length, 0);
+    assert.equal(overlays.length, 0);
+    assert.equal(panelElements.get("annotation-count").textContent, "0");
+    press();
+    release();
+    assert.equal(app.annotations.length, 0);
+    handlers.get("open")();
+    release();
+    assert.equal(app.annotations.length, 0);
+    press();
+    release();
+    assert.equal(app.annotations.length, 1);
+    await input.listeners.get("change")();
+    assert.deepEqual(environment.revokedUrls, ["blob:image-1"]);
+    assert.equal(images.at(-1).src, "blob:image-2");
+    assert.equal(input.value, "");
+});
+
+test("invalid files and cancelled image replacement keep existing annotations", async () => {
+    const environment = await loadViewer();
+    const {app, handlers, panelElements, window} = environment;
+    handlers.get("open")();
+    environment.messageHandler({sourcePluginId: "5e61", payload: {
+        type: "segmentation-tool-changed", tool: "rectangle",
+    }});
+    handlers.get("canvas-press")({position: {x: 1, y: 2}});
+    handlers.get("canvas-release")({position: {x: 30, y: 40}});
+    const before = structuredClone(app.annotations);
+    app.viewer.open = () => assert.fail("Must not replace the current image");
+    const input = panelElements.get("open-image-file");
+    input.files = [new Blob(["invalid"])];
+    window.Image = class { async decode() { throw new Error("Invalid image"); } };
+    await input.listeners.get("change")();
+    assert.match(environment.statusElement.textContent, /Could not open this image/);
+    assert.deepEqual(app.annotations, before);
+    window.Image = class { async decode() {} };
+    window.confirm = () => false;
+    await input.listeners.get("change")();
+    assert.deepEqual(app.annotations, before);
+    assert.equal(environment.revokedUrls.length, 2);
+    assert.equal(panelElements.get("open-image").disabled, false);
 });

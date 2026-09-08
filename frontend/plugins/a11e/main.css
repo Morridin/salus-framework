@@ -27,6 +27,9 @@ body {
 
 .viewer-canvas { position: relative; flex: 1; min-width: 0; }
 
+#open-image { position: absolute; bottom: 12px; left: 12px; z-index: 10; padding: 8px 12px; border: 1px solid #41414c; border-radius: 6px; background: #222228; color: #ececf0; font: 12px system-ui, sans-serif; cursor: pointer; }
+#open-image:focus-visible { outline: 2px solid #a8b9ff; outline-offset: 2px; }
+
 #annotation-panel {
     box-sizing: border-box;
     width: 260px;

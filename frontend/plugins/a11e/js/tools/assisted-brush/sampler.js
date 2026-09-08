@@ -105,36 +105,44 @@ export function pixelKeysToRuns(pixelKeys) {
 export function createIntensitySampler({window, document, imageUrl}) {
     let imageData = null;
     let failure = null;
-    const ImageConstructor = window.Image;
+    let currentImage = null;
 
-    if (typeof ImageConstructor !== "function") {
-        return {
-            get ready() { return false; },
-            get error() { return new Error("Image pixels are unavailable."); },
-            select() { return []; },
-        };
+    function setImage(url) {
+        imageData = null;
+        failure = null;
+        currentImage = null;
+        if (typeof window.Image !== "function") {
+            failure = new Error("Image pixels are unavailable.");
+            return;
+        }
+
+        const image = new window.Image();
+        currentImage = image;
+        image.crossOrigin = "anonymous";
+        image.addEventListener("load", () => {
+            if (image !== currentImage) return;
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                const context = canvas.getContext("2d", {willReadFrequently: true});
+                context.drawImage(image, 0, 0);
+                imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            } catch (error) {
+                failure = error;
+            }
+        });
+        image.addEventListener("error", () => {
+            if (image !== currentImage) return;
+            failure = new Error("The source image could not be sampled.");
+        });
+        image.src = url;
     }
 
-    const image = new ImageConstructor();
-    image.crossOrigin = "anonymous";
-    image.addEventListener("load", () => {
-        try {
-            const canvas = document.createElement("canvas");
-            canvas.width = image.naturalWidth;
-            canvas.height = image.naturalHeight;
-            const context = canvas.getContext("2d", {willReadFrequently: true});
-            context.drawImage(image, 0, 0);
-            imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        } catch (error) {
-            failure = error;
-        }
-    });
-    image.addEventListener("error", () => {
-        failure = new Error("The source image could not be sampled.");
-    });
-    image.src = imageUrl;
+    setImage(imageUrl);
 
     return {
+        setImage,
         get ready() { return imageData !== null; },
         get error() { return failure; },
         select(center, radius, tolerance) {

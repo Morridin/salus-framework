@@ -69,3 +69,45 @@ test("selected pixels are compacted into horizontal runs", async () => {
         {y: 2, xStart: 7, xEnd: 7},
     ]);
 });
+
+test("changing images resets sampling and ignores late events from older images", async () => {
+    const {createIntensitySampler} = await samplerModule;
+    const images = [];
+    const window = {Image: class {
+        constructor() {
+            this.listeners = new Map();
+            this.naturalWidth = 2;
+            this.naturalHeight = 1;
+            images.push(this);
+        }
+        addEventListener(name, callback) { this.listeners.set(name, callback); }
+    }};
+    let pixels = grayscaleImage([[20, 20]]);
+    const document = {createElement: () => ({getContext: () => ({
+        drawImage() {},
+        getImageData: () => pixels,
+    })})};
+    const sampler = createIntensitySampler({window, document, imageUrl: "first.png"});
+    images[0].listeners.get("load")();
+    assert.equal(sampler.select({x: 0, y: 0}, 3, 0).length, 2);
+
+    sampler.setImage("second.png");
+    assert.equal(sampler.ready, false);
+    assert.equal(sampler.error, null);
+    assert.deepEqual(sampler.select({x: 0, y: 0}, 3, 0), []);
+    images[0].listeners.get("load")();
+    images[0].listeners.get("error")();
+    assert.equal(sampler.ready, false);
+    assert.equal(sampler.error, null);
+
+    pixels = grayscaleImage([[20, 100]]);
+    images[1].listeners.get("load")();
+    assert.equal(sampler.select({x: 0, y: 0}, 3, 0).length, 1);
+    sampler.setImage("broken.png");
+    images[2].listeners.get("error")();
+    assert.ok(sampler.error);
+    sampler.setImage("recovered.png");
+    assert.equal(sampler.error, null);
+    images[3].listeners.get("load")();
+    assert.equal(sampler.ready, true);
+});

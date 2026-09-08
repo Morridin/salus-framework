@@ -5,6 +5,8 @@ import {createViewerAdapter} from "./viewer/viewer-adapter.js";
 import {createToolbarBridge} from "./toolbar/toolbar-bridge.js";
 import {createToolController} from "./tools/tool-controller.js";
 import {createViewerSession} from "./viewer/viewer-session.js";
+import {setupImageOpener} from "./viewer/image-opener.js";
+import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
 
 const TOOLBAR_PLUGIN_ID = "5e61";
 const VIEWER_PLUGIN_ID = "a11e";
@@ -32,20 +34,36 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
         reportStatus,
     });
     createAnnotationPanel({document, controller: annotations});
+    const sampler = createIntensitySampler({window, document, imageUrl});
     const tools = createToolController({
-        window,
         document,
         OpenSeadragon,
         viewer,
         viewerElement,
-        imageUrl,
+        sampler,
         surface,
         renderer,
         createAnnotation: annotations.createAnnotation,
         reportStatus,
+        isImageReady,
     });
 
     session.onImageOpened(renderer.initializeLayers);
+    setupImageOpener({
+        window,
+        document,
+        hasAnnotations: () => annotations.annotations.length > 0,
+        reportStatus,
+        openImage(url) {
+            tools.cancelDrawing();
+            sampler.setImage(url);
+            for (const annotation of [...annotations.annotations]) {
+                annotations.deleteAnnotation(annotation.id);
+            }
+            viewer.clearOverlays();
+            session.openImage(url);
+        },
+    });
     toolbar.subscribe({
         onToolChanged: tools.selectTool,
         onExportRequested: annotations.exportAnnotationsAsGeoJson,

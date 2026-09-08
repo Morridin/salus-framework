@@ -2,27 +2,25 @@ import {createAssistedBrushTool} from "./assisted-brush/tool.js";
 import {createBrushTool} from "./brush.js";
 import {createDragShapeTool} from "./drag-shape.js";
 import {createPolygonTool} from "./polygon.js";
-import {createIntensitySampler} from "./assisted-brush/sampler.js";
 
 // Owns drawing tools, their settings, and dispatch of viewer input.
 export function createToolController({
-    window,
     document,
     OpenSeadragon,
     viewer,
     viewerElement,
-    imageUrl,
+    sampler,
     surface,
     renderer,
     createAnnotation,
     reportStatus,
+    isImageReady = () => true,
 }) {
     let activeTool = "none";
     let brushRadius = 12;
     let brushTolerance = 24;
     viewerElement.dataset.tool = activeTool;
 
-    const intensitySampler = createIntensitySampler({window, document, imageUrl});
     const tools = {
         rectangle: createDragShapeTool({
             surface,
@@ -46,7 +44,7 @@ export function createToolController({
         "assisted-brush": createAssistedBrushTool({
             surface,
             renderer,
-            sampler: intensitySampler,
+            sampler,
             createAnnotation,
             getRadius: () => brushRadius,
             getTolerance: () => brushTolerance,
@@ -55,6 +53,7 @@ export function createToolController({
     };
 
     function activeToolHandler(name, event) {
+        if (!isImageReady()) return;
         if (!tools[activeTool] || !renderer.canRender(activeTool)) return;
         tools[activeTool][name]?.(event);
     }
@@ -76,9 +75,13 @@ export function createToolController({
         activeToolHandler("keyDown", event)
     );
 
+    function cancelDrawing() {
+        tools[activeTool]?.deactivate?.();
+    }
+
     function selectTool(tool, nextBrushRadius, nextBrushTolerance) {
         if (activeTool !== tool) {
-            tools[activeTool]?.deactivate?.();
+            cancelDrawing();
         }
         activeTool = tool;
         if (nextBrushRadius !== null) {
@@ -90,5 +93,5 @@ export function createToolController({
         viewerElement.dataset.tool = tool;
     }
 
-    return {selectTool};
+    return {selectTool, cancelDrawing};
 }
