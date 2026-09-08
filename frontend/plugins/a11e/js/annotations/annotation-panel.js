@@ -1,4 +1,5 @@
 import {annotationColor, annotationName} from "./annotation-appearance.js";
+import {isFiniteNumber, readRangeNumber} from "../numbers.js";
 
 function createAnnotationRow(document, id, onSelect) {
     const button = document.createElement("button");
@@ -100,8 +101,8 @@ export function createAnnotationPanel({document, controller}) {
     }
 
     opacityInput.addEventListener("input", () => {
-        const value = Number(opacityInput.value);
-        if (!Number.isFinite(value)) return;
+        const value = readRangeNumber(opacityInput);
+        if (!isFiniteNumber(value)) return;
         const percent = Math.max(0, Math.min(100, value));
         viewer.style.setProperty("--annotation-opacity", String(percent / 100));
         opacityValue.value = `${percent}%`;

@@ -1,5 +1,6 @@
 import {featureCollection, polygon} from "@turf/helpers";
 import {union} from "@turf/union";
+import {isPositiveFinite} from "../numbers.js";
 
 const CIRCLE_POINT_COUNT = 64;
 
@@ -58,7 +59,7 @@ function brushToPolygonRing({points, radius}) {
     throw new Error("A brush annotation requires at least one point.");
   }
 
-  if (!Number.isFinite(radius) || radius <= 0) {
+  if (!isPositiveFinite(radius)) {
     throw new Error("A brush annotation requires a positive radius.");
   }
 

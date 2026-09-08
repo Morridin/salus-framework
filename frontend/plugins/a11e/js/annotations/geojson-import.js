@@ -1,9 +1,11 @@
+import {isFiniteNumber, isPositiveFinite} from "../numbers.js";
+
 function isPositiveNumber(value) {
-  return Number.isFinite(value) && value > 0;
+  return isPositiveFinite(value);
 }
 
 function isValidPoint(point) {
-  return Number.isFinite(point?.x) && Number.isFinite(point?.y);
+  return isFiniteNumber(point?.x) && isFiniteNumber(point?.y);
 }
 
 function hasValidPoints(points, minimumCount) {
@@ -15,8 +17,8 @@ function hasValidPoints(points, minimumCount) {
 
 function isValidRectangle({x, y, width, height}) {
   return (
-    Number.isFinite(x) &&
-    Number.isFinite(y) &&
+    isFiniteNumber(x) &&
+    isFiniteNumber(y) &&
     isPositiveNumber(width) &&
     isPositiveNumber(height)
   );
@@ -24,8 +26,8 @@ function isValidRectangle({x, y, width, height}) {
 
 function isValidCircle({centerX, centerY, radius}) {
   return (
-    Number.isFinite(centerX) &&
-    Number.isFinite(centerY) &&
+    isFiniteNumber(centerX) &&
+    isFiniteNumber(centerY) &&
     isPositiveNumber(radius)
   );
 }

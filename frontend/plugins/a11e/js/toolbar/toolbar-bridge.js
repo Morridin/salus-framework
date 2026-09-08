@@ -1,11 +1,5 @@
-const VALID_TOOLS = new Set([
-    "none",
-    "rectangle",
-    "circle",
-    "polygon",
-    "brush",
-    "assisted-brush",
-]);
+import {VALID_TOOLS} from "../constants.js";
+import {asFiniteNumber} from "../numbers.js";
 
 export function createToolbarBridge({
     channel,
@@ -41,14 +35,12 @@ export function createToolbarBridge({
     function handleToolChange(payload, onToolChanged) {
         if (!VALID_TOOLS.has(payload.tool)) return;
 
-        const brushRadius = Number(payload.brushRadius);
-        const brushTolerance = Number(payload.brushTolerance);
-        const validRadius = Number.isFinite(brushRadius) && brushRadius > 0
-            ? brushRadius
+        const brushRadius = asFiniteNumber(payload.brushRadius);
+        const brushTolerance = asFiniteNumber(payload.brushTolerance);
+        const validRadius = brushRadius > 0 ? brushRadius : null;
+        const validTolerance = brushTolerance >= 0
+            ? Math.min(255, brushTolerance)
             : null;
-        const validTolerance = (
-            Number.isFinite(brushTolerance) && brushTolerance >= 0
-        ) ? Math.min(255, brushTolerance) : null;
 
         onToolChanged?.(payload.tool, validRadius, validTolerance);
     }

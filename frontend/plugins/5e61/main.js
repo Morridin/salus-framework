@@ -20,8 +20,8 @@
             payload: {
                 type: "segmentation-tool-changed",
                 tool: selectedButton?.dataset.tool ?? "none",
-                brushRadius: Number(radiusInput.value),
-                brushTolerance: Number(toleranceInput.value),
+                brushRadius: radiusInput.valueAsNumber,
+                brushTolerance: toleranceInput.valueAsNumber,
             },
         });
     }
