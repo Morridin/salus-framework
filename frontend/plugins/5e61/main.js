@@ -41,15 +41,15 @@
         button.addEventListener("click", () => selectTool(selectedButton === button ? null : button));
     }
 
-    radiusInput.addEventListener("input", () => {
-        radiusOutput.value = `${radiusInput.value} px`;
-        sendSelection();
-    });
+    function bindSlider(input, output, format) {
+        input.addEventListener("input", () => {
+            output.value = format(input.value);
+            sendSelection();
+        });
+    }
 
-    toleranceInput.addEventListener("input", () => {
-        toleranceOutput.value = toleranceInput.value;
-        sendSelection();
-    });
+    bindSlider(radiusInput, radiusOutput, value => `${value} px`);
+    bindSlider(toleranceInput, toleranceOutput, value => value);
 
     importButton.addEventListener("click", () => importFileInput.click());
 
