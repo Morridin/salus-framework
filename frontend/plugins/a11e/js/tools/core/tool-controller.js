@@ -62,22 +62,20 @@ function buildTools(context) {
 export function createToolController({
     document,
     OpenSeadragon,
-    viewer,
-    viewerElement,
+    session,
     sampler,
     surface,
     renderer,
     commitAnnotation,
-    reportStatus,
-    isImageReady = () => true,
 }) {
+    const {viewer, viewerElement} = session;
     const settings = createToolSettings();
     const tools = buildTools({
         surface,
         renderer,
         sampler,
         commitAnnotation,
-        reportStatus,
+        reportStatus: session.reportStatus,
         getOption: name => settings.getOption(name),
     });
 
@@ -89,7 +87,7 @@ export function createToolController({
     viewerElement.dataset.tool = settings.getState().tool;
 
     function activeToolHandler(name, event) {
-        if (!isImageReady()) return;
+        if (!session.isImageReady()) return;
         const activeTool = settings.getState().tool;
         if (!tools[activeTool] || !renderer.canRender(activeTool)) return;
         tools[activeTool][name]?.(event);

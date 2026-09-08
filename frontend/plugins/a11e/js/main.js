@@ -17,7 +17,7 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     const session = createViewerSession({window, document, OpenSeadragon});
     if (!session) return null;
 
-    const {viewer, viewerElement, imageUrl, isImageReady, reportStatus} = session;
+    const {viewer, imageUrl, isImageReady, reportStatus} = session;
     const surface = createViewerAdapter({viewer, document});
     const renderer = createAnnotationRenderer({surface});
     const toolbar = createToolbarBridge({
@@ -38,29 +38,28 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     const tools = createToolController({
         document,
         OpenSeadragon,
-        viewer,
-        viewerElement,
+        session,
         sampler,
         surface,
         renderer,
         commitAnnotation: annotations.commitAnnotation,
-        reportStatus,
-        isImageReady,
     });
+
+    function openImage(url) {
+        tools.cancelDrawing();
+        sampler.setImage(url);
+        annotations.clearAnnotations();
+        viewer.clearOverlays();
+        session.openImage(url);
+    }
 
     session.onImageOpened(renderer.initializeLayers);
     setupImageOpener({
         window,
         document,
         hasAnnotations: () => annotations.annotations.length > 0,
+        openImage,
         reportStatus,
-        openImage(url) {
-            tools.cancelDrawing();
-            sampler.setImage(url);
-            annotations.clearAnnotations();
-            viewer.clearOverlays();
-            session.openImage(url);
-        },
     });
     toolbar.subscribe({
         onToolChanged: tools.selectTool,
