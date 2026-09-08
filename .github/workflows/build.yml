@@ -37,15 +37,32 @@ jobs:
           rustup update stable
           rustup target add wasm32-unknown-unknown
 
-      - name: Install Dioxus CLI
-        shell: bash
-        run: cargo install dioxus-cli --locked
-
       - name: Prepare Build
         shell: bash
         run: |
           cd ${{ env.MAIN_PACKAGE }}
           printf "Test-Token" > token
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install JavaScript quality tools
+        run: npm ci --prefix frontend
+
+      - name: Lint JavaScript
+        run: npm run lint --prefix frontend
+
+      - name: Run Tests
+        shell: bash
+        run: |
+          node --test frontend/tests/*.test.js
+          cargo test -p frontend --features server
+
+      - name: Install Dioxus CLI
+        shell: bash
+        run: cargo install dioxus-cli --locked
 
       - name: Build Application
         shell: bash

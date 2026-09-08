@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Image Viewer</title>
+    <link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/openseadragon@6.0.2/build/openseadragon/openseadragon.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@turf/helpers": "https://cdn.jsdelivr.net/npm/@turf/helpers@7.4.0/+esm",
+                "@turf/union": "https://cdn.jsdelivr.net/npm/@turf/union@7.4.0/+esm"
+            }
+        }
+    </script>
+    <script type="module" src="js/main.js"></script>
+</head>
+<body>
+    <div class="viewer-layout">
+        <div class="viewer-canvas">
+            <button id="open-image" type="button">Open image</button>
+            <input id="open-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" hidden />
+            <main id="image-viewer" aria-label="Zoomable image viewer"></main>
+            <button id="toggle-annotations" aria-controls="annotation-panel" aria-expanded="true" hidden>Annotations</button>
+            <p id="viewer-error" role="alert" hidden></p>
+            <p id="viewer-status" role="status" hidden></p>
+        </div>
+        <aside id="annotation-panel" aria-labelledby="annotation-panel-title">
+            <header class="annotation-panel-header">
+                <h2 id="annotation-panel-title">Annotations <span id="annotation-count" class="annotation-count">0</span></h2>
+                <button id="collapse-annotations" aria-label="Collapse annotations" title="Collapse annotations">›</button>
+            </header>
+            <div class="annotation-opacity-control">
+                <label for="annotation-opacity">Overlay opacity</label>
+                <output id="annotation-opacity-value" for="annotation-opacity">100%</output>
+                <input id="annotation-opacity" type="range" min="0" max="100" step="1" value="100" aria-valuetext="100%" />
+            </div>
+            <p id="annotation-empty" class="annotation-empty">No annotations yet. Draw a region or import annotations to get started.</p>
+            <div id="annotation-list" aria-label="Annotations"></div>
+            <div class="annotation-editor">
+                <h3>Selected annotation</h3>
+                <label for="annotation-name">Name</label>
+                <input id="annotation-name" type="text" maxlength="80" disabled />
+                <label for="annotation-color">Color</label>
+                <div class="annotation-color-field">
+                    <input id="annotation-color" type="color" disabled />
+                    <output id="annotation-color-value" for="annotation-color"></output>
+                </div>
+                <button id="delete-annotation" type="button" disabled>Delete selected annotation</button>
+            </div>
+        </aside>
+    </div>
+</body>
+</html>

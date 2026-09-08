@@ -216,6 +216,38 @@ Hence, it is the plug-in's author's obligation to introduce measures against ill
 For long-term stability, please provide your plug-in's back-end executables as standalone binaries that don't require 
 external dependencies to run. E.g., if your plug-in needs python, provide a working python instance with your plug-in.
 
+### Communication between plug-ins
+
+Local `dynamic` plug-ins can exchange live messages directly through the browser's `BroadcastChannel` API. Communication
+is limited to local plug-ins served from the same origin as Salus. Installed local plug-ins are currently treated as
+trusted application components, and `sourcePluginId` is routing metadata rather than cryptographic proof of identity.
+
+Open the shared channel and send a payload to another mounted plug-in using its UUID:
+
+```javascript
+const channel = new BroadcastChannel("salus:plugin-messages");
+
+channel.postMessage({
+    sourcePluginId: "sender-plugin-uuid",
+    targetPluginId: "target-plugin-uuid",
+    payload: {text: "Hello"},
+});
+```
+
+Listen on the same channel and filter messages by the receiving plug-in's UUID:
+
+```javascript
+channel.addEventListener("message", event => {
+    if (event.data?.targetPluginId !== "receiver-plugin-uuid") return;
+
+    console.log(event.data.sourcePluginId);
+    console.log(event.data.payload);
+});
+```
+
+Messages are delivered only while the receiving plug-in is mounted. If multiple mounted instances listen for the target
+UUID, every instance receives the message. Sending to an unavailable UUID has no effect.
+
 ### Communication with the back-end
 Whenever a plug-in has to perform computationally heavy or difficult tasks, it should relay on the resources of the 
 back-end server instead of running such calculations within the browser window.

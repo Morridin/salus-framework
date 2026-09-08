@@ -1,0 +1,92 @@
+:root {
+    color-scheme: dark;
+    font-family: system-ui, sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    align-items: flex-start;
+    background: #111;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+button {
+    display: inline-flex;
+    gap: 0.45rem;
+    min-width: 2.5rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #444;
+    border-radius: 0.35rem;
+    align-items: center;
+    color: #ccc;
+    background: #222;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    border-color: #777;
+    color: #fff;
+}
+
+button[aria-pressed="true"] {
+    border-color: #2ecc71;
+    color: #fff;
+    background: #174b2d;
+}
+
+svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.brush-size,
+.brush-tolerance {
+    display: none;
+    gap: 0.45rem;
+    align-items: center;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+.toolbar[data-tool="brush"] .brush-size,
+.toolbar[data-tool="assisted-brush"] .brush-size,
+.toolbar[data-tool="assisted-brush"] .brush-tolerance {
+    display: flex;
+}
+
+.brush-size input,
+.brush-tolerance input {
+    width: min(9rem, 30vw);
+    accent-color: #2ecc71;
+}
+
+.brush-size output,
+.brush-tolerance output {
+    min-width: 3.2rem;
+    color: #fff;
+}
+
+@media (max-width: 22rem) {
+    button span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Segmentation Tools",
+  "type": "dynamic",
+  "source": "index.html",
+  "dependencies": ["a11e"],
+  "panels": ["bottom", "right"],
+  "endpoints": []
+}

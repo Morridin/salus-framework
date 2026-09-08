@@ -1,0 +1,8 @@
+{
+  "name": "Image Viewer",
+  "type": "dynamic",
+  "source": "index.html",
+  "dependencies": [],
+  "panels": ["center"],
+  "endpoints": []
+}

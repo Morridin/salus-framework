@@ -6,7 +6,13 @@ target
 token
 
 # Dynamic content
-frontend/plugins/
+frontend/plugins/*
+!frontend/plugins/5e61/
+!frontend/plugins/5e61/**
+!frontend/plugins/a11e/
+!frontend/plugins/a11e/**
+frontend/plugins/a11e/node_modules/
+frontend/node_modules/
 
 # Test files
 frontend/www-root/assets/test.css

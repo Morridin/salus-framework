@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 dioxus-free-icons = { version = "0.10.0", features = ["lucide"] }
-web-sys = "0.3.103"
 indexmap = "2.14.0"
+web-sys = { version = "0.3.103", features = ["Location", "Window"] }
 
 dioxus = { workspace = true, features = ["fullstack"] }
 uuid = { workspace = true }
