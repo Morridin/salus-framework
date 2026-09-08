@@ -69,13 +69,21 @@ export function selectConnectedRegion(imageData, center, radius, tolerance) {
     return accepted;
 }
 
+// Pixel keys are an internal encoding ("y:x") produced by the brush tool,
+// so parsing here never faces external input.
+function decodePixelKey(key) {
+    const separator = key.indexOf(":");
+    return {
+        y: Number(key.slice(0, separator)),
+        x: Number(key.slice(separator + 1)),
+    };
+}
+
 export function pixelKeysToRuns(pixelKeys) {
     const rows = new Map();
 
     for (const key of pixelKeys) {
-        const separator = key.indexOf(":");
-        const y = Number(key.slice(0, separator));
-        const x = Number(key.slice(separator + 1));
+        const {y, x} = decodePixelKey(key);
         const row = rows.get(y) || [];
         row.push(x);
         rows.set(y, row);
