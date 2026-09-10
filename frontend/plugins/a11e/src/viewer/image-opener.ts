@@ -1,0 +1,74 @@
+import { requiredElement } from "../shared/environment.js";
+import type { BrowserEnvironment } from "../shared/environment.js";
+import type { Annotation } from "../shared/types.js";
+
+// Local files stay in the browser. Decode before replacing the current image.
+interface ImageOpenerOptions {
+    env: Pick<BrowserEnvironment, "window" | "document">;
+    annotations: { readonly annotations: Annotation[] };
+    openImage: (url: string) => void;
+    session: { reportStatus: (message: string) => void };
+}
+
+export function setupImageOpener({ env, annotations, openImage, session }: ImageOpenerOptions) {
+    const { window, document } = env;
+    const { reportStatus } = session;
+    const button = requiredElement(document, "open-image", "button");
+    const input = requiredElement(document, "open-image-file", "input");
+    let currentUrl: string | null = null;
+
+    button.addEventListener("click", () => input.click());
+
+    async function openSelectedFile() {
+        const file = input.files?.[0];
+
+        input.value = "";
+
+        if (!file) {
+            return;
+        }
+
+        button.disabled = true;
+
+        const url = window.URL.createObjectURL(file);
+
+        try {
+            if (!window.Image) {
+                throw new Error("Image decoding is unavailable.");
+            }
+
+            const image = new window.Image();
+
+            image.src = url;
+            await image.decode();
+
+            if (
+                annotations.annotations.length > 0 &&
+                !window.confirm(
+                    "Opening another image will clear the current annotations. Export them first if you want to keep them. Continue?",
+                )
+            ) {
+                window.URL.revokeObjectURL(url);
+
+                return;
+            }
+
+            openImage(url);
+
+            if (currentUrl) {
+                window.URL.revokeObjectURL(currentUrl);
+            }
+
+            currentUrl = url;
+        } catch {
+            window.URL.revokeObjectURL(url);
+            reportStatus("Could not open this image. Try a PNG or JPEG file.");
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    input.addEventListener("change", () => {
+        void openSelectedFile();
+    });
+}

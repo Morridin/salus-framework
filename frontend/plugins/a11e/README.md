@@ -1,14 +1,14 @@
 # Image viewer plugin
 
-`index.html` loads `js/main.js`, which connects the viewer, annotations, drawing
+`index.html` loads the compiled `dist/main.js`, which connects the viewer, annotations, drawing
 tools, and toolbar. `plugin.json` is the Salus manifest; `main.css` and `sample.svg`
 are the plugin's stylesheet and sample image.
 
-## JavaScript layout
+## TypeScript layout
 
 ```text
-js/
-├── main.js                  # Application entry point and composition
+src/
+├── main.ts                  # Application entry point and composition
 ├── annotations/             # Annotation workflows, state, and rendering
 ├── viewer/                  # OpenSeadragon setup and coordinate/overlay adapter
 ├── messaging/               # Communication with the toolbar plugin (5e61)
@@ -16,13 +16,13 @@ js/
     └── assisted-brush/      # Assisted brush tool and intensity sampling
 ```
 
-Keep new drawing tools in `js/tools/` and connect them through
-`js/tools/core/tool-controller.js`. The controller owns selection and brush
+Keep new drawing tools in `src/tools/` and connect them through
+`src/tools/core/tool-controller.ts`. The controller owns selection and brush
 settings; tools return plain event handlers
 and read brush settings when a stroke begins. Shared tool identifiers live in
-`js/tools/core/registry.js`. Annotation persistence and rendering belong in
-`js/annotations/`, alongside GeoJSON import and export.
-Viewer-specific operations belong in `js/viewer/`.
+`src/tools/core/registry.ts`. Annotation persistence and rendering belong in
+`src/annotations/`, alongside GeoJSON import and export.
+Viewer-specific operations belong in `src/viewer/`.
 
 Commit finished annotations through the annotation controller's
 `commitAnnotation(data, preview)`. Drawing tools pass their preview element;
@@ -44,8 +44,27 @@ From the repository root:
 
 ```sh
 npm ci --prefix frontend
-node --test frontend/tests/*.test.js
+npm run check --prefix frontend
 ```
 
 The tests remain in `frontend/tests/` because they also cover integration with
 the separate toolbar plugin.
+
+## Building and type safety
+
+Edit `src/**/*.ts`; `dist/` is generated and ignored by Git. From the repository
+root run `npm run build --prefix frontend` before `dx serve` or `dx build`.
+`npm run dev --prefix frontend` builds both plugins and starts Dioxus.
+For incremental compilation, use `npm run watch:viewer --prefix frontend` and
+`npm run watch:toolbar --prefix frontend` in separate terminals. Dioxus may need
+a restart to refresh its copied plugin assets.
+
+Application code and tests use strict TypeScript, checked array access, and exact
+optional properties. ESLint bans explicit `any` and unsafe uses of values from
+untyped APIs. Treat external JSON and messages as `unknown`, validate them at
+entry, then pass named domain types internally. Runtime declarations for the
+OpenSeadragon API used here are in `src/viewer/types.ts`.
+
+The test runner compiles tests and their source dependencies into `frontend/test-build/`.
+DOM integration tests use jsdom; rendering tests implement the small rendering
+interfaces. Run `npm run check --prefix frontend` before committing.

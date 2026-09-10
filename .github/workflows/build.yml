@@ -48,16 +48,15 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Install JavaScript quality tools
+      - name: Install frontend dependencies
         run: npm ci --prefix frontend
 
-      - name: Lint JavaScript
-        run: npm run lint --prefix frontend
+      - name: Check and build TypeScript plugins
+        run: npm run check --prefix frontend
 
       - name: Run Tests
         shell: bash
         run: |
-          node --test frontend/tests/*.test.js
           cargo test -p frontend --features server
 
       - name: Install Dioxus CLI

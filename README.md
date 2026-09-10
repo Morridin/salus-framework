@@ -54,10 +54,15 @@ building and running the program.
 For reference on the additional dependencies and their installation, please refer to the [Dioxus website](https://dioxuslabs.com/learn/0.7/getting_started/#platform-specific-dependencies).
 
 ## How to start the program
-Navigate to the `frontend` directory and type into the terminal the command
+Use Node.js 24 or later. From the repository root, install and build the TypeScript plugins before starting Dioxus:
 ```bash
-dx serve
+npm ci --prefix frontend
+npm run dev --prefix frontend
 ```
+
+For production builds, run `npm run build --prefix frontend` before `dx build`.
+Run `npm run check --prefix frontend` to check types, lint, formatting, build, and run the frontend tests.
+See the [TypeScript readability guidelines](frontend/CODE_STYLE.md) and run `npm run format --prefix frontend` to apply automatic fixes.
 
 The Salus framework will build and then run.
 

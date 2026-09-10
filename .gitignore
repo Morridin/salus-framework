@@ -22,3 +22,8 @@ backend/src/build.rs
 
 # I don't know what this is
 frontend/www-root/assets/dx-components-theme.css
+
+# Compiled TypeScript (build before running Dioxus)
+frontend/plugins/a11e/dist/
+frontend/plugins/5e61/dist/
+frontend/test-build/

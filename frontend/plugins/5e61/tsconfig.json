@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "noEmitOnError": true,
+        "rootDir": "src",
+        "outDir": "dist",
+        "moduleDetection": "legacy"
+    },
+    "include": [
+        "src/**/*.ts",
+        "../../types/plugin-protocol.d.ts"
+    ],
+    "exclude": []
+}

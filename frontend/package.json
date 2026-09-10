@@ -1,16 +1,35 @@
 {
   "name": "salus-frontend-quality",
   "private": true,
+  "type": "module",
   "scripts": {
-    "lint": "eslint plugins/a11e/js plugins/5e61/main.js tests eslint.config.mjs --max-warnings 0",
-    "test": "node --test tests/*.test.js",
-    "check": "npm run lint && npm test"
+    "build": "tsc -p plugins/a11e/tsconfig.json && tsc -p plugins/5e61/tsconfig.json",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test test-build/tests/*.test.js",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
+    "dev": "npm run build && dx serve",
+    "watch:viewer": "tsc -p plugins/a11e/tsconfig.json --watch",
+    "watch:toolbar": "tsc -p plugins/5e61/tsconfig.json --watch",
+    "lint:fix": "eslint . --fix --max-warnings 0",
+    "format": "npm run lint:fix && prettier \"**/*.ts\" --write",
+    "format:check": "prettier \"**/*.ts\" --check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@turf/helpers": "7.4.0",
+    "@turf/union": "7.4.0",
+    "@types/jsdom": "30.0.0",
+    "@types/node": "^22.20.2",
     "eslint": "10.10.0",
     "globals": "17.12.0",
-    "@turf/helpers": "7.4.0",
-    "@turf/union": "7.4.0"
+    "jsdom": "30.0.1",
+    "prettier": "3.9.6",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.70.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

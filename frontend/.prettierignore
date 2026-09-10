@@ -1,0 +1,4 @@
+node_modules/
+www-root/
+plugins/*/dist/
+test-build/
