@@ -1,6 +1,9 @@
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-export function createViewerAdapter({viewer, document}) {
+export function createViewerAdapter({env, session}) {
+    const {viewer} = session;
+    const {document} = env;
+
     function toImagePoint(position) {
         const viewportPoint = viewer.viewport.pointFromPixel(position);
         return viewer.viewport.viewportToImageCoordinates(viewportPoint);

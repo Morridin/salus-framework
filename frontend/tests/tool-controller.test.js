@@ -7,9 +7,12 @@ test("tool selection validates settings, clamps tolerance, and returns detached 
     const {createToolController} = await controllerModule;
     const viewerElement = {dataset: {}};
     const controller = createToolController({
-        document: {addEventListener() {}},
-        OpenSeadragon: {MouseTracker: class { setTracking() {} }},
+        env: {
+            document: {addEventListener() {}},
+            OpenSeadragon: {MouseTracker: class { setTracking() {} }},
+        },
         session: {viewer: {addHandler() {}}, viewerElement},
+        annotations: {commitAnnotation() {}},
     });
     assert.deepEqual(controller.selectTool(), {
         tool: "none", brushRadius: 12, brushTolerance: 24,

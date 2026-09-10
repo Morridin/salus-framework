@@ -1,16 +1,12 @@
 import {createAnnotationStore} from "./store.js";
 import {annotationsToGeoJson} from "./io/geojson-export.js";
 import {annotationsFromGeoJson} from "./io/geojson-import.js";
+import {downloadTextFile} from "../shared/download-file.js";
 
 // Owns committed annotations and their import/export workflows.
-export function createAnnotationController({
-    window,
-    document,
-    renderer,
-    publishAnnotation,
-    isImageReady,
-    reportStatus,
-}) {
+export function createAnnotationController({env, session, renderer, toolbar}) {
+    const {publishAnnotation} = toolbar;
+    const {isImageReady, reportStatus} = session;
     const annotationStore = createAnnotationStore();
 
     const listeners = new Set();
@@ -56,19 +52,12 @@ export function createAnnotationController({
 
     function exportAnnotationsAsGeoJson() {
         const geoJson = annotationsToGeoJson(annotationStore.list());
-        const fileContents = JSON.stringify(geoJson, null, 2);
-        const file = new window.Blob(
-            [fileContents],
-            {type: "application/geo+json"},
+        downloadTextFile(
+            env,
+            "segmentations.geojson",
+            JSON.stringify(geoJson, null, 2),
+            "application/geo+json",
         );
-        const fileUrl = window.URL.createObjectURL(file);
-        const downloadLink = document.createElement("a");
-
-        downloadLink.href = fileUrl;
-        downloadLink.download = "segmentations.geojson";
-        downloadLink.click();
-
-        window.URL.revokeObjectURL(fileUrl);
     }
 
     async function importAnnotationsFromGeoJson(file) {

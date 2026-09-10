@@ -1,10 +1,10 @@
 import {isKnownToolId} from "../tools/core/registry.js";
+import {TOOLBAR_PLUGIN_ID, VIEWER_PLUGIN_ID} from "../shared/plugin-config.js";
 
-export function createToolbarBridge({
-    channel,
-    viewerPluginId,
-    toolbarPluginId,
-}) {
+export function createToolbarBridge({channel}) {
+    const viewerPluginId = VIEWER_PLUGIN_ID;
+    const toolbarPluginId = TOOLBAR_PLUGIN_ID;
+
     function publishAnnotation(annotation) {
         channel.postMessage({
             sourcePluginId: viewerPluginId,

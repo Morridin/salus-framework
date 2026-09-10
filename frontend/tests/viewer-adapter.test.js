@@ -63,7 +63,7 @@ test("viewer adapter translates image operations for tools", async () => {
     };
 
     const {createViewerAdapter} = await surfaceModule;
-    const surface = createViewerAdapter({viewer, document});
+    const surface = createViewerAdapter({env: {document}, session: {viewer}});
     const element = surface.createElement("div");
 
     assert.deepEqual(surface.toImagePoint({x: 2, y: 3}), {x: 30, y: 50});

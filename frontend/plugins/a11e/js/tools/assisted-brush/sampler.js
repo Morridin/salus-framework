@@ -110,7 +110,8 @@ export function pixelKeysToRuns(pixelKeys) {
     return runs;
 }
 
-export function createIntensitySampler({window, document, imageUrl}) {
+export function createIntensitySampler({env, session}) {
+    const {window, document} = env;
     let imageData = null;
     let failure = null;
     let currentImage = null;
@@ -147,7 +148,7 @@ export function createIntensitySampler({window, document, imageUrl}) {
         image.src = url;
     }
 
-    setImage(imageUrl);
+    setImage(session.imageUrl);
 
     return {
         setImage,

@@ -6,32 +6,34 @@ import {NO_TOOL, SHAPES, isKnownToolId} from "./registry.js";
 import {isFiniteNumber, isPositiveFinite} from "../../shared/numbers.js";
 
 // Owns tool selection, brush settings, and dispatch of viewer input.
-export function createToolController({
-    document,
-    OpenSeadragon,
-    session,
-    sampler,
-    surface,
-    renderer,
-    commitAnnotation,
-}) {
+export function createToolController({env, session, sampler, surface, renderer, annotations}) {
+    const {document, OpenSeadragon} = env;
     const {viewer, viewerElement} = session;
     let currentTool = NO_TOOL;
     // Only this controller updates settings; brushes read them at stroke start.
     const brushSettings = {brushRadius: 12, brushTolerance: 24};
     const tools = {
         [SHAPES.RECTANGLE]: createDragShapeTool({
-            surface, renderer, commitAnnotation, tool: SHAPES.RECTANGLE,
+            surface, renderer,
+            commitAnnotation: annotations.commitAnnotation,
+            tool: SHAPES.RECTANGLE,
         }),
         [SHAPES.CIRCLE]: createDragShapeTool({
-            surface, renderer, commitAnnotation, tool: SHAPES.CIRCLE,
+            surface, renderer,
+            commitAnnotation: annotations.commitAnnotation,
+            tool: SHAPES.CIRCLE,
         }),
-        [SHAPES.POLYGON]: createPolygonTool({surface, renderer, commitAnnotation}),
+        [SHAPES.POLYGON]: createPolygonTool({
+            surface, renderer,
+            commitAnnotation: annotations.commitAnnotation,
+        }),
         [SHAPES.BRUSH]: createBrushTool({
-            surface, renderer, commitAnnotation, brushSettings,
+            surface, renderer, commitAnnotation: annotations.commitAnnotation,
+            brushSettings,
         }),
         [SHAPES.ASSISTED_BRUSH]: createAssistedBrushTool({
-            surface, renderer, commitAnnotation, brushSettings, sampler,
+            surface, renderer, commitAnnotation: annotations.commitAnnotation,
+            brushSettings, sampler,
             reportStatus: session.reportStatus,
         }),
     };

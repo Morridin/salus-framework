@@ -7,12 +7,14 @@ test("controller updates and clears visuals before notifying, while reads stay d
     const visuals = new Map();
     const observed = [];
     const controller = createAnnotationController({
+        env: {},
+        session: {},
         renderer: {
             render(annotation) { visuals.set(annotation.id, annotation); },
             updateAppearance(annotation) { visuals.set(annotation.id, annotation); },
             removeAnnotation(id) { visuals.delete(id); },
         },
-        publishAnnotation() {},
+        toolbar: {publishAnnotation() {}},
     });
     controller.subscribe(() => {
         const snapshot = controller.annotations;
@@ -55,11 +57,15 @@ for (const usePreview of [false, true]) {
             },
         };
         const controller = createAnnotationController({
+            env: {},
+            session: {},
             renderer,
-            publishAnnotation(annotation) {
-                assert.equal(elements.get(annotation.id)?.isPreview, false,
-                    "published annotations must already have a committed visual");
-                published.push(annotation);
+            toolbar: {
+                publishAnnotation(annotation) {
+                    assert.equal(elements.get(annotation.id)?.isPreview, false,
+                        "published annotations must already have a committed visual");
+                    published.push(annotation);
+                },
             },
         });
         controller.subscribe(() => {

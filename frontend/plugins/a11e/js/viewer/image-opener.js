@@ -1,5 +1,7 @@
 // Local files stay in the browser. Decode before replacing the current image.
-export function setupImageOpener({window, document, hasAnnotations, openImage, reportStatus}) {
+export function setupImageOpener({env, annotations, openImage, session}) {
+    const {window, document} = env;
+    const {reportStatus} = session;
     const button = document.getElementById("open-image");
     const input = document.getElementById("open-image-file");
     let currentUrl = null;
@@ -15,7 +17,7 @@ export function setupImageOpener({window, document, hasAnnotations, openImage, r
             const image = new window.Image();
             image.src = url;
             await image.decode();
-            if (hasAnnotations() && !window.confirm(
+            if (annotations.annotations.length > 0 && !window.confirm(
                 "Opening another image will clear the current annotations. Export them first if you want to keep them. Continue?",
             )) {
                 window.URL.revokeObjectURL(url);

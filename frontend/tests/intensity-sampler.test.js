@@ -87,7 +87,10 @@ test("changing images resets sampling and ignores late events from older images"
         drawImage() {},
         getImageData: () => pixels,
     })})};
-    const sampler = createIntensitySampler({window, document, imageUrl: "first.png"});
+    const sampler = createIntensitySampler({
+        env: {window, document},
+        session: {imageUrl: "first.png"},
+    });
     images[0].listeners.get("load")();
     assert.equal(sampler.select({x: 0, y: 0}, 3, 0).length, 2);
 

@@ -52,8 +52,10 @@ test("assisted brush creates a compact intensity-mask annotation", async () => {
     const renderer = createAnnotationRenderer({surface});
     renderer.initializeLayers();
     const controller = createAnnotationController({
+        env: {},
+        session: {},
         renderer,
-        publishAnnotation() {},
+        toolbar: {publishAnnotation() {}},
     });
     const sampler = {
         ready: true,

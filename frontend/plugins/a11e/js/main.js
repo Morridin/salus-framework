@@ -7,60 +7,32 @@ import {createToolController} from "./tools/core/tool-controller.js";
 import {createViewerSession} from "./viewer/viewer-session.js";
 import {setupImageOpener} from "./viewer/image-opener.js";
 import {createIntensitySampler} from "./tools/assisted-brush/sampler.js";
-
-const TOOLBAR_PLUGIN_ID = "5e61";
-const VIEWER_PLUGIN_ID = "a11e";
-const CHANNEL_NAME = "salus:plugin-messages";
+import {CHANNEL_NAME} from "./shared/plugin-config.js";
 
 // Composes the viewer, annotation workflows, drawing tools, and toolbar.
 export function startImageViewer({window, document, OpenSeadragon, channel}) {
-    const session = createViewerSession({window, document, OpenSeadragon});
+    const env = {window, document, OpenSeadragon};
+    const session = createViewerSession(env);
     if (!session) return null;
 
-    const {viewer, imageUrl, isImageReady, reportStatus} = session;
-    const surface = createViewerAdapter({viewer, document});
+    const surface = createViewerAdapter({env, session});
     const renderer = createAnnotationRenderer({surface});
-    const toolbar = createToolbarBridge({
-        channel,
-        viewerPluginId: VIEWER_PLUGIN_ID,
-        toolbarPluginId: TOOLBAR_PLUGIN_ID,
-    });
-    const annotations = createAnnotationController({
-        window,
-        document,
-        renderer,
-        publishAnnotation: toolbar.publishAnnotation,
-        isImageReady,
-        reportStatus,
-    });
-    createAnnotationPanel({document, controller: annotations});
-    const sampler = createIntensitySampler({window, document, imageUrl});
-    const tools = createToolController({
-        document,
-        OpenSeadragon,
-        session,
-        sampler,
-        surface,
-        renderer,
-        commitAnnotation: annotations.commitAnnotation,
-    });
+    const toolbar = createToolbarBridge({channel});
+    const annotations = createAnnotationController({env, session, renderer, toolbar});
+    createAnnotationPanel({env, controller: annotations});
+    const sampler = createIntensitySampler({env, session});
+    const tools = createToolController({env, session, sampler, surface, renderer, annotations});
 
     function openImage(url) {
         tools.cancelDrawing();
         sampler.setImage(url);
         annotations.clearAnnotations();
-        viewer.clearOverlays();
+        session.viewer.clearOverlays();
         session.openImage(url);
     }
 
     session.onImageOpened(renderer.initializeLayers);
-    setupImageOpener({
-        window,
-        document,
-        hasAnnotations: () => annotations.annotations.length > 0,
-        openImage,
-        reportStatus,
-    });
+    setupImageOpener({env, annotations, openImage, session});
     toolbar.subscribe({
         onToolChanged: tools.selectTool,
         onExportRequested: annotations.exportAnnotationsAsGeoJson,
@@ -68,13 +40,13 @@ export function startImageViewer({window, document, OpenSeadragon, channel}) {
     });
     toolbar.requestState();
 
-    window.imageViewer = viewer;
+    window.imageViewer = session.viewer;
     Object.defineProperty(window, "imageViewerAnnotations", {
         configurable: true,
         get: () => annotations.annotations,
     });
     return {
-        viewer,
+        viewer: session.viewer,
         get annotations() { return annotations.annotations; },
     };
 }

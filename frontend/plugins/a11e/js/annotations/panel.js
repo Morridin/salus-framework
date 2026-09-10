@@ -29,7 +29,8 @@ function createAnnotationRow(document, id, onSelect) {
     return {element: button, update};
 }
 
-export function createAnnotationPanel({document, controller}) {
+export function createAnnotationPanel({env, controller}) {
+    const {document} = env;
     const panel = document.getElementById("annotation-panel");
     if (!panel) return;
     const toggle = document.getElementById("toggle-annotations");
