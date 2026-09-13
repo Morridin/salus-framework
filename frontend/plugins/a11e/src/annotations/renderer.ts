@@ -1,7 +1,27 @@
 import { annotationColor } from "./appearance.js";
 import { ANNOTATION_FILL_OPACITY } from "../shared/annotation-constants.js";
 import type { Annotation, Bounds, OverlayAnnotation, Point, Run, Shape } from "../shared/types.js";
-import type { RenderElement, ViewerSurface } from "../tools/core/types.js";
+import type { PixelPoint } from "../viewer/types.js";
+
+/** DOM elements used for annotation overlays and SVG drawings. */
+export type RenderElement = HTMLElement | SVGElement;
+
+export interface ViewerSurface {
+    toImagePoint(position: PixelPoint): Point;
+    createElement(tagName: string): HTMLElement;
+    createSvgElement(tagName: string): SVGElement;
+    createSvgLayer(className: string): SVGSVGElement;
+    addOverlay(element: RenderElement, bounds: Bounds): void;
+    updateOverlay(element: RenderElement, bounds: Bounds): void;
+    removeOverlay(element: RenderElement): void;
+}
+
+export interface AnnotationRenderer {
+    canRender(shape: Shape): boolean;
+    render(annotation: Annotation, options?: { preview?: boolean }): RenderElement;
+    update(element: RenderElement, annotation: Annotation): void;
+    remove(element: RenderElement): void;
+}
 
 type SvgShape = Exclude<Shape, OverlayAnnotation["shape"]>;
 

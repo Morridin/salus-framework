@@ -1,7 +1,7 @@
 import type { Annotation, AnnotationChanges, CommittedAnnotation } from "../shared/types.js";
-import type { RenderElement } from "../tools/core/types.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
-import type { TextFile } from "../messaging/toolbar-bridge.js";
+import type { RenderElement } from "./renderer.js";
+import type { TextFile } from "./io/geojson-import.js";
 import { errorMessage } from "../shared/validation.js";
 import { createAnnotationStore } from "./store.js";
 import { annotationsToGeoJson } from "./io/geojson-export.js";

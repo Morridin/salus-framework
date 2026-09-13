@@ -7,7 +7,8 @@ import { createAssistedBrushTool } from "../assisted-brush/tool.js";
 import { createBrushTool } from "../brush.js";
 import { createDragShapeTool } from "../drag-shape.js";
 import { createPolygonTool } from "../polygon.js";
-import { NO_TOOL, SHAPES } from "./registry.js";
+import { SHAPES } from "../../shared/types.js";
+import { NO_TOOL } from "./registry.js";
 import { isFiniteNumber, isPositiveFinite } from "../../shared/numbers.js";
 
 interface ControllerOptions extends Omit<ToolContext, "commitAnnotation"> {

@@ -1,7 +1,7 @@
 import type { BrushContext } from "./core/types.js";
 import type { Stroke } from "./stroke-tool.js";
 import { createStrokeTool } from "./stroke-tool.js";
-import { SHAPES } from "./core/registry.js";
+import { SHAPES } from "../shared/types.js";
 
 export function createBrushTool({ surface, renderer, brushSettings, commitAnnotation }: BrushContext) {
     return createStrokeTool<Stroke & { radius: number }>({

@@ -1,6 +1,6 @@
 import type { Annotation } from "../plugins/a11e/src/shared/types.js";
 import { createDom } from "./helpers/dom.js";
-import type { RenderElement } from "../plugins/a11e/src/tools/core/types.js";
+import type { RenderElement } from "../plugins/a11e/src/annotations/renderer.js";
 import { required, shape } from "./helpers/assertions.js";
 import assert from "node:assert/strict";
 import test from "node:test";

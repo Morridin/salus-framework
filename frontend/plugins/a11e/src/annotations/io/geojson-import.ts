@@ -3,6 +3,11 @@ import { isRecord, isUnknownArray } from "../../shared/validation.js";
 import { SALUS_GEOJSON_VERSION } from "./geojson-schema.js";
 import type { Annotation, Point, Run } from "../../shared/types.js";
 
+/** A file-like value that can produce its text contents. */
+export interface TextFile {
+    text(): Promise<string>;
+}
+
 function isValidPoint(point: unknown): point is Point {
     return isRecord(point) && isFiniteNumber(point.x) && isFiniteNumber(point.y);
 }

@@ -1,5 +1,6 @@
 import type { Point, Annotation } from "../shared/types.js";
-import type { RenderElement, ToolContext } from "./core/types.js";
+import type { ToolContext } from "./core/types.js";
+import type { RenderElement } from "../annotations/renderer.js";
 import type { ViewerToolEvent } from "../viewer/types.js";
 import { MINIMUM_POINT_DISTANCE } from "../shared/annotation-constants.js";
 

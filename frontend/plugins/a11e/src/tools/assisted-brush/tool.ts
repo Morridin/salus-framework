@@ -3,7 +3,7 @@ import type { AssistedBrushContext } from "../core/types.js";
 import type { Stroke } from "../stroke-tool.js";
 import { pixelKeysToRuns } from "./sampler.js";
 import { createStrokeTool } from "../stroke-tool.js";
-import { SHAPES } from "../core/registry.js";
+import { SHAPES } from "../../shared/types.js";
 
 interface AssistedStroke extends Stroke {
     radius: number;

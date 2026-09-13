@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import type { ViewerSurface } from "../../plugins/a11e/src/tools/core/types.js";
+import type { ViewerSurface } from "../../plugins/a11e/src/annotations/renderer.js";
 
 /** Real DOM elements with stubs for the OpenSeadragon operations. */
 export function fakeSurface(overrides: Partial<ViewerSurface> = {}): ViewerSurface {

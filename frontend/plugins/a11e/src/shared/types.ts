@@ -67,3 +67,12 @@ export interface AnnotationChanges {
 export type Shape = Annotation["shape"];
 
 export type ToolId = Shape | "none";
+
+/** Annotation shape identifiers, shared by drawing, rendering, and messaging. */
+export const SHAPES = {
+    RECTANGLE: "rectangle",
+    CIRCLE: "circle",
+    POLYGON: "polygon",
+    BRUSH: "brush",
+    ASSISTED_BRUSH: "assisted-brush",
+} as const satisfies Record<string, Shape>;

@@ -4,10 +4,7 @@ import { isFiniteNumber } from "../shared/numbers.js";
 import { isRecord } from "../shared/validation.js";
 import type { CommittedAnnotation } from "../shared/types.js";
 import type { ToolSelection } from "../tools/core/types.js";
-
-export interface TextFile {
-    text(): Promise<string>;
-}
+import type { TextFile } from "../annotations/io/geojson-import.js";
 
 export interface MessageChannel {
     postMessage(message: unknown): void;

@@ -1,4 +1,4 @@
-import type { RenderElement } from "../plugins/a11e/src/tools/core/types.js";
+import type { RenderElement } from "../plugins/a11e/src/annotations/renderer.js";
 import { fakeSurface } from "./helpers/rendering.js";
 import { required } from "./helpers/assertions.js";
 import type { Bounds } from "../plugins/a11e/src/shared/types.js";

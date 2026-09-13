@@ -1,7 +1,5 @@
 import type { Shape } from "./types.js";
-// Visual defaults and domain limits for annotations. Tool identity lives in
-// tools/core/registry.js — import SHAPES from there, not from here.
-import { SHAPES } from "../tools/core/registry.js";
+import { SHAPES } from "./types.js";
 
 export const COLOR_HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 

@@ -1,5 +1,5 @@
 import type { Annotation } from "../shared/types.js";
-import { SHAPES } from "../tools/core/registry.js";
+import { SHAPES } from "../shared/types.js";
 import { ASSISTED_BRUSH_COLOR, COLOR_HEX_PATTERN, DEFAULT_ANNOTATION_COLOR } from "../shared/annotation-constants.js";
 
 export function annotationColor(annotation: Annotation): string {

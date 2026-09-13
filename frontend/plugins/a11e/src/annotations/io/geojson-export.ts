@@ -11,7 +11,7 @@ import type {
 } from "../../shared/types.js";
 import { featureCollection, polygon } from "@turf/helpers";
 import { union } from "@turf/union";
-import { SHAPES } from "../../tools/core/registry.js";
+import { SHAPES } from "../../shared/types.js";
 import { isPositiveFinite } from "../../shared/numbers.js";
 import { SALUS_GEOJSON_VERSION } from "./geojson-schema.js";
 import type { AnnotationProperties } from "./geojson-schema.js";
