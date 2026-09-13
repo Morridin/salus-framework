@@ -21,10 +21,25 @@ interface ControllerOptions {
     };
 }
 
-export type AnnotationController = ReturnType<typeof createAnnotationController>;
+export interface AnnotationController {
+    readonly annotations: CommittedAnnotation[];
+    commitAnnotation(this: void, annotationData: Annotation, preview?: RenderElement | null): CommittedAnnotation;
+    updateAnnotation(id: string | null, changes: AnnotationChanges): CommittedAnnotation | undefined;
+    deleteAnnotation(id: string | null): void;
+    clearAnnotations(): void;
+    selectAnnotation(id: string | null): void;
+    subscribe(listener: () => void): () => void;
+    importAnnotationsFromGeoJson(this: void, file: TextFile): Promise<void>;
+    exportAnnotationsAsGeoJson(this: void): void;
+}
 
 // Owns committed annotations and their import/export workflows.
-export function createAnnotationController({ env, session, renderer, toolbar }: ControllerOptions) {
+export function createAnnotationController({
+    env,
+    session,
+    renderer,
+    toolbar,
+}: ControllerOptions): AnnotationController {
     const { publishAnnotation } = toolbar;
     const { isImageReady, reportStatus } = session;
     const annotationStore = createAnnotationStore();

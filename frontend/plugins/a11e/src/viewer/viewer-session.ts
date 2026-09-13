@@ -1,13 +1,22 @@
 import { requiredElement } from "../shared/environment.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
+import type { Viewer } from "./types.js";
 
-export type ViewerSession = NonNullable<ReturnType<typeof createViewerSession>>;
+export interface ViewerSession {
+    viewer: Viewer;
+    viewerElement: HTMLElement;
+    imageUrl: string;
+    isImageReady(): boolean;
+    reportStatus(message: string): void;
+    onImageOpened(initializeLayers: () => void): void;
+    openImage(url: string): void;
+}
 
 const DEFAULT_IMAGE_URL = "sample.svg";
 const OPENSEADRAGON_IMAGES_URL = "https://cdn.jsdelivr.net/npm/openseadragon@6.0.2/build/openseadragon/images/";
 
 // Owns OpenSeadragon setup, image readiness, and viewer feedback.
-export function createViewerSession({ window, document, OpenSeadragon }: BrowserEnvironment) {
+export function createViewerSession({ window, document, OpenSeadragon }: BrowserEnvironment): ViewerSession | null {
     const viewerElement = requiredElement(document, "image-viewer", "main");
     const errorElement = requiredElement(document, "viewer-error", "p");
     const statusElement = requiredElement(document, "viewer-status", "p");
