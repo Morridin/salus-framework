@@ -28,15 +28,15 @@ export function startImageViewer({
     const session = createdSession;
 
     const surface = createViewerAdapter({ env, session });
-    const renderer = createAnnotationRenderer<HTMLElement | SVGElement>({ surface });
+    const renderer = createAnnotationRenderer({ surface });
 
     const toolbar = createToolbarBridge({ channel });
-    const annotations = createAnnotationController<HTMLElement | SVGElement>({ env, session, renderer, toolbar });
+    const annotations = createAnnotationController({ env, session, renderer, toolbar });
 
     createAnnotationPanel({ env, controller: annotations });
 
     const sampler = createIntensitySampler({ env, session });
-    const tools = createToolController<HTMLElement | SVGElement>({
+    const tools = createToolController({
         env,
         session,
         sampler,

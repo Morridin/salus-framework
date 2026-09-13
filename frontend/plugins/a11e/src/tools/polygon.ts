@@ -1,13 +1,9 @@
 import type { Point } from "../shared/types.js";
-import type { AnnotationElement, ToolContext, ViewerToolEvent } from "./core/types.js";
+import type { RenderElement, ToolContext, ViewerToolEvent } from "./core/types.js";
 import { SHAPES } from "./core/registry.js";
 
-export function createPolygonTool<E extends AnnotationElement>({
-    surface,
-    renderer,
-    commitAnnotation,
-}: ToolContext<E>) {
-    let draft: { points: Point[]; element: E } | null = null;
+export function createPolygonTool({ surface, renderer, commitAnnotation }: ToolContext) {
+    let draft: { points: Point[]; element: RenderElement } | null = null;
 
     function renderDraft(cursorPoint: Point | null = null) {
         if (!draft) {

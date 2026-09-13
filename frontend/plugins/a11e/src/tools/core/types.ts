@@ -19,30 +19,24 @@ export interface ViewerToolEvent {
     preventDefault?: () => void;
 }
 
-/** The rendering operations shared by HTML and SVG annotation elements. */
-export interface AnnotationElement {
-    dataset: DOMStringMap;
-    classList: Pick<DOMTokenList, "add" | "remove">;
-    style: Pick<CSSStyleDeclaration, "setProperty">;
-    setAttribute(name: string, value: string): void;
-    remove(): void;
-}
+/** DOM elements used for annotation overlays and SVG drawings. */
+export type RenderElement = HTMLElement | SVGElement;
 
-export interface ViewerSurface<E extends AnnotationElement = AnnotationElement> {
+export interface ViewerSurface {
     toImagePoint(position: Point): Point;
-    createElement(tagName: string): E;
-    createSvgElement(tagName: string): E;
-    createSvgLayer(className: string): { append(element: E): void };
-    addOverlay(element: E, bounds: Bounds): void;
-    updateOverlay(element: E, bounds: Bounds): void;
-    removeOverlay(element: E): void;
+    createElement(tagName: string): HTMLElement;
+    createSvgElement(tagName: string): SVGElement;
+    createSvgLayer(className: string): SVGSVGElement;
+    addOverlay(element: RenderElement, bounds: Bounds): void;
+    updateOverlay(element: RenderElement, bounds: Bounds): void;
+    removeOverlay(element: RenderElement): void;
 }
 
-export interface AnnotationRenderer<E extends AnnotationElement = AnnotationElement> {
+export interface AnnotationRenderer {
     canRender(shape: Shape): boolean;
-    render(annotation: Annotation, options?: { preview?: boolean }): E;
-    update(element: E, annotation: Annotation): void;
-    remove(element: E): void;
+    render(annotation: Annotation, options?: { preview?: boolean }): RenderElement;
+    update(element: RenderElement, annotation: Annotation): void;
+    remove(element: RenderElement): void;
 }
 
 export interface IntensitySampler {
@@ -62,17 +56,17 @@ export interface Tool {
     deactivate?(): void;
 }
 
-export interface ToolContext<E extends AnnotationElement = AnnotationElement> {
-    surface: ViewerSurface<E>;
-    renderer: AnnotationRenderer<E>;
-    commitAnnotation(this: void, annotation: Annotation, preview?: E | null): CommittedAnnotation;
+export interface ToolContext {
+    surface: ViewerSurface;
+    renderer: AnnotationRenderer;
+    commitAnnotation(this: void, annotation: Annotation, preview?: RenderElement | null): CommittedAnnotation;
 }
 
-export interface BrushContext<E extends AnnotationElement = AnnotationElement> extends ToolContext<E> {
+export interface BrushContext extends ToolContext {
     brushSettings: Readonly<BrushSettings>;
 }
 
-export interface AssistedBrushContext<E extends AnnotationElement = AnnotationElement> extends BrushContext<E> {
+export interface AssistedBrushContext extends BrushContext {
     sampler: Pick<IntensitySampler, "ready" | "error" | "select">;
     reportStatus?: (message: string) => void;
 }

@@ -1,6 +1,6 @@
 import { MINIMUM_SHAPE_SIZE } from "../shared/annotation-constants.js";
 import type { OverlayAnnotation, Point } from "../shared/types.js";
-import type { AnnotationElement, ToolContext, ViewerToolEvent } from "./core/types.js";
+import type { RenderElement, ToolContext, ViewerToolEvent } from "./core/types.js";
 
 function geometry(tool: OverlayAnnotation["shape"], start: Point, end: Point): OverlayAnnotation {
     if (tool === "rectangle") {
@@ -21,13 +21,13 @@ function geometry(tool: OverlayAnnotation["shape"], start: Point, end: Point): O
     };
 }
 
-export function createDragShapeTool<E extends AnnotationElement>({
+export function createDragShapeTool({
     surface,
     renderer,
     tool,
     commitAnnotation,
-}: ToolContext<E> & { tool: OverlayAnnotation["shape"] }) {
-    let drawing: { start: Point; annotation: OverlayAnnotation; element: E } | null = null;
+}: ToolContext & { tool: OverlayAnnotation["shape"] }) {
+    let drawing: { start: Point; annotation: OverlayAnnotation; element: RenderElement } | null = null;
 
     function updateDrawing(position: Point | undefined) {
         if (!drawing || !position) {

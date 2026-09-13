@@ -1,5 +1,5 @@
 import type { Point, Annotation } from "../shared/types.js";
-import type { AnnotationElement, ToolContext, ViewerToolEvent } from "./core/types.js";
+import type { RenderElement, ToolContext, ViewerToolEvent } from "./core/types.js";
 import { MINIMUM_POINT_DISTANCE } from "../shared/annotation-constants.js";
 
 // Shared press-drag-release lifecycle for continuous stroke tools
@@ -7,12 +7,12 @@ import { MINIMUM_POINT_DISTANCE } from "../shared/annotation-constants.js";
 // distance throttling, and preview/commit/cancel wiring; each tool
 // supplies how a stroke starts, how an accepted point extends it,
 // and what annotation to commit.
-export interface Stroke<E extends AnnotationElement> {
+export interface Stroke {
     points: Point[];
-    element: E;
+    element: RenderElement;
 }
 
-interface StrokeOptions<S extends Stroke<E>, E extends AnnotationElement> extends ToolContext<E> {
+interface StrokeOptions<S extends Stroke> extends ToolContext {
     minimumDistance?: number;
     beginStroke(this: void, event: ViewerToolEvent): S | null;
     onPoint(this: void, stroke: S, point: Point, previous: Point | null): void;
@@ -25,7 +25,7 @@ export function isPrimaryButton(event: ViewerToolEvent) {
     return button === undefined || button === 0;
 }
 
-export function createStrokeTool<S extends Stroke<E>, E extends AnnotationElement>({
+export function createStrokeTool<S extends Stroke>({
     surface,
     renderer,
     commitAnnotation,
@@ -33,7 +33,7 @@ export function createStrokeTool<S extends Stroke<E>, E extends AnnotationElemen
     beginStroke,
     onPoint,
     buildAnnotation,
-}: StrokeOptions<S, E>) {
+}: StrokeOptions<S>) {
     let stroke: S | null = null;
 
     function addPoint(position: Point | undefined) {

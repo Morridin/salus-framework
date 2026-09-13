@@ -1,4 +1,4 @@
-import { FakeElement, fakeSurface } from "./helpers/rendering.js";
+import { fakeSurface } from "./helpers/rendering.js";
 import type { Point } from "../plugins/a11e/src/shared/types.js";
 import { createDom } from "./helpers/dom.js";
 import assert from "node:assert/strict";
@@ -13,16 +13,12 @@ void test("assisted brush creates a compact intensity-mask annotation", async ()
     const { createAnnotationRenderer } = await rendererModule;
     const { createAnnotationController } = await controllerModule;
     const sampledPoints = [];
-    const surface = fakeSurface({
-        toImagePoint: (point) => point,
-        createSvgLayer: () => new FakeElement(),
-        createSvgElement: () => new FakeElement(),
-    });
-    const renderer = createAnnotationRenderer<FakeElement>({ surface });
+    const surface = fakeSurface();
+    const renderer = createAnnotationRenderer({ surface });
 
     renderer.initializeLayers();
 
-    const controller = createAnnotationController<FakeElement>({
+    const controller = createAnnotationController({
         env: createDom(),
         session: { isImageReady: () => true, reportStatus() {} },
         renderer,
@@ -42,7 +38,7 @@ void test("assisted brush creates a compact intensity-mask annotation", async ()
             ];
         },
     };
-    const tool = createAssistedBrushTool<FakeElement>({
+    const tool = createAssistedBrushTool({
         surface,
         renderer,
         sampler,

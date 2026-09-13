@@ -1,6 +1,6 @@
 import type { Annotation } from "../plugins/a11e/src/shared/types.js";
 import { createDom } from "./helpers/dom.js";
-import { FakeElement } from "./helpers/rendering.js";
+import type { RenderElement } from "../plugins/a11e/src/tools/core/types.js";
 import { required, shape } from "./helpers/assertions.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -62,8 +62,12 @@ void test("controller updates and clears visuals before notifying, while reads s
 
 for (const usePreview of [false, true]) {
     void test(`commit ${usePreview ? "finalizes a preview" : "renders a new annotation"} before publishing and notifying`, () => {
-        const preview = Object.assign(new FakeElement(), { isPreview: true });
-        const elements = new Map<string | undefined, { isPreview: boolean }>();
+        const env = createDom();
+        const preview = env.document.createElement("div");
+
+        preview.classList.add("preview");
+
+        const elements = new Map<string | undefined, RenderElement>();
         const published: Annotation[] = [];
         const observed: Annotation[] = [];
         const renderer = {
@@ -73,24 +77,24 @@ for (const usePreview of [false, true]) {
             render(annotation: Annotation) {
                 assert.equal(usePreview, false, "a draft must reuse its preview");
 
-                elements.set(annotation.id, { isPreview: false });
+                elements.set(annotation.id, env.document.createElement("div"));
             },
-            finalizePreview(element: typeof preview, annotation: Annotation) {
+            finalizePreview(element: RenderElement, annotation: Annotation) {
                 assert.equal(usePreview, true, "imports have no preview to finalize");
                 assert.equal(element, preview);
 
-                element.isPreview = false;
+                element.classList.remove("preview");
                 elements.set(annotation.id, element);
             },
         };
         const controller = createAnnotationController({
-            env: createDom(),
+            env,
             session: { isImageReady: () => true, reportStatus() {} },
             renderer,
             toolbar: {
                 publishAnnotation(annotation) {
                     assert.equal(
-                        elements.get(annotation.id)?.isPreview,
+                        elements.get(annotation.id)?.classList.contains("preview"),
                         false,
                         "published annotations must already have a committed visual",
                     );
@@ -104,7 +108,7 @@ for (const usePreview of [false, true]) {
             const annotation = required(controller.annotations.at(-1));
 
             assert.equal(
-                elements.get(annotation.id)?.isPreview,
+                elements.get(annotation.id)?.classList.contains("preview"),
                 false,
                 "subscribers must be able to select the committed visual immediately",
             );

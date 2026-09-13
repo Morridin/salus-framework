@@ -1,7 +1,7 @@
 import { annotationColor } from "./appearance.js";
 import { ANNOTATION_FILL_OPACITY } from "../shared/annotation-constants.js";
 import type { Annotation, Bounds, OverlayAnnotation, Point, Run, Shape } from "../shared/types.js";
-import type { AnnotationElement, ViewerSurface } from "../tools/core/types.js";
+import type { RenderElement, ViewerSurface } from "../tools/core/types.js";
 
 type SvgShape = Exclude<Shape, OverlayAnnotation["shape"]>;
 
@@ -31,10 +31,10 @@ function assistedBrushPathData(runs: Run[]): string {
     return runs.map(({ y, xStart, xEnd }) => `M ${xStart} ${y} H ${xEnd + 1} V ${y + 1} H ${xStart} Z`).join(" ");
 }
 
-export function createAnnotationRenderer<E extends AnnotationElement>({ surface }: { surface: ViewerSurface<E> }) {
-    let layers: Record<SvgShape, { append(element: E): void }> | null = null;
-    const committedElements = new Map<string, E>();
-    const overlayElements = new WeakSet<E>();
+export function createAnnotationRenderer({ surface }: { surface: ViewerSurface }) {
+    let layers: Record<SvgShape, SVGSVGElement> | null = null;
+    const committedElements = new Map<string, RenderElement>();
+    const overlayElements = new WeakSet<RenderElement>();
     let selectedId: string | null = null;
 
     function setSelected(id: string | null) {
@@ -63,7 +63,7 @@ export function createAnnotationRenderer<E extends AnnotationElement>({ surface 
         element.style.setProperty("--annotation-fill", `${color}${opacity}`);
     }
 
-    function register(element: E, annotation: Annotation) {
+    function register(element: RenderElement, annotation: Annotation) {
         if (!annotation.id) {
             return;
         }
@@ -100,7 +100,7 @@ export function createAnnotationRenderer<E extends AnnotationElement>({ surface 
         }
     }
 
-    function update(element: E, annotation: Annotation) {
+    function update(element: RenderElement, annotation: Annotation) {
         switch (annotation.shape) {
             case "rectangle":
             case "circle":
@@ -119,12 +119,12 @@ export function createAnnotationRenderer<E extends AnnotationElement>({ surface 
         }
     }
 
-    function render(annotation: Annotation, options?: { preview?: boolean }): E {
+    function render(annotation: Annotation, options?: { preview?: boolean }): RenderElement {
         // Also reject unknown shapes from untyped runtime callers.
         canRender(annotation.shape);
 
         const preview = options?.preview === true;
-        let element: E;
+        let element: RenderElement;
 
         if (annotation.shape === "rectangle" || annotation.shape === "circle") {
             element = surface.createElement("div");
@@ -153,14 +153,14 @@ export function createAnnotationRenderer<E extends AnnotationElement>({ surface 
         return element;
     }
 
-    function finalizePreview(element: E, annotation: Annotation) {
+    function finalizePreview(element: RenderElement, annotation: Annotation) {
         update(element, annotation);
         element.classList.remove("preview");
 
         register(element, annotation);
     }
 
-    function remove(element: E) {
+    function remove(element: RenderElement) {
         const id = element.dataset.annotationId;
 
         if (id === selectedId) {

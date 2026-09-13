@@ -1,11 +1,11 @@
 import type { Point, Run } from "../../shared/types.js";
-import type { AnnotationElement, AssistedBrushContext } from "../core/types.js";
+import type { AssistedBrushContext } from "../core/types.js";
 import type { Stroke } from "../stroke-tool.js";
 import { pixelKeysToRuns } from "./sampler.js";
 import { createStrokeTool } from "../stroke-tool.js";
 import { SHAPES } from "../core/registry.js";
 
-interface AssistedStroke<E extends AnnotationElement> extends Stroke<E> {
+interface AssistedStroke extends Stroke {
     radius: number;
     tolerance: number;
     pixelKeys: Set<string>;
@@ -13,21 +13,21 @@ interface AssistedStroke<E extends AnnotationElement> extends Stroke<E> {
 }
 
 // Intensity-aware brush interaction and mask rendering.
-export function createAssistedBrushTool<E extends AnnotationElement>({
+export function createAssistedBrushTool({
     surface,
     renderer,
     sampler,
     brushSettings,
     commitAnnotation,
     reportStatus = () => {},
-}: AssistedBrushContext<E>) {
-    function sampleAt(stroke: AssistedStroke<E>, point: Point) {
+}: AssistedBrushContext) {
+    function sampleAt(stroke: AssistedStroke, point: Point) {
         for (const pixel of sampler.select(point, stroke.radius, stroke.tolerance)) {
             stroke.pixelKeys.add(`${pixel.y}:${pixel.x}`);
         }
     }
 
-    function extendStroke(stroke: AssistedStroke<E>, point: Point, previous: Point | null) {
+    function extendStroke(stroke: AssistedStroke, point: Point, previous: Point | null) {
         if (!previous) {
             sampleAt(stroke, point);
         } else {
@@ -52,7 +52,7 @@ export function createAssistedBrushTool<E extends AnnotationElement>({
         });
     }
 
-    return createStrokeTool<AssistedStroke<E>, E>({
+    return createStrokeTool<AssistedStroke>({
         surface,
         renderer,
         commitAnnotation,

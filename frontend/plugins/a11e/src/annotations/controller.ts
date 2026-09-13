@@ -1,5 +1,5 @@
 import type { Annotation, AnnotationChanges, CommittedAnnotation } from "../shared/types.js";
-import type { AnnotationElement } from "../tools/core/types.js";
+import type { RenderElement } from "../tools/core/types.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
 import type { TextFile } from "../messaging/toolbar-bridge.js";
 import { errorMessage } from "../shared/validation.js";
@@ -8,14 +8,14 @@ import { annotationsToGeoJson } from "./io/geojson-export.js";
 import { annotationsFromGeoJson } from "./io/geojson-import.js";
 import { downloadTextFile } from "../shared/download-file.js";
 
-interface ControllerOptions<E extends AnnotationElement> {
+interface ControllerOptions {
     env: Pick<BrowserEnvironment, "window" | "document">;
     session: { isImageReady: () => boolean; reportStatus: (message: string) => void };
     toolbar: { publishAnnotation: (annotation: CommittedAnnotation) => void };
     renderer: {
         render(annotation: Annotation): void;
         updateAppearance(annotation: Annotation): void;
-        finalizePreview(element: E, annotation: Annotation): void;
+        finalizePreview(element: RenderElement, annotation: Annotation): void;
         removeAnnotation(id: string): void;
         setSelected(this: void, id: string | null): void;
     };
@@ -24,12 +24,7 @@ interface ControllerOptions<E extends AnnotationElement> {
 export type AnnotationController = ReturnType<typeof createAnnotationController>;
 
 // Owns committed annotations and their import/export workflows.
-export function createAnnotationController<E extends AnnotationElement>({
-    env,
-    session,
-    renderer,
-    toolbar,
-}: ControllerOptions<E>) {
+export function createAnnotationController({ env, session, renderer, toolbar }: ControllerOptions) {
     const { publishAnnotation } = toolbar;
     const { isImageReady, reportStatus } = session;
     const annotationStore = createAnnotationStore();
@@ -62,7 +57,7 @@ export function createAnnotationController<E extends AnnotationElement>({
 
     // Complete the visual before publishing or notifying subscribers.
     // Drawing tools supply their preview; imports render a new element.
-    function commitAnnotation(annotationData: Annotation, preview: E | null = null) {
+    function commitAnnotation(annotationData: Annotation, preview: RenderElement | null = null) {
         const annotation = annotationStore.add(annotationData);
 
         if (preview) {

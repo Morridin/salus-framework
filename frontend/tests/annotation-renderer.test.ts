@@ -1,4 +1,5 @@
-import { FakeElement, fakeSurface } from "./helpers/rendering.js";
+import type { RenderElement } from "../plugins/a11e/src/tools/core/types.js";
+import { fakeSurface } from "./helpers/rendering.js";
 import { required } from "./helpers/assertions.js";
 import type { Bounds } from "../plugins/a11e/src/shared/types.js";
 import assert from "node:assert/strict";
@@ -6,15 +7,13 @@ import test from "node:test";
 import { createAnnotationRenderer } from "../plugins/a11e/src/annotations/renderer.js";
 
 void test("renders every annotation shape through one renderer", () => {
-    const overlays: { element: FakeElement; bounds: Bounds }[] = [];
-    const layers: FakeElement[] = [];
+    const overlays: { element: RenderElement; bounds: Bounds }[] = [];
+    const layers: SVGSVGElement[] = [];
+    const domSurface = fakeSurface();
     const surface = fakeSurface({
-        createElement: (tagName) => new FakeElement(tagName),
-        createSvgElement: (tagName) => new FakeElement(tagName),
         createSvgLayer(className) {
-            const layer = new FakeElement("svg");
+            const layer = domSurface.createSvgLayer(className);
 
-            layer.className = className;
             layers.push(layer);
 
             return layer;
@@ -23,7 +22,7 @@ void test("renders every annotation shape through one renderer", () => {
             overlays.push({ element, bounds });
         },
     });
-    const renderer = createAnnotationRenderer<FakeElement>({ surface });
+    const renderer = createAnnotationRenderer({ surface });
 
     renderer.initializeLayers();
 
@@ -65,24 +64,24 @@ void test("renders every annotation shape through one renderer", () => {
         runs: [{ y: 2, xStart: 3, xEnd: 4 }],
     });
 
-    assert.deepEqual([...rectangle.classes], ["segmentation-overlay", "rectangle"]);
+    assert.deepEqual([...rectangle.classList], ["segmentation-overlay", "rectangle"]);
     assert.deepEqual(required(overlays[0]).bounds, {
         x: 10,
         y: 20,
         width: 30,
         height: 40,
     });
-    assert.deepEqual([...circle.classes], ["segmentation-overlay", "circle"]);
+    assert.deepEqual([...circle.classList], ["segmentation-overlay", "circle"]);
     assert.deepEqual(required(overlays[1]).bounds, {
         x: 40,
         y: 50,
         width: 20,
         height: 20,
     });
-    assert.equal(polygon.attributes.get("points"), "1,2 3,4");
-    assert.equal(brush.attributes.get("d"), "M 1 2 L 3 4");
-    assert.equal(brush.attributes.get("stroke-width"), "10");
-    assert.equal(assistedBrush.attributes.get("d"), "M 3 2 H 5 V 3 H 3 Z");
+    assert.equal(polygon.getAttribute("points"), "1,2 3,4");
+    assert.equal(brush.getAttribute("d"), "M 1 2 L 3 4");
+    assert.equal(brush.getAttribute("stroke-width"), "10");
+    assert.equal(assistedBrush.getAttribute("d"), "M 3 2 H 5 V 3 H 3 Z");
     assert.deepEqual(
         layers.map((layer) => layer.children.length),
         [1, 1, 1],
@@ -90,12 +89,9 @@ void test("renders every annotation shape through one renderer", () => {
 });
 
 void test("finalizes and removes overlay previews", () => {
-    const updates: { element: FakeElement; bounds: Bounds }[] = [];
-    const removals: FakeElement[] = [];
+    const updates: { element: RenderElement; bounds: Bounds }[] = [];
+    const removals: RenderElement[] = [];
     const surface = fakeSurface({
-        createElement: (tagName) => new FakeElement(tagName),
-        createSvgElement: (tagName) => new FakeElement(tagName),
-        createSvgLayer: () => new FakeElement("svg"),
         addOverlay() {},
         updateOverlay(element, bounds) {
             updates.push({ element, bounds });
@@ -104,7 +100,7 @@ void test("finalizes and removes overlay previews", () => {
             removals.push(element);
         },
     });
-    const renderer = createAnnotationRenderer<FakeElement>({ surface });
+    const renderer = createAnnotationRenderer({ surface });
 
     renderer.initializeLayers();
 
@@ -129,18 +125,15 @@ void test("finalizes and removes overlay previews", () => {
     });
     renderer.remove(element);
 
-    assert.equal(element.classes.has("preview"), false);
+    assert.equal(element.classList.contains("preview"), false);
     assert.equal(element.dataset.annotationId, "segmentation-1");
     assert.deepEqual(required(updates[0]).bounds, { x: 5, y: 6, width: 7, height: 8 });
     assert.deepEqual(removals, [element]);
 });
 
 void test("reports unsupported shapes and uninitialized layers clearly", () => {
-    const surface = fakeSurface({
-        createElement: (tagName) => new FakeElement(tagName),
-        createSvgElement: (tagName) => new FakeElement(tagName),
-    });
-    const renderer = createAnnotationRenderer<FakeElement>({ surface });
+    const surface = fakeSurface();
+    const renderer = createAnnotationRenderer({ surface });
 
     assert.equal(renderer.canRender("rectangle"), true);
     assert.equal(renderer.canRender("polygon"), false);

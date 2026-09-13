@@ -1,14 +1,7 @@
 import type { BrowserEnvironment } from "../../shared/environment.js";
 import type { ViewerSession } from "../../viewer/viewer-session.js";
 import type { Shape, ToolId } from "../../shared/types.js";
-import type {
-    AnnotationElement,
-    Tool,
-    ToolContext,
-    ToolSelection,
-    ViewerToolEvent,
-    IntensitySampler,
-} from "./types.js";
+import type { Tool, ToolContext, ToolSelection, ViewerToolEvent, IntensitySampler } from "./types.js";
 import { createAssistedBrushTool } from "../assisted-brush/tool.js";
 import { createBrushTool } from "../brush.js";
 import { createDragShapeTool } from "../drag-shape.js";
@@ -16,22 +9,15 @@ import { createPolygonTool } from "../polygon.js";
 import { NO_TOOL, SHAPES } from "./registry.js";
 import { isFiniteNumber, isPositiveFinite } from "../../shared/numbers.js";
 
-interface ControllerOptions<E extends AnnotationElement> extends Omit<ToolContext<E>, "commitAnnotation"> {
+interface ControllerOptions extends Omit<ToolContext, "commitAnnotation"> {
     env: Pick<BrowserEnvironment, "document" | "OpenSeadragon">;
     session: Pick<ViewerSession, "viewer" | "viewerElement" | "isImageReady" | "reportStatus">;
     sampler: IntensitySampler;
-    annotations: Pick<ToolContext<E>, "commitAnnotation">;
+    annotations: Pick<ToolContext, "commitAnnotation">;
 }
 
 // Owns tool selection, brush settings, and dispatch of viewer input.
-export function createToolController<E extends AnnotationElement>({
-    env,
-    session,
-    sampler,
-    surface,
-    renderer,
-    annotations,
-}: ControllerOptions<E>) {
+export function createToolController({ env, session, sampler, surface, renderer, annotations }: ControllerOptions) {
     const { document, OpenSeadragon } = env;
     const { viewer, viewerElement } = session;
     let currentTool: ToolId = NO_TOOL;

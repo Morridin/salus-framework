@@ -1,15 +1,10 @@
-import type { AnnotationElement, BrushContext } from "./core/types.js";
+import type { BrushContext } from "./core/types.js";
 import type { Stroke } from "./stroke-tool.js";
 import { createStrokeTool } from "./stroke-tool.js";
 import { SHAPES } from "./core/registry.js";
 
-export function createBrushTool<E extends AnnotationElement>({
-    surface,
-    renderer,
-    brushSettings,
-    commitAnnotation,
-}: BrushContext<E>) {
-    return createStrokeTool<Stroke<E> & { radius: number }, E>({
+export function createBrushTool({ surface, renderer, brushSettings, commitAnnotation }: BrushContext) {
+    return createStrokeTool<Stroke & { radius: number }>({
         surface,
         renderer,
         commitAnnotation,
