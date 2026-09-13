@@ -1,5 +1,6 @@
 import type { Point, Annotation } from "../shared/types.js";
-import type { RenderElement, ToolContext, ViewerToolEvent } from "./core/types.js";
+import type { RenderElement, ToolContext } from "./core/types.js";
+import type { ViewerToolEvent } from "../viewer/types.js";
 import { MINIMUM_POINT_DISTANCE } from "../shared/annotation-constants.js";
 
 // Shared press-drag-release lifecycle for continuous stroke tools

@@ -1,7 +1,8 @@
 import type { BrowserEnvironment } from "../../shared/environment.js";
 import type { ViewerSession } from "../../viewer/viewer-session.js";
+import type { ViewerToolEvent } from "../../viewer/types.js";
 import type { Shape, ToolId } from "../../shared/types.js";
-import type { Tool, ToolContext, ToolSelection, ViewerToolEvent, IntensitySampler } from "./types.js";
+import type { Tool, ToolContext, ToolSelection, IntensitySampler } from "./types.js";
 import { createAssistedBrushTool } from "../assisted-brush/tool.js";
 import { createBrushTool } from "../brush.js";
 import { createDragShapeTool } from "../drag-shape.js";

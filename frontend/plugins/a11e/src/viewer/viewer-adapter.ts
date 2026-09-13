@@ -1,6 +1,7 @@
 import type { BrowserEnvironment } from "../shared/environment.js";
 import type { ViewerSession } from "./viewer-session.js";
-import type { Point, Bounds } from "../shared/types.js";
+import type { PixelPoint } from "./types.js";
+import type { Bounds } from "../shared/types.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
@@ -14,7 +15,7 @@ export function createViewerAdapter({
     const { viewer } = session;
     const { document } = env;
 
-    function toImagePoint(position: Point) {
+    function toImagePoint(position: PixelPoint) {
         const viewportPoint = viewer.viewport.pointFromPixel(new env.OpenSeadragon.Point(position.x, position.y));
 
         return viewer.viewport.viewportToImageCoordinates(viewportPoint);

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { loadViewer } from "./helpers/viewer.js";
 import { required, shape, parseJson } from "./helpers/assertions.js";
-import type { ViewerToolEvent } from "../plugins/a11e/src/tools/core/types.js";
+import type { ViewerToolEvent } from "../plugins/a11e/src/viewer/types.js";
 import { annotationsFromGeoJson } from "../plugins/a11e/src/annotations/io/geojson-import.js";
 
 const exportModule = import("../plugins/a11e/src/annotations/io/geojson-export.js");

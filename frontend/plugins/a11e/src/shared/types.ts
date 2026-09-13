@@ -59,7 +59,10 @@ export type OverlayAnnotation = Extract<Annotation, { shape: "rectangle" | "circ
 
 export type CommittedAnnotation = Annotation & { id: string };
 
-export type AnnotationChanges = { name?: unknown; color?: unknown };
+export interface AnnotationChanges {
+    name?: string;
+    color?: string;
+}
 
 export type Shape = Annotation["shape"];
 

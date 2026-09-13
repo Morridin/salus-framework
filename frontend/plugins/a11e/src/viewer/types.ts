@@ -1,5 +1,31 @@
-import type { Point, Bounds } from "../shared/types.js";
-import type { ViewerToolEvent } from "../tools/core/types.js";
+import type { Point } from "../shared/types.js";
+
+/** Canvas pixel coordinates from viewer input events (OpenSeadragon "web" coordinates). */
+export interface PixelPoint {
+    x: number;
+    y: number;
+}
+
+/** OpenSeadragon viewport coordinates, normalized to the viewer. */
+export interface ViewportPoint {
+    x: number;
+    y: number;
+}
+
+export interface ViewportBounds extends ViewportPoint {
+    width: number;
+    height: number;
+}
+
+/** Only the event fields drawing tools consume. */
+export interface ViewerToolEvent {
+    position?: PixelPoint;
+    originalEvent?: { button?: number };
+    preventDefaultAction?: boolean;
+    quick?: boolean;
+    key?: string;
+    preventDefault?: () => void;
+}
 
 /** The OpenSeadragon API used by this plugin, including its image tile source. */
 export interface ImageTileSource {
@@ -18,15 +44,15 @@ export type ViewerEventName =
 export interface Viewer {
     canvas: HTMLElement;
     addHandler(name: ViewerEventName, handler: (event: ViewerEvent) => void): void;
-    addOverlay(overlay: { element: HTMLElement | SVGElement; location: Bounds }): void;
-    updateOverlay(element: HTMLElement | SVGElement, location: Bounds): void;
+    addOverlay(overlay: { element: HTMLElement | SVGElement; location: ViewportBounds }): void;
+    updateOverlay(element: HTMLElement | SVGElement, location: ViewportBounds): void;
     removeOverlay(element: HTMLElement | SVGElement): void;
     clearOverlays(): void;
     open(source: ImageTileSource): void;
     viewport: {
-        pointFromPixel(position: Point): Point;
-        viewportToImageCoordinates(point: Point): Point;
-        imageToViewportRectangle(x: number, y: number, width: number, height: number): Bounds;
+        pointFromPixel(position: PixelPoint): ViewportPoint;
+        viewportToImageCoordinates(point: ViewportPoint): Point;
+        imageToViewportRectangle(x: number, y: number, width: number, height: number): ViewportBounds;
     };
     world: { getItemAt(index: number): { getContentSize(): Point } };
 }
@@ -45,5 +71,5 @@ export interface OpenSeadragonApi {
         showNavigator: boolean;
     }): Viewer;
     MouseTracker: new (options: MouseTrackerOptions) => { setTracking(enabled: boolean): void };
-    Point: new (x: number, y: number) => Point;
+    Point: new (x: number, y: number) => PixelPoint;
 }

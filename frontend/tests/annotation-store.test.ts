@@ -1,5 +1,5 @@
-import type { PolygonAnnotation } from "../plugins/a11e/src/shared/types.js";
-import { required, shape } from "./helpers/assertions.js";
+import type { AnnotationChanges, PolygonAnnotation } from "../plugins/a11e/src/shared/types.js";
+import { parseJson, required, shape } from "./helpers/assertions.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createAnnotationStore } from "../plugins/a11e/src/annotations/store.js";
@@ -66,7 +66,11 @@ void test("update validates appearance and preserves identity and geometry", () 
     required(shape(updated, "polygon").points[0]).x = 100;
 
     assert.deepEqual(store.get(added.id), expected);
-    assert.deepEqual(store.update(added.id, { name: 12, color: "red" }), expected);
+
+    // Untyped runtime callers can still send malformed changes; the store ignores them.
+    const malformed = parseJson('{"name": 12, "color": "red"}') as AnnotationChanges;
+
+    assert.deepEqual(store.update(added.id, malformed), expected);
     assert.equal(store.update("missing", { name: "Missing" }), undefined);
     assert.equal(added.name, undefined, "previous snapshots remain unchanged");
 });

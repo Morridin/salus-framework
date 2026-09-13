@@ -1,5 +1,6 @@
 import type { Point } from "../shared/types.js";
-import type { RenderElement, ToolContext, ViewerToolEvent } from "./core/types.js";
+import type { RenderElement, ToolContext } from "./core/types.js";
+import type { ViewerToolEvent } from "../viewer/types.js";
 import { SHAPES } from "./core/registry.js";
 
 export function createPolygonTool({ surface, renderer, commitAnnotation }: ToolContext) {

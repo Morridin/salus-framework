@@ -1,4 +1,5 @@
 import type { Annotation, Bounds, CommittedAnnotation, Point, Shape, ToolId } from "../../shared/types.js";
+import type { PixelPoint, ViewerToolEvent } from "../../viewer/types.js";
 
 export interface ToolSelection extends Partial<BrushSettings> {
     tool?: ToolId;
@@ -9,21 +10,11 @@ export interface BrushSettings {
     brushTolerance: number;
 }
 
-/** Only the event fields drawing tools consume. */
-export interface ViewerToolEvent {
-    position?: Point;
-    originalEvent?: { button?: number };
-    preventDefaultAction?: boolean;
-    quick?: boolean;
-    key?: string;
-    preventDefault?: () => void;
-}
-
 /** DOM elements used for annotation overlays and SVG drawings. */
 export type RenderElement = HTMLElement | SVGElement;
 
 export interface ViewerSurface {
-    toImagePoint(position: Point): Point;
+    toImagePoint(position: PixelPoint): Point;
     createElement(tagName: string): HTMLElement;
     createSvgElement(tagName: string): SVGElement;
     createSvgLayer(className: string): SVGSVGElement;
