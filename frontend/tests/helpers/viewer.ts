@@ -19,25 +19,38 @@ interface SentMessage {
 export function loadViewer() {
     const browser = createDom();
     const { document, window } = browser;
-    const handlers = new Map<ViewerEventName, (event: ViewerEvent) => void>();
+    const handlers = new Map<ViewerEventName, ((event: ViewerEvent) => void)[]>();
     const sentMessages: SentMessage[] = [];
     const downloads: { filename: string; url: string }[] = [];
     const revokedUrls: string[] = [];
     const opened: ImageTileSource[] = [];
     let exportedFile: Blob | null = null;
     let messageListener: ((event: MessageEvent<unknown>) => void) | undefined;
+    let viewerDestroyed = false;
     const viewerElement = required(document.getElementById("image-viewer"));
     const statusElement = required(document.getElementById("viewer-status"));
     const overlays: (HTMLElement | SVGElement)[] = [];
     const viewer: Viewer = {
         canvas: viewerElement,
         addHandler(name, handler) {
-            const previous = handlers.get(name);
+            const registered = handlers.get(name) ?? [];
 
-            handlers.set(name, (event) => {
-                previous?.(event);
-                handler(event);
-            });
+            registered.push(handler);
+            handlers.set(name, registered);
+        },
+        removeHandler(name, handler) {
+            const registered = handlers.get(name);
+            const index = registered?.indexOf(handler) ?? -1;
+
+            if (!registered || index === -1) {
+                return;
+            }
+
+            registered.splice(index, 1);
+
+            if (registered.length === 0) {
+                handlers.delete(name);
+            }
         },
         addOverlay({ element }) {
             viewerElement.append(element);
@@ -67,6 +80,9 @@ export function loadViewer() {
             imageToViewportRectangle: (x, y, width, height) => ({ x, y, width, height }),
         },
         world: { getItemAt: () => ({ getContentSize: () => ({ x: 1000, y: 800 }) }) },
+        destroy() {
+            viewerDestroyed = true;
+        },
     };
 
     window.URL.createObjectURL = (file) => {
@@ -112,6 +128,8 @@ export function loadViewer() {
     const OpenSeadragon: OpenSeadragonApi = Object.assign(() => viewer, {
         MouseTracker: class {
             setTracking() {}
+
+            destroy() {}
         },
         Point: class {
             constructor(
@@ -134,11 +152,18 @@ export function loadViewer() {
         sentMessages,
         revokedUrls,
         handlers: {
-            get:
-                (name: ViewerEventName) =>
-                (event: ViewerEvent = {}) =>
-                    required(handlers.get(name))(event),
+            get: (name: ViewerEventName) => {
+                const registered = handlers.get(name) ?? [];
+
+                return (event: ViewerEvent = {}) => {
+                    for (const handler of registered) {
+                        handler(event);
+                    }
+                };
+            },
+            has: (name: ViewerEventName) => (handlers.get(name)?.length ?? 0) > 0,
         },
+        isViewerDestroyed: () => viewerDestroyed,
         keyDown(key: string) {
             document.dispatchEvent(new browser.dom.window.KeyboardEvent("keydown", { key }));
         },

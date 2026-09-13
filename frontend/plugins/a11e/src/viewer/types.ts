@@ -44,6 +44,7 @@ export type ViewerEventName =
 export interface Viewer {
     canvas: HTMLElement;
     addHandler(name: ViewerEventName, handler: (event: ViewerEvent) => void): void;
+    removeHandler(name: ViewerEventName, handler: (event: ViewerEvent) => void): void;
     addOverlay(overlay: { element: HTMLElement | SVGElement; location: ViewportBounds }): void;
     updateOverlay(element: HTMLElement | SVGElement, location: ViewportBounds): void;
     removeOverlay(element: HTMLElement | SVGElement): void;
@@ -55,6 +56,7 @@ export interface Viewer {
         imageToViewportRectangle(x: number, y: number, width: number, height: number): ViewportBounds;
     };
     world: { getItemAt(index: number): { getContentSize(): Point } };
+    destroy(): void;
 }
 
 export interface MouseTrackerOptions {
@@ -70,6 +72,6 @@ export interface OpenSeadragonApi {
         animationTime: number;
         showNavigator: boolean;
     }): Viewer;
-    MouseTracker: new (options: MouseTrackerOptions) => { setTracking(enabled: boolean): void };
+    MouseTracker: new (options: MouseTrackerOptions) => { setTracking(enabled: boolean): void; destroy(): void };
     Point: new (x: number, y: number) => PixelPoint;
 }

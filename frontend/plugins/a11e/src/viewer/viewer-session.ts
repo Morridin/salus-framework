@@ -10,6 +10,7 @@ export interface ViewerSession {
     reportStatus(message: string): void;
     onImageOpened(initializeLayers: () => void): void;
     openImage(url: string): void;
+    dispose(): void;
 }
 
 const DEFAULT_IMAGE_URL = "sample.svg";
@@ -77,5 +78,8 @@ export function createViewerSession({ window, document, OpenSeadragon }: Browser
         reportStatus,
         onImageOpened,
         openImage,
+        dispose() {
+            viewer.destroy();
+        },
     };
 }

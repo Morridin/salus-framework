@@ -16,7 +16,7 @@ void test("tool selection validates settings, clamps tolerance, and returns deta
         session: { viewer: env.app.viewer, viewerElement, isImageReady: () => true, reportStatus() {} },
         surface,
         renderer: createAnnotationRenderer({ surface }),
-        sampler: { ready: false, error: null, select: () => [], setImage() {} },
+        sampler: { ready: false, error: null, select: () => [], setImage() {}, dispose() {} },
         annotations: { commitAnnotation: (annotation) => ({ ...annotation, id: "test" }) },
     });
 

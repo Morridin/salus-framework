@@ -17,7 +17,9 @@ export function setupImageOpener({ env, annotations, openImage, session }: Image
     const input = requiredElement(document, "open-image-file", "input");
     let currentUrl: string | null = null;
 
-    button.addEventListener("click", () => input.click());
+    function openPicker() {
+        input.click();
+    }
 
     async function openSelectedFile() {
         const file = input.files?.[0];
@@ -68,7 +70,22 @@ export function setupImageOpener({ env, annotations, openImage, session }: Image
         }
     }
 
-    input.addEventListener("change", () => {
+    function onFileChange() {
         void openSelectedFile();
-    });
+    }
+
+    button.addEventListener("click", openPicker);
+    input.addEventListener("change", onFileChange);
+
+    return {
+        dispose() {
+            button.removeEventListener("click", openPicker);
+            input.removeEventListener("change", onFileChange);
+
+            if (currentUrl) {
+                window.URL.revokeObjectURL(currentUrl);
+                currentUrl = null;
+            }
+        },
+    };
 }

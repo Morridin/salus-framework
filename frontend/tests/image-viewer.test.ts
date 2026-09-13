@@ -791,3 +791,21 @@ void test("brush settings apply to the next stroke and invalid selections preser
         assert.equal(shape(environment.app.annotations.at(-1), "brush").radius, 20);
     }
 });
+
+void test("dispose releases viewer handlers and debug globals, and is idempotent", () => {
+    const environment = loadViewer();
+
+    assert.equal(environment.handlers.has("canvas-press"), true);
+    assert.equal(environment.isViewerDestroyed(), false);
+
+    environment.app.dispose();
+
+    assert.equal(environment.handlers.has("canvas-press"), false);
+    assert.equal(environment.isViewerDestroyed(), true);
+    assert.equal(environment.window.imageViewer, undefined);
+    assert.equal("imageViewerAnnotations" in environment.window, false);
+
+    environment.app.dispose();
+
+    assert.equal(environment.isViewerDestroyed(), true);
+});

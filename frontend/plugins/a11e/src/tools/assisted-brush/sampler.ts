@@ -211,5 +211,10 @@ export function createIntensitySampler({
         select(center: Point, radius: number, tolerance: number) {
             return imageData ? selectConnectedRegion(imageData, center, radius, tolerance) : [];
         },
+        dispose() {
+            currentImage = null;
+            imageData = null;
+            failure = null;
+        },
     };
 }

@@ -1,4 +1,6 @@
 import type { BrowserEnvironment } from "./shared/environment.js";
+import type { CommittedAnnotation } from "./shared/types.js";
+import type { Viewer } from "./viewer/types.js";
 import type { MessageChannel } from "./messaging/toolbar-bridge.js";
 import { createAnnotationPanel } from "./annotations/panel.js";
 import { createAnnotationController } from "./annotations/controller.js";
@@ -11,13 +13,19 @@ import { setupImageOpener } from "./viewer/image-opener.js";
 import { createIntensitySampler } from "./tools/assisted-brush/sampler.js";
 import { CHANNEL_NAME } from "./shared/plugin-config.js";
 
+export interface ViewerApplication {
+    readonly viewer: Viewer;
+    readonly annotations: CommittedAnnotation[];
+    dispose(): void;
+}
+
 // Composes the viewer, annotation workflows, drawing tools, and toolbar.
 export function startImageViewer({
     window,
     document,
     OpenSeadragon,
     channel,
-}: BrowserEnvironment & { channel: MessageChannel }) {
+}: BrowserEnvironment & { channel: MessageChannel }): ViewerApplication | null {
     const env = { window, document, OpenSeadragon };
     const createdSession = createViewerSession(env);
 
@@ -33,7 +41,7 @@ export function startImageViewer({
     const toolbar = createToolbarBridge({ channel });
     const annotations = createAnnotationController({ env, session, renderer, toolbar });
 
-    createAnnotationPanel({ env, controller: annotations });
+    const panel = createAnnotationPanel({ env, controller: annotations });
 
     const sampler = createIntensitySampler({ env, session });
     const tools = createToolController({
@@ -55,13 +63,15 @@ export function startImageViewer({
     }
 
     session.onImageOpened(renderer.initializeLayers);
-    setupImageOpener({ env, annotations, openImage, session });
 
-    toolbar.subscribe({
+    const imageOpener = setupImageOpener({ env, annotations, openImage, session });
+
+    const unsubscribeToolbar = toolbar.subscribe({
         onToolChanged: tools.selectTool,
         onExportRequested: annotations.exportAnnotationsAsGeoJson,
         onImportRequested: annotations.importAnnotationsFromGeoJson,
     });
+
     toolbar.requestState();
 
     window.imageViewer = session.viewer;
@@ -70,11 +80,33 @@ export function startImageViewer({
         get: () => annotations.annotations,
     });
 
+    let disposed = false;
+
+    function dispose() {
+        if (disposed) {
+            return;
+        }
+
+        disposed = true;
+
+        unsubscribeToolbar();
+        panel?.dispose();
+        tools.dispose();
+        imageOpener.dispose();
+        sampler.dispose();
+
+        delete window.imageViewer;
+        delete window.imageViewerAnnotations;
+
+        session.dispose();
+    }
+
     return {
         viewer: session.viewer,
         get annotations() {
             return annotations.annotations;
         },
+        dispose,
     };
 }
 

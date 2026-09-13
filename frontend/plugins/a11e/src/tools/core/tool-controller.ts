@@ -1,6 +1,6 @@
 import type { BrowserEnvironment } from "../../shared/environment.js";
 import type { ViewerSession } from "../../viewer/viewer-session.js";
-import type { ViewerToolEvent } from "../../viewer/types.js";
+import type { ViewerEvent, ViewerEventName, ViewerToolEvent } from "../../viewer/types.js";
 import type { Shape, ToolId } from "../../shared/types.js";
 import type { Tool, ToolContext, ToolSelection, IntensitySampler } from "./types.js";
 import { createAssistedBrushTool } from "../assisted-brush/tool.js";
@@ -102,10 +102,16 @@ export function createToolController({ env, session, sampler, surface, renderer,
         tool[name]?.(event);
     }
 
-    viewer.addHandler("canvas-press", (event) => activeToolHandler("press", event));
-    viewer.addHandler("canvas-drag", (event) => activeToolHandler("drag", event));
-    viewer.addHandler("canvas-release", (event) => activeToolHandler("release", event));
-    viewer.addHandler("canvas-click", (event) => activeToolHandler("click", event));
+    const canvasHandlers: [ViewerEventName, (event: ViewerEvent) => void][] = [
+        ["canvas-press", (event) => activeToolHandler("press", event)],
+        ["canvas-drag", (event) => activeToolHandler("drag", event)],
+        ["canvas-release", (event) => activeToolHandler("release", event)],
+        ["canvas-click", (event) => activeToolHandler("click", event)],
+    ];
+
+    for (const [eventName, handler] of canvasHandlers) {
+        viewer.addHandler(eventName, handler);
+    }
 
     const pointerTracker = new OpenSeadragon.MouseTracker({
         element: viewer.canvas,
@@ -114,7 +120,21 @@ export function createToolController({ env, session, sampler, surface, renderer,
 
     pointerTracker.setTracking(true);
 
-    document.addEventListener("keydown", (event) => activeToolHandler("keyDown", event));
+    function onKeyDown(event: KeyboardEvent) {
+        activeToolHandler("keyDown", event);
+    }
 
-    return { selectTool, cancelDrawing };
+    document.addEventListener("keydown", onKeyDown);
+
+    function dispose() {
+        for (const [eventName, handler] of canvasHandlers) {
+            viewer.removeHandler(eventName, handler);
+        }
+
+        pointerTracker.destroy();
+        document.removeEventListener("keydown", onKeyDown);
+        cancelDrawing();
+    }
+
+    return { selectTool, cancelDrawing, dispose };
 }

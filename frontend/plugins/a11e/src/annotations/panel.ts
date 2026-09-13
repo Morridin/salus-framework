@@ -69,6 +69,17 @@ export function createAnnotationPanel({
     const opacityValue = requiredElement(document, "annotation-opacity-value", "output");
     const viewer = requiredElement(document, "image-viewer", "main");
 
+    const teardown: (() => void)[] = [];
+
+    function listen<K extends keyof HTMLElementEventMap>(
+        target: HTMLElement,
+        type: K,
+        handler: (event: HTMLElementEventMap[K]) => void,
+    ) {
+        target.addEventListener(type, handler);
+        teardown.push(() => target.removeEventListener(type, handler));
+    }
+
     const rows = new Map<string, ReturnType<typeof createAnnotationRow>>();
     let selectedId: string | null = null;
     let notifiedSelection: string | null | undefined;
@@ -138,7 +149,7 @@ export function createAnnotationPanel({
         (expanded ? collapse : toggle).focus();
     }
 
-    opacityInput.addEventListener("input", () => {
+    listen(opacityInput, "input", () => {
         const value = readRangeNumber(opacityInput);
 
         if (!isFiniteNumber(value)) {
@@ -151,27 +162,34 @@ export function createAnnotationPanel({
         opacityValue.value = `${percent}%`;
         opacityInput.setAttribute("aria-valuetext", `${percent}%`);
     });
-    nameInput.addEventListener("input", () => {
-        controller.updateAnnotation(selectedId, { name: nameInput.value });
-    });
-    colorInput.addEventListener("input", () => {
-        controller.updateAnnotation(selectedId, { color: colorInput.value });
-    });
-    toggle.addEventListener("click", () => setExpanded(true));
-    deleteButton.addEventListener("click", () => {
+    listen(nameInput, "input", () => controller.updateAnnotation(selectedId, { name: nameInput.value }));
+    listen(colorInput, "input", () => controller.updateAnnotation(selectedId, { color: colorInput.value }));
+    listen(toggle, "click", () => setExpanded(true));
+    listen(deleteButton, "click", () => {
         controller.deleteAnnotation(selectedId);
 
         if (deleteButton.disabled) {
             collapse.focus();
         }
     });
-    collapse.addEventListener("click", () => setExpanded(false));
-    panel.addEventListener("keydown", (event) => {
+    listen(collapse, "click", () => setExpanded(false));
+    listen(panel, "keydown", (event) => {
         if (event.key === "Escape") {
             setExpanded(false);
         }
     });
 
-    controller.subscribe(refresh);
+    const unsubscribe = controller.subscribe(refresh);
+
     refresh();
+
+    return {
+        dispose() {
+            for (const removeListener of teardown) {
+                removeListener();
+            }
+
+            unsubscribe();
+        },
+    };
 }

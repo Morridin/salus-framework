@@ -35,6 +35,7 @@ export interface IntensitySampler {
     readonly error: Error | null;
     select(center: Point, radius: number, tolerance: number): Point[];
     setImage(url: string): void;
+    dispose(): void;
 }
 
 export interface Tool {
