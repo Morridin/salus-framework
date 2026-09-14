@@ -1,4 +1,4 @@
-import type { Annotation, AnnotationChanges, CommittedAnnotation } from "../shared/types.js";
+import type { Annotation, AnnotationChanges, AnnotationSummary, CommittedAnnotation } from "../shared/types.js";
 import { ANNOTATION_ID_PREFIX, isValidColor } from "../shared/annotation-constants.js";
 
 export function createAnnotationStore() {
@@ -58,5 +58,41 @@ export function createAnnotationStore() {
         return structuredClone(annotations.splice(0));
     }
 
-    return { add, update, remove, clear, get, list };
+    function summarize(annotation: CommittedAnnotation): AnnotationSummary {
+        const summary: AnnotationSummary = { id: annotation.id, shape: annotation.shape };
+
+        if (annotation.name !== undefined) {
+            summary.name = annotation.name;
+        }
+
+        if (annotation.color !== undefined) {
+            summary.color = annotation.color;
+        }
+
+        return summary;
+    }
+
+    // Lightweight display rows: committed geometry is never copied.
+    function summaries() {
+        return annotations.map(summarize);
+    }
+
+    // Live read-only view for synchronous consumers; never mutate or retain it across writes.
+    function view(): readonly CommittedAnnotation[] {
+        return annotations;
+    }
+
+    return {
+        add,
+        update,
+        remove,
+        clear,
+        get,
+        list,
+        summaries,
+        view,
+        get count() {
+            return annotations.length;
+        },
+    };
 }

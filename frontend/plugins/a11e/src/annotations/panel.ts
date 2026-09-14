@@ -1,6 +1,6 @@
 import { requiredElement } from "../shared/environment.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
-import type { CommittedAnnotation } from "../shared/types.js";
+import type { AnnotationSummary } from "../shared/types.js";
 import type { AnnotationController } from "./controller.js";
 import { annotationColor, annotationName } from "./appearance.js";
 import { isFiniteNumber, readRangeNumber } from "../shared/numbers.js";
@@ -29,7 +29,7 @@ function createAnnotationRow(document: Document, id: string, onSelect: (id: stri
 
     button.append(swatch, text);
 
-    function update(annotation: CommittedAnnotation, selected: boolean) {
+    function update(annotation: AnnotationSummary, selected: boolean) {
         button.setAttribute("aria-pressed", String(selected));
         swatch.style.backgroundColor = annotationColor(annotation);
         name.textContent = annotationName(annotation) || "Unnamed region";
@@ -46,7 +46,7 @@ export function createAnnotationPanel({
     env: Pick<BrowserEnvironment, "document">;
     controller: Pick<
         AnnotationController,
-        "annotations" | "selectAnnotation" | "updateAnnotation" | "deleteAnnotation" | "subscribe"
+        "summaries" | "selectAnnotation" | "updateAnnotation" | "deleteAnnotation" | "subscribe"
     >;
 }) {
     const { document } = env;
@@ -89,11 +89,11 @@ export function createAnnotationPanel({
         refresh();
     }
 
-    function renderList(annotations: CommittedAnnotation[]) {
-        count.textContent = String(annotations.length);
-        empty.hidden = annotations.length > 0;
+    function renderList(summaries: readonly AnnotationSummary[]) {
+        count.textContent = String(summaries.length);
+        empty.hidden = summaries.length > 0;
 
-        const ids = new Set(annotations.map((annotation) => annotation.id));
+        const ids = new Set(summaries.map((annotation) => annotation.id));
 
         for (const [id, row] of rows) {
             if (!ids.has(id)) {
@@ -102,7 +102,7 @@ export function createAnnotationPanel({
             }
         }
 
-        for (const annotation of annotations) {
+        for (const annotation of summaries) {
             let row = rows.get(annotation.id);
 
             if (!row) {
@@ -115,7 +115,7 @@ export function createAnnotationPanel({
         }
     }
 
-    function renderEditor(selected: CommittedAnnotation | undefined) {
+    function renderEditor(selected: AnnotationSummary | undefined) {
         nameInput.disabled = !selected;
         colorInput.disabled = !selected;
         deleteButton.disabled = !selected;
@@ -126,8 +126,8 @@ export function createAnnotationPanel({
     }
 
     function refresh() {
-        const annotations = controller.annotations;
-        const selected = annotations.find((annotation) => annotation.id === selectedId) ?? annotations[0];
+        const summaries = controller.summaries;
+        const selected = summaries.find((annotation) => annotation.id === selectedId) ?? summaries[0];
 
         selectedId = selected?.id ?? null;
 
@@ -138,7 +138,7 @@ export function createAnnotationPanel({
             controller.selectAnnotation(selectedId);
         }
 
-        renderList(annotations);
+        renderList(summaries);
         renderEditor(selected);
     }
 

@@ -89,3 +89,29 @@ void test("remove and clear return removed snapshots and never recycle generated
     assert.deepEqual(store.clear(), []);
     assert.equal(store.add({ id: first.id, shape: "polygon" as const, points: [] }).id, "segmentation-3");
 });
+
+void test("summaries expose display fields without geometry while the view stays live", () => {
+    const store = createAnnotationStore();
+    const added = store.add({ shape: "polygon" as const, name: "Tissue", points: [{ x: 1, y: 2 }] });
+
+    assert.deepEqual(store.summaries(), [{ id: added.id, name: "Tissue", shape: "polygon" }]);
+    assert.equal("points" in required(store.summaries()[0]), false);
+
+    assert.equal(store.count, 1);
+    assert.deepEqual(store.view(), [added]);
+
+    store.update(added.id, { color: "#112233" });
+
+    assert.deepEqual(store.summaries(), [{ id: added.id, name: "Tissue", color: "#112233", shape: "polygon" }]);
+    assert.equal(
+        "points" in required(store.summaries()[0]),
+        false,
+        "recoloring must not start copying committed geometry",
+    );
+    assert.equal(required(store.view()[0]).color, "#112233", "the view reflects committed state without copying");
+
+    store.remove(added.id);
+
+    assert.deepEqual(store.summaries(), []);
+    assert.equal(store.count, 0);
+});

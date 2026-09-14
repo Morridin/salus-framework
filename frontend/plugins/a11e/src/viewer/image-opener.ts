@@ -1,11 +1,10 @@
 import { requiredElement } from "../shared/environment.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
-import type { Annotation } from "../shared/types.js";
 
 // Local files stay in the browser. Decode before replacing the current image.
 interface ImageOpenerOptions {
     env: Pick<BrowserEnvironment, "window" | "document">;
-    annotations: { readonly annotations: Annotation[] };
+    annotations: { readonly count: number };
     openImage: (url: string) => void;
     session: { reportStatus: (message: string) => void };
 }
@@ -45,7 +44,7 @@ export function setupImageOpener({ env, annotations, openImage, session }: Image
             await image.decode();
 
             if (
-                annotations.annotations.length > 0 &&
+                annotations.count > 0 &&
                 !window.confirm(
                     "Opening another image will clear the current annotations. Export them first if you want to keep them. Continue?",
                 )

@@ -1,4 +1,4 @@
-import type { Annotation, AnnotationChanges, CommittedAnnotation } from "../shared/types.js";
+import type { Annotation, AnnotationChanges, AnnotationSummary, CommittedAnnotation } from "../shared/types.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
 import type { RenderElement } from "./renderer.js";
 import type { TextFile } from "./io/geojson-import.js";
@@ -22,7 +22,11 @@ interface ControllerOptions {
 }
 
 export interface AnnotationController {
+    /** Owned deep copies: callers may mutate and retain them. */
     readonly annotations: CommittedAnnotation[];
+    /** Lightweight display rows for the panel. */
+    readonly summaries: readonly AnnotationSummary[];
+    readonly count: number;
     commitAnnotation(this: void, annotationData: Annotation, preview?: RenderElement | null): CommittedAnnotation;
     updateAnnotation(id: string | null, changes: AnnotationChanges): CommittedAnnotation | undefined;
     deleteAnnotation(id: string | null): void;
@@ -141,6 +145,12 @@ export function createAnnotationController({
     return {
         get annotations() {
             return annotationStore.list();
+        },
+        get summaries() {
+            return annotationStore.summaries();
+        },
+        get count() {
+            return annotationStore.count;
         },
         commitAnnotation,
         updateAnnotation,

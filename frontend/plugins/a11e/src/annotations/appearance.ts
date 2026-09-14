@@ -1,8 +1,16 @@
-import type { Annotation } from "../shared/types.js";
+import type { Shape } from "../shared/types.js";
 import { SHAPES } from "../shared/types.js";
 import { ASSISTED_BRUSH_COLOR, COLOR_HEX_PATTERN, DEFAULT_ANNOTATION_COLOR } from "../shared/annotation-constants.js";
 
-export function annotationColor(annotation: Annotation): string {
+/** Appearance fields shared by committed annotations and their panel summaries. */
+interface AnnotationDisplay {
+    id?: string;
+    name?: string;
+    color?: string;
+    shape: Shape;
+}
+
+export function annotationColor(annotation: AnnotationDisplay): string {
     return typeof annotation.color === "string" && COLOR_HEX_PATTERN.test(annotation.color)
         ? annotation.color
         : annotation.shape === SHAPES.ASSISTED_BRUSH
@@ -10,6 +18,6 @@ export function annotationColor(annotation: Annotation): string {
           : DEFAULT_ANNOTATION_COLOR;
 }
 
-export function annotationName(annotation: Annotation): string {
+export function annotationName(annotation: AnnotationDisplay): string {
     return annotation.name ?? annotation.id ?? "";
 }

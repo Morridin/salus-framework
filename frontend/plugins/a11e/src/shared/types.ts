@@ -59,6 +59,14 @@ export type OverlayAnnotation = Extract<Annotation, { shape: "rectangle" | "circ
 
 export type CommittedAnnotation = Annotation & { id: string };
 
+/** Lightweight committed display data for lists and editors. */
+export interface AnnotationSummary {
+    id: string;
+    name?: string;
+    color?: string;
+    shape: Shape;
+}
+
 export interface AnnotationChanges {
     name?: string;
     color?: string;
