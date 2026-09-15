@@ -1,4 +1,3 @@
-import { requiredElement } from "../shared/environment.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
 
 // Local files stay in the browser. Decode before replacing the current image.
@@ -12,8 +11,8 @@ interface ImageOpenerOptions {
 export function setupImageOpener({ env, annotations, openImage, session }: ImageOpenerOptions) {
     const { window, document } = env;
     const { reportStatus } = session;
-    const button = requiredElement(document, "open-image", "button");
-    const input = requiredElement(document, "open-image-file", "input");
+    const button = document.querySelector<HTMLButtonElement>("#open-image")!;
+    const input = document.querySelector<HTMLInputElement>("#open-image-file")!;
     let currentUrl: string | null = null;
 
     function openPicker() {

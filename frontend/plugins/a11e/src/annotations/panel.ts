@@ -1,4 +1,3 @@
-import { requiredElement } from "../shared/environment.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
 import type { AnnotationSummary } from "../shared/types.js";
 import type { AnnotationController } from "./controller.js";
@@ -55,19 +54,19 @@ export function createAnnotationPanel({
         return;
     }
 
-    const panel = requiredElement(document, "annotation-panel", "aside");
-    const toggle = requiredElement(document, "toggle-annotations", "button");
-    const collapse = requiredElement(document, "collapse-annotations", "button");
-    const list = requiredElement(document, "annotation-list", "div");
-    const count = requiredElement(document, "annotation-count", "span");
-    const empty = requiredElement(document, "annotation-empty", "p");
-    const nameInput = requiredElement(document, "annotation-name", "input");
-    const colorInput = requiredElement(document, "annotation-color", "input");
-    const colorValue = requiredElement(document, "annotation-color-value", "output");
-    const deleteButton = requiredElement(document, "delete-annotation", "button");
-    const opacityInput = requiredElement(document, "annotation-opacity", "input");
-    const opacityValue = requiredElement(document, "annotation-opacity-value", "output");
-    const viewer = requiredElement(document, "image-viewer", "main");
+    const panel = document.querySelector<HTMLElement>("#annotation-panel")!;
+    const toggle = document.querySelector<HTMLButtonElement>("#toggle-annotations")!;
+    const collapse = document.querySelector<HTMLButtonElement>("#collapse-annotations")!;
+    const list = document.querySelector<HTMLDivElement>("#annotation-list")!;
+    const count = document.querySelector<HTMLSpanElement>("#annotation-count")!;
+    const empty = document.querySelector<HTMLParagraphElement>("#annotation-empty")!;
+    const nameInput = document.querySelector<HTMLInputElement>("#annotation-name")!;
+    const colorInput = document.querySelector<HTMLInputElement>("#annotation-color")!;
+    const colorValue = document.querySelector<HTMLOutputElement>("#annotation-color-value")!;
+    const deleteButton = document.querySelector<HTMLButtonElement>("#delete-annotation")!;
+    const opacityInput = document.querySelector<HTMLInputElement>("#annotation-opacity")!;
+    const opacityValue = document.querySelector<HTMLOutputElement>("#annotation-opacity-value")!;
+    const viewer = document.querySelector<HTMLElement>("#image-viewer")!;
 
     const teardown: (() => void)[] = [];
 
