@@ -1,0 +1,13 @@
+# Normalise all text files to LF in the repository.
+# Editors on Windows may still use CRLF locally; git converts on commit.
+* text=auto eol=lf
+
+# Binary files, so git never touches their contents.
+*.png   binary
+*.ico   binary
+*.woff2 binary
+*.ttf   binary
+*.pem   binary
+
+# Generated rustdoc output. Collapses the diffs in reviews.
+doc/** linguist-generated=true

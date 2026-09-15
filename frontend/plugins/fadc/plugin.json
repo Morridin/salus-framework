@@ -1,7 +1,0 @@
-{
-  "name": "Static Test Plug-in",
-  "type": "static",
-  "source": "index.html",
-  "dependencies": [],
-  "panels": ["bottom", "all"]
-}
