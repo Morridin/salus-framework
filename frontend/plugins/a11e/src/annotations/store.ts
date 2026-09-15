@@ -33,6 +33,12 @@ export function createAnnotationStore() {
             return;
         }
 
+        if (changes.category === null) {
+            delete annotation.category;
+        } else if (changes.category) {
+            annotation.category = structuredClone(changes.category);
+        }
+
         if (typeof changes.name === "string") {
             annotation.name = changes.name;
         }
@@ -60,6 +66,10 @@ export function createAnnotationStore() {
 
     function summarize(annotation: CommittedAnnotation): AnnotationSummary {
         const summary: AnnotationSummary = { id: annotation.id, shape: annotation.shape };
+
+        if (annotation.category) {
+            summary.category = structuredClone(annotation.category);
+        }
 
         if (annotation.name !== undefined) {
             summary.name = annotation.name;

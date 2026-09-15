@@ -52,6 +52,22 @@ function assistedBrushPathData(runs: Run[]): string {
 }
 
 export function createAnnotationRenderer({ surface }: { surface: ViewerSurface }) {
+    let previewColor: string | undefined;
+
+    function setPreviewColor(color: string | undefined) {
+        previewColor = color;
+    }
+
+    function stylePreview(element: RenderElement, annotation: Annotation) {
+        const color = previewColor ?? annotationColor(annotation);
+
+        element.style.setProperty("--annotation-color", color);
+        element.style.setProperty(
+            "--annotation-fill",
+            `${color}${ANNOTATION_FILL_OPACITY[annotation.shape] ?? ANNOTATION_FILL_OPACITY.default}`,
+        );
+    }
+
     let layers: Record<SvgShape, SVGSVGElement> | null = null;
     const committedElements = new Map<string, RenderElement>();
     const overlayElements = new WeakSet<RenderElement>();
@@ -121,6 +137,10 @@ export function createAnnotationRenderer({ surface }: { surface: ViewerSurface }
     }
 
     function update(element: RenderElement, annotation: Annotation) {
+        if (element.classList.contains("preview")) {
+            stylePreview(element, annotation);
+        }
+
         switch (annotation.shape) {
             case "rectangle":
             case "circle":
@@ -166,6 +186,7 @@ export function createAnnotationRenderer({ surface }: { surface: ViewerSurface }
 
         if (preview) {
             element.classList.add("preview");
+            stylePreview(element, annotation);
         } else {
             register(element, annotation);
         }
@@ -207,6 +228,7 @@ export function createAnnotationRenderer({ surface }: { surface: ViewerSurface }
     }
 
     return {
+        setPreviewColor,
         initializeLayers,
         canRender,
         render,

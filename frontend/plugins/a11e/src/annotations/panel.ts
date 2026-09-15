@@ -45,7 +45,7 @@ export function createAnnotationPanel({
     env: Pick<BrowserEnvironment, "document">;
     controller: Pick<
         AnnotationController,
-        "summaries" | "selectAnnotation" | "updateAnnotation" | "deleteAnnotation" | "subscribe"
+        "categories" | "summaries" | "selectAnnotation" | "updateAnnotation" | "deleteAnnotation" | "subscribe"
     >;
 }) {
     const { document } = env;
@@ -61,6 +61,7 @@ export function createAnnotationPanel({
     const count = document.querySelector<HTMLSpanElement>("#annotation-count")!;
     const empty = document.querySelector<HTMLParagraphElement>("#annotation-empty")!;
     const nameInput = document.querySelector<HTMLInputElement>("#annotation-name")!;
+    const categoryInput = document.querySelector<HTMLSelectElement>("#annotation-category")!;
     const colorInput = document.querySelector<HTMLInputElement>("#annotation-color")!;
     const colorValue = document.querySelector<HTMLOutputElement>("#annotation-color-value")!;
     const deleteButton = document.querySelector<HTMLButtonElement>("#delete-annotation")!;
@@ -116,7 +117,20 @@ export function createAnnotationPanel({
 
     function renderEditor(selected: AnnotationSummary | undefined) {
         nameInput.disabled = !selected;
-        colorInput.disabled = !selected;
+        colorInput.disabled = !selected || !!selected.category;
+        categoryInput.disabled = !selected;
+
+        const options = [{ id: "", name: "Uncategorized" }, ...controller.categories].map((category) => {
+            const option = document.createElement("option");
+
+            option.value = category.id;
+            option.textContent = category.name;
+
+            return option;
+        });
+
+        categoryInput.replaceChildren(...options);
+        categoryInput.value = selected?.category?.id ?? "";
         deleteButton.disabled = !selected;
 
         nameInput.value = selected ? annotationName(selected) : "";
@@ -162,6 +176,11 @@ export function createAnnotationPanel({
         opacityInput.setAttribute("aria-valuetext", `${percent}%`);
     });
     listen(nameInput, "input", () => controller.updateAnnotation(selectedId, { name: nameInput.value }));
+    listen(categoryInput, "change", () =>
+        controller.updateAnnotation(selectedId, {
+            category: controller.categories.find((category) => category.id === categoryInput.value) ?? null,
+        }),
+    );
     listen(colorInput, "input", () => controller.updateAnnotation(selectedId, { color: colorInput.value }));
     listen(toggle, "click", () => setExpanded(true));
     listen(deleteButton, "click", () => {

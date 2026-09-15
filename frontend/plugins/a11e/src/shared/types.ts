@@ -16,7 +16,14 @@ export interface Run {
     xEnd: number;
 }
 
+export interface AnnotationCategory {
+    id: string;
+    name: string;
+    color: string;
+}
+
 interface AnnotationAppearance {
+    category?: AnnotationCategory;
     id?: string;
     name?: string;
     color?: string;
@@ -61,6 +68,7 @@ export type CommittedAnnotation = Annotation & { id: string };
 
 /** Lightweight committed display data for lists and editors. */
 export interface AnnotationSummary {
+    category?: AnnotationCategory;
     id: string;
     name?: string;
     color?: string;
@@ -68,6 +76,7 @@ export interface AnnotationSummary {
 }
 
 export interface AnnotationChanges {
+    category?: AnnotationCategory | null;
     name?: string;
     color?: string;
 }

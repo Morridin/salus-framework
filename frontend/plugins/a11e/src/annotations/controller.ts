@@ -1,7 +1,14 @@
-import type { Annotation, AnnotationChanges, AnnotationSummary, CommittedAnnotation } from "../shared/types.js";
+import type {
+    AnnotationCategory,
+    Annotation,
+    AnnotationChanges,
+    AnnotationSummary,
+    CommittedAnnotation,
+} from "../shared/types.js";
 import type { BrowserEnvironment } from "../shared/environment.js";
 import type { RenderElement } from "./renderer.js";
 import type { TextFile } from "./io/geojson-import.js";
+import { isValidColor } from "../shared/annotation-constants.js";
 import { errorMessage } from "../shared/validation.js";
 import { createAnnotationStore } from "./store.js";
 import { annotationsToGeoJson } from "./io/geojson-export.js";
@@ -22,6 +29,11 @@ interface ControllerOptions {
 }
 
 export interface AnnotationController {
+    readonly categories: AnnotationCategory[];
+    readonly activeCategoryId: string | null;
+    createCategory(name: string, color: string): void;
+    editCategory(id: string, name: string, color: string): void;
+    selectCategory(id: string | null): void;
     /** Owned deep copies: callers may mutate and retain them. */
     readonly annotations: CommittedAnnotation[];
     /** Lightweight display rows for the panel. */
@@ -48,6 +60,52 @@ export function createAnnotationController({
     const { isImageReady, reportStatus } = session;
     const annotationStore = createAnnotationStore();
 
+    const categories: AnnotationCategory[] = [];
+    let activeCategoryId: string | null = null;
+
+    function createCategory(name: string, color: string) {
+        if (!name.trim() || !isValidColor(color)) {
+            return;
+        }
+
+        const category = { id: crypto.randomUUID(), name: name.trim(), color };
+
+        categories.push(category);
+        activeCategoryId = category.id;
+        notify();
+    }
+
+    function selectCategory(id: string | null) {
+        if (id !== null && !categories.some((category) => category.id === id)) {
+            return;
+        }
+
+        activeCategoryId = id;
+        notify();
+    }
+
+    function editCategory(id: string, name: string, color: string) {
+        const category = categories.find((item) => item.id === id);
+
+        if (!category || !name.trim() || !isValidColor(color)) {
+            return;
+        }
+
+        Object.assign(category, { name: name.trim(), color });
+
+        for (const annotation of annotationStore.view()) {
+            if (annotation.category?.id === id) {
+                const updated = annotationStore.update(annotation.id, { category });
+
+                if (updated) {
+                    renderer.updateAppearance(updated);
+                }
+            }
+        }
+
+        notify();
+    }
+
     const listeners = new Set<() => void>();
 
     function subscribe(listener: () => void) {
@@ -61,6 +119,16 @@ export function createAnnotationController({
     }
 
     function updateAnnotation(id: string | null, changes: AnnotationChanges) {
+        if (changes.category) {
+            const category = categories.find((item) => item.id === changes.category?.id);
+
+            if (!category) {
+                return;
+            }
+
+            changes = { ...changes, category };
+        }
+
         const annotation = annotationStore.update(id, changes);
 
         if (!annotation) {
@@ -76,8 +144,16 @@ export function createAnnotationController({
 
     // Complete the visual before publishing or notifying subscribers.
     // Drawing tools supply their preview; imports render a new element.
-    function commitAnnotation(annotationData: Annotation, preview: RenderElement | null = null) {
-        const annotation = annotationStore.add(annotationData);
+    function commitAnnotation(
+        annotationData: Annotation,
+        preview: RenderElement | null = null,
+        useActiveCategory = true,
+    ) {
+        const category =
+            annotationData.category ??
+            (useActiveCategory ? categories.find((item) => item.id === activeCategoryId) : undefined);
+
+        const annotation = annotationStore.add(category ? { ...annotationData, category } : annotationData);
 
         if (preview) {
             renderer.finalizePreview(preview, annotation);
@@ -119,7 +195,23 @@ export function createAnnotationController({
             }
 
             for (const annotationData of annotations) {
-                commitAnnotation(annotationData);
+                if (annotationData.category) {
+                    const imported = annotationData.category;
+
+                    let category = categories.find(
+                        (item) => item.name === imported.name && item.color === imported.color,
+                    );
+
+                    if (!category) {
+                        category = { ...imported, id: crypto.randomUUID() };
+                        categories.push(category);
+                    }
+
+                    annotationData.category = category;
+                }
+
+                // Legacy imports retain their original appearance, regardless of the drawing category.
+                commitAnnotation(annotationData, null, false);
             }
 
             reportStatus(`Imported ${annotations.length} annotation${annotations.length === 1 ? "" : "s"}.`);
@@ -143,6 +235,15 @@ export function createAnnotationController({
     }
 
     return {
+        get categories() {
+            return structuredClone(categories);
+        },
+        get activeCategoryId() {
+            return activeCategoryId;
+        },
+        createCategory,
+        editCategory,
+        selectCategory,
         get annotations() {
             return annotationStore.list();
         },

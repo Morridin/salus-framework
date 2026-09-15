@@ -1,3 +1,4 @@
+import { isValidColor } from "../shared/annotation-constants.js";
 import { isKnownToolId } from "../tools/core/registry.js";
 import { TOOLBAR_PLUGIN_ID, VIEWER_PLUGIN_ID } from "../shared/plugin-config.js";
 import { isFiniteNumber } from "../shared/numbers.js";
@@ -13,6 +14,9 @@ export interface MessageChannel {
 }
 
 interface MessageHandlers {
+    onCategoriesRequested?: () => void;
+    onCategorySelected?: (id: string | null) => void;
+    onCategorySaved?: (name: string, color: string, id?: string) => void;
     onToolChanged?: (selection: ToolSelection) => void;
     onExportRequested?: () => void;
     onImportRequested?: (file: TextFile) => Promise<void>;
@@ -22,6 +26,9 @@ type ViewerPayload = PluginProtocol.ViewerToToolbarPayload<CommittedAnnotation>;
 
 // Pins the handled message types to the shared protocol.
 const TOOLBAR_MESSAGE_TYPES = [
+    "categories-request",
+    "category-select",
+    "category-save",
     "segmentation-tool-changed",
     "segmentation-export-request",
     "segmentation-import-request",
@@ -73,6 +80,26 @@ export function createToolbarBridge({ channel }: { channel: MessageChannel }) {
         }
 
         switch (payload.type) {
+            case "categories-request":
+                handlers.onCategoriesRequested?.();
+                break;
+            case "category-select":
+                if (payload.id === null || typeof payload.id === "string") {
+                    handlers.onCategorySelected?.(payload.id);
+                }
+
+                break;
+            case "category-save":
+                if (
+                    typeof payload.name === "string" &&
+                    payload.name.trim() &&
+                    isValidColor(payload.color) &&
+                    (payload.id === undefined || typeof payload.id === "string")
+                ) {
+                    handlers.onCategorySaved?.(payload.name, payload.color, payload.id);
+                }
+
+                break;
             case "segmentation-tool-changed":
                 if (isKnownToolId(payload.tool)) {
                     const selection: ToolSelection = { tool: payload.tool };
@@ -114,5 +141,12 @@ export function createToolbarBridge({ channel }: { channel: MessageChannel }) {
         return () => channel.removeEventListener("message", listener);
     }
 
-    return { publishAnnotation, requestState, subscribe };
+    return {
+        publishAnnotation,
+        requestState,
+        subscribe,
+        publishCategories(categories: PluginProtocol.Category[], activeCategoryId: string | null) {
+            send({ type: "categories-state", categories, activeCategoryId });
+        },
+    };
 }

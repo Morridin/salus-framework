@@ -1,3 +1,4 @@
+import { isValidColor } from "../../shared/annotation-constants.js";
 import { isFiniteNumber, isPositiveFinite } from "../../shared/numbers.js";
 import { isRecord, isUnknownArray } from "../../shared/validation.js";
 import { SALUS_GEOJSON_VERSION } from "./geojson-schema.js";
@@ -36,6 +37,21 @@ function isAnnotation(annotation: unknown): annotation is Annotation {
 
     for (const key of ["id", "name", "color"]) {
         if (annotation[key] !== undefined && typeof annotation[key] !== "string") {
+            return false;
+        }
+    }
+
+    if (annotation.category !== undefined) {
+        const category = annotation.category;
+
+        if (
+            !isRecord(category) ||
+            typeof category.id !== "string" ||
+            !category.id ||
+            typeof category.name !== "string" ||
+            !category.name.trim() ||
+            !isValidColor(category.color)
+        ) {
             return false;
         }
     }

@@ -90,3 +90,22 @@ svg {
         clip-path: inset(50%);
     }
 }
+
+.category-controls, #category-editor:not([hidden]) {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    color: #ccc;
+}
+#category-editor { width: 100%; }
+.category-controls select, #category-name {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 0.35rem;
+    padding: 0.5rem;
+    font: inherit;
+    max-width: 12rem;
+}
+#category-color { width: 2.5rem; height: 2rem; }

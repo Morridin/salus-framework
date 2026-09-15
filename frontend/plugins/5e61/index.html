@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Segmentation Tools</title>
     <link rel="stylesheet" href="main.css" />
-    <script src="dist/main.js" defer></script>
+    <script type="module" src="dist/main.js"></script>
 </head>
 <body>
     <div class="toolbar" role="toolbar" aria-label="Segmentation tools">
@@ -50,6 +50,20 @@
             <input id="brush-tolerance" type="range" min="0" max="255" value="24" step="1" />
             <output id="brush-tolerance-output" for="brush-tolerance">24</output>
         </label>
+        <div class="category-controls">
+            <label for="category-select">Category</label>
+            <select id="category-select"><option value="">Uncategorized</option></select>
+            <button id="category-create" type="button">New category</button>
+            <button id="category-edit" type="button" disabled>Edit category</button>
+        </div>
+        <form id="category-editor" hidden>
+            <label for="category-name">Name</label>
+            <input id="category-name" required maxlength="100" placeholder="Category name" />
+            <label for="category-color">Color</label>
+            <input id="category-color" type="color" value="#2ecc71" />
+            <button type="submit">Save</button>
+            <button id="category-cancel" type="button">Cancel</button>
+        </form>
         <input id="import-geojson-file" type="file" accept=".geojson,.json,application/geo+json,application/json" hidden />
         <button id="import-geojson" type="button" title="Import annotations from a Salus GeoJSON export">
             <svg viewBox="0 0 24 24" aria-hidden="true">

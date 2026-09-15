@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
 import test from "node:test";
-import vm from "node:vm";
+import { startToolbar } from "../plugins/5e61/src/toolbar.js";
 import { createDom } from "./helpers/dom.js";
 import { required } from "./helpers/assertions.js";
 import { isRecord } from "../plugins/a11e/src/shared/validation.js";
@@ -32,17 +30,11 @@ void test("toolbar opens the picker and sends selected files, allowing the same 
         clicks += 1;
     };
 
-    const source = fs.readFileSync(path.join(process.cwd(), "plugins/5e61/dist/main.js"), "utf8");
-
-    vm.runInNewContext(source, {
-        document,
-        BroadcastChannel: class {
-            postMessage(message: unknown) {
-                messages.push(message);
-            }
-
-            addEventListener() {}
+    startToolbar(document, {
+        postMessage(message) {
+            messages.push(message);
         },
+        addEventListener() {},
     });
 
     assert.equal(latest().payload.tool, "none");

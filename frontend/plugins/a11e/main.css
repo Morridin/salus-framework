@@ -118,7 +118,7 @@ body {
 
 .segmentation-overlay.preview {
     border-style: dashed;
-    background: rgb(46 204 113 / 7%);
+    background: var(--annotation-fill, rgb(46 204 113 / 7%));
 }
 
 .polygon-layer {
@@ -136,7 +136,7 @@ body {
 }
 
 .polygon-segmentation.preview {
-    fill: rgb(46 204 113 / 7%);
+    fill: var(--annotation-fill, rgb(46 204 113 / 7%));
     stroke-dasharray: 6 4;
 }
 
@@ -161,7 +161,7 @@ body {
 }
 
 .assisted-brush-segmentation.preview {
-    fill: rgb(64 196 255 / 32%);
+    fill: var(--annotation-fill, rgb(64 196 255 / 32%));
 }
 
 .brush-segmentation {
@@ -172,7 +172,7 @@ body {
 }
 
 .brush-segmentation.preview {
-    stroke: rgb(46 204 113 / 30%);
+    stroke: var(--annotation-fill, rgb(46 204 113 / 30%));
 }
 
 #viewer-error {
@@ -197,3 +197,5 @@ body {
     font: 0.85rem system-ui, sans-serif;
     pointer-events: none;
 }
+
+#annotation-category { width: 100%; padding: 7px; border: 1px solid #41414c; border-radius: 5px; color: #eee; background: #222228; }

@@ -11,6 +11,7 @@ import { createToolController } from "./tools/core/tool-controller.js";
 import { createViewerSession } from "./viewer/viewer-session.js";
 import { setupImageOpener } from "./viewer/image-opener.js";
 import { createIntensitySampler } from "./tools/assisted-brush/sampler.js";
+import { createCategorySync } from "./messaging/category-sync.js";
 import { CHANNEL_NAME } from "./shared/plugin-config.js";
 
 export interface ViewerApplication {
@@ -44,6 +45,7 @@ export function startImageViewer({
     const panel = createAnnotationPanel({ env, controller: annotations });
 
     const sampler = createIntensitySampler({ env, session });
+
     const tools = createToolController({
         env,
         session,
@@ -66,13 +68,17 @@ export function startImageViewer({
 
     const imageOpener = setupImageOpener({ env, annotations, openImage, session });
 
+    const categorySync = createCategorySync({ annotations, toolbar, setPreviewColor: renderer.setPreviewColor });
+
     const unsubscribeToolbar = toolbar.subscribe({
+        ...categorySync.handlers,
         onToolChanged: tools.selectTool,
         onExportRequested: annotations.exportAnnotationsAsGeoJson,
         onImportRequested: annotations.importAnnotationsFromGeoJson,
     });
 
     toolbar.requestState();
+    categorySync.publish();
 
     window.imageViewer = session.viewer;
     Object.defineProperty(window, "imageViewerAnnotations", {
@@ -90,6 +96,7 @@ export function startImageViewer({
         disposed = true;
 
         unsubscribeToolbar();
+        categorySync.dispose();
         panel?.dispose();
         tools.dispose();
         imageOpener.dispose();

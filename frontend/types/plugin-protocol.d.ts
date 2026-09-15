@@ -1,8 +1,7 @@
 /**
  * Cross-plugin messages exchanged over the salus:plugin-messages channel.
  *
- * This file stays a global script (no imports or exports) so the toolbar (5e61)
- * can reference the protocol while remaining a classic script.
+ * Shared ambient types keep both independently deployed plugins on the same protocol.
  */
 declare namespace PluginProtocol {
     type PluginId = "a11e" | "5e61";
@@ -11,6 +10,12 @@ declare namespace PluginProtocol {
         sourcePluginId: PluginId;
         targetPluginId: PluginId;
         payload: TPayload;
+    }
+
+    interface Category {
+        id: string;
+        name: string;
+        color: string;
     }
 
     /** Toolbar (5e61) requests handled by the viewer (a11e). */
@@ -22,10 +27,15 @@ declare namespace PluginProtocol {
               brushRadius: number;
               brushTolerance: number;
           }
+        | { type: "categories-request" }
+        | { type: "category-select"; id: string | null }
+        | { type: "category-save"; id?: string; name: string; color: string }
         | { type: "segmentation-export-request" }
         | { type: "segmentation-import-request"; file: Blob };
 
     /** Viewer (a11e) messages handled by the toolbar (5e61). */
     type ViewerToToolbarPayload<TAnnotation> =
-        { type: "segmentation-created"; annotation: TAnnotation } | { type: "segmentation-state-request" };
+        | { type: "categories-state"; categories: Category[]; activeCategoryId: string | null }
+        | { type: "segmentation-created"; annotation: TAnnotation }
+        | { type: "segmentation-state-request" };
 }
