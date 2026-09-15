@@ -5,7 +5,7 @@ import globals from "globals";
 import stylistic from "@stylistic/eslint-plugin";
 
 export default defineConfig([
-    {ignores: ["**/node_modules/**", "www-root/**", "plugins/*/dist/**", "test-build/**"]},
+    {ignores: ["**/node_modules/**", "www-root/**", "plugins/*/dist/**", "test-build/**", "tools/oxlint/anti-slop/**"]},
     {
         files: ["**/*.ts"],
         extends: [js.configs.recommended, tseslint.configs.recommendedTypeChecked],

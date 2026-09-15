@@ -13,10 +13,12 @@
     "watch:toolbar": "tsc -p plugins/5e61/tsconfig.json --watch",
     "lint:fix": "eslint . --fix --max-warnings 0",
     "format": "npm run lint:fix && prettier \"**/*.ts\" --write",
-    "format:check": "prettier \"**/*.ts\" --check"
+    "format:check": "prettier \"**/*.ts\" --check",
+    "lint:anti-slop": "oxlint -c .oxlintrc.json ."
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@oxlint/plugins": "1.83.0",
     "@stylistic/eslint-plugin": "5.10.0",
     "@turf/helpers": "7.4.0",
     "@turf/union": "7.4.0",
@@ -25,6 +27,7 @@
     "eslint": "10.10.0",
     "globals": "17.12.0",
     "jsdom": "30.0.1",
+    "oxlint": "1.83.0",
     "prettier": "3.9.6",
     "typescript": "6.0.2",
     "typescript-eslint": "8.70.0"

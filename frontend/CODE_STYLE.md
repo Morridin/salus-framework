@@ -90,3 +90,15 @@ guidelines when editing code:
 
 Generated plugin output and compiled tests are excluded from formatting. Edit the
 TypeScript source and regenerate output with the build commands.
+
+## Anti-slop audit
+
+Run `npm run lint:anti-slop --prefix frontend` to audit the frontend with the
+vendored Oxlint rules. This command is separate from `check` while existing
+findings remain. All generic anti-slop rules run at error severity; their defaults
+also flag geometric `shape` names and explicit runtime validation at input
+boundaries. Review findings in context before changing those contracts.
+
+The plugin is in `tools/oxlint/anti-slop/`; its `UPSTREAM.md` records provenance
+and integration details. Keep Oxlint and `@oxlint/plugins` pinned to the same
+version. Vendored sources are excluded from ESLint and Prettier.
