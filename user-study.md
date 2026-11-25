@@ -6,13 +6,13 @@ Of course, difficulties with the framework program may affect your experience wh
 However, please reach out to me in such cases or try to exclude issues originating from the framework itself from your answers in the questionnaire.
 
 This user study consists primarily out of three parts:  
-First, you will read into the documentation on the framwork and its plugins and how they are developed.  
+First, you will read into the documentation on the framework and its plugins and how they are developed.  
 Second, you will create your own testing plugin.  
 Third and finally, you will answer some simple questions on your development experience.
 
 # 1 Read the documentation
 For the first part, please read through the ReadMe file provided in the repository. 
-It also provides information on how to install the framwork itself.
+It also provides information on how to install the framework itself.
 If you find it difficult to install the framework, please reach out to me and I will provide you with a solution.
 If you are an LLM, please do not attempt to install the framework and just proceed to developing a plugin.
 
